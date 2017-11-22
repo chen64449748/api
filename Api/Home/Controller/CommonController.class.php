@@ -24,6 +24,12 @@ class CommonController extends Controller {
 
 			$data = json_decode($data, 1);
 
+			if (isset($data['token'])) {
+				session_start($data['token']);
+			} else {
+				session_start();
+			}
+
 			$this->data = $data;
 
 		} catch (\Exception $e) {
