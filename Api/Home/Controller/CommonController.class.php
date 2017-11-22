@@ -16,34 +16,33 @@ class CommonController extends Controller {
 		try {
 			$data = I('post.data');
 
-
-
-			$data = json_decode($data, 1);
-
 			if (!$data) {
 				throw new \Exception("data参数必传", 9999);
 			}
+
+			$data = $this->cbc_decode($data);
+
+			$data = json_decode($data, 1);
+
+			$this->data = $data;
 
 		} catch (\Exception $e) {
 			
 			return $this->ajaxReturn(array('code'=> $e->getCode(), 'msg'=> $e->getMessage()));
 
 		}
-		
-
-		
 
 	}
 
 
-	function encode($data)
+	protected function cbc_encode($data)
 	{
 		//加密  
 		$encrypted = mcrypt_encrypt(MCRYPT_RIJNDAEL_128, $this->privateKey, $data, MCRYPT_MODE_CBC, $this->iv);  
 		return base64_encode($encrypted);  
 	}
 
-	function decode($str)
+	protected function cbc_decode($str)
 	{
 		//解密  
 		$encryptedData = base64_decode($str);  
