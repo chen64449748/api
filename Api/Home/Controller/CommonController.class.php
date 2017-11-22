@@ -1,7 +1,7 @@
 <?php
 namespace Home\Controller;
 use Think\Controller;
-
+use Org\HLBPay;
 class CommonController extends Controller {
     
     protected $data = '';
@@ -12,6 +12,7 @@ class CommonController extends Controller {
 
 	function __construct()
 	{
+
 
 		try {
 			$data = I('post.data');
@@ -39,7 +40,6 @@ class CommonController extends Controller {
 		}
 
 	}
-
 
 	protected function cbc_encode($data)
 	{

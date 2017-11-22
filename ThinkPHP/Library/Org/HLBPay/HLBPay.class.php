@@ -1,8 +1,7 @@
-<?php 
+<?php
 
-/**
-* 
-*/
+namespace Org\HLBPay;
+
 class HLBPay
 {
 	private $http_client;
@@ -20,6 +19,7 @@ class HLBPay
 	// rsa 私钥
 	private $rsa_signkey = 'MIICdgIBADANBgkqhkiG9w0BAQEFAASCAmAwggJcAgEAAoGBAK5GQSOPqzt7o4xcgygdikqN1uY13J7Uu0nJdm/BtxPH1Y1qolPUw/lSCd83f7KnS/xS/THCVEwvUm2iOtQKIDj2A/SC7Jy+bZbbbrJqkx+61pgjuIFsKo7Wf/2OX59Nj1qQlWa99J3ZH/kEFxKd5V1moV9cCNpBZVoEYyhmBbajAgMBAAECgYAIDqt4T24lQ+Qd2zEdK7B3HfOvlRHsLf2yvaPCKvyh531SGnoC0jV1U3utXE2FHwL+WX/nSwrGsvFmrDd4EjfHFsqRvHm+TJfXoHtmkfvbVGI7bFl/3NbYdi76tqbth6W8k0gkPUsACs2ix8a4K7zxOO+UpOeUBIXrchDxFmj9sQJBAOgSHQAI5hr/3+rSQXlq2lET87Ew9Ib72Lwqri3vsHO/sysVTLAznuA+V8s+a4tUeA839a/tGLp1SaJhvma9/30CQQDAPoNFw4rYTm9vbQnrCb6Mm0l9GNpCD1c4ShTxHJyt8Gql0e1Sl3vc28AxyqHLq66abYDzOpnPGJ8AIpri4qifAkArJsMRsJXoy089gJ8ADqhNjyIu/mVZfBbO1jjQ/dKXkzujdTBvSwnttGnqts6Ud75jRgp/Dd0dPpXUhcw7mnSZAkEAmYeTKP0Afr0tS6ymNhojHoHJz+kwLX+45VBspx51loghc+pSgRpPplOti1ZLnq+uktAPIrDTM0xzdxUr4zSm+wJAV54yRQsZBkRmhPibmLeoe3lM6hcAwLqS+E1H09X92fBLqCtBAybDnf++hT2ATgtW+xgI+tFVbOqbi1QbLyw1kA==';
 	
+	// 测试
 	private $customer_number = 'C1800001108';
 
 	private $send_url; // 发送接口
@@ -29,9 +29,8 @@ class HLBPay
 
 	private $result; // 返回结果
 
-	function __construct($http_client, $crypt_rsa)
+	function __construct($crypt_rsa)
 	{
-		$this->http_client = $http_client;
 		$this->crypt_rsa = $crypt_rsa;
 	}
 
@@ -68,6 +67,13 @@ class HLBPay
 		}
 
 		call_user_func(array($this, $type), $params);
+	}
+
+	function sendRequest()
+	{
+		$pageContents = HttpClient::quickPost($this->send_url, $this->send_data);
+		$result = json_decode($pageContents, 1);
+		$this->result = $pageContents;
 	}
 
 	function getResult()
