@@ -22,6 +22,7 @@ class CommonController extends Controller {
 			}
 
 			$data = $this->cbc_decode($data);
+			$data = trim($data);
 
 			$data = json_decode($data, 1);
 
@@ -38,6 +39,7 @@ class CommonController extends Controller {
 			return $this->ajaxReturn(array('code'=> $e->getCode(), 'msg'=> $e->getMessage()));
 
 		}
+
 
 	}
 
