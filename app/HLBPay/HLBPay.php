@@ -20,70 +20,112 @@ class HLBPay
 	// 测试
 	private $customer_number = 'C1800001107';
 
+	private $type; // 业务类型
 	public $send_url; // 发送接口
 	public $send_data; // 发送的参数
 	private $sign; // 签名
 	private $out_order_id; // 生成单号
 
 	public $response; // 返回
-	private $result; // 返回结果
+	public $result; // 返回结果
 
-	function __construct($crypt_rsa)
+	function setType($type)
 	{
-		$this->crypt_rsa = $crypt_rsa;
+		$this->type = $type;
+		$url_t = '';
+		// TransferQuery  CreditCardRepayment 需要RSA
+		if ($type == 'CreditCardRepayment' || $type == 'TransferQuery') {
+			$this->setRSA(new Crypt_RSA);
+			$this->send_url = $this->huan_gateway . 'transfer/interface.action';
+		} else {
+			$this->send_url = $this->pay_gateway . 'quickPayApi/interface.action';
+		}
 	}
 
-	function setParams($type, $params)
+	function setParams($params)
 	{
 		// 接口列表
 		// key 参数type， value api地址
+		// $type_list = array(
+		// 	'QuickPayBankCardPay' 			=> 'quickPayApi', // 银行卡支付下单
+		// 	'QuickPayBindPay'				=> 'quickPayApi', // 绑卡支付
+		// 	'QuickPayBindPayValidateCode'	=> 'quickPayApi', // 绑卡支付短信
+
+		// 	'QuickPayBindCard' 				=> 'quickPayApi', // 绑卡
+		// 	'QuickPayBindCardValidateCode'  => 'quickPayApi', // 绑卡短信
+
+		// 	'QuickPayQuery'					=> 'quickPayApi', // 订单查询
+
+		// 	'CreditCardRepayment'			=> 'transfer', 	  // 信用卡还款	
+		// 	'TransferQuery'					=> 'transfer',	  // 信用卡还款查询
+		// 	'AccountQuery'					=> 'quickPayApi',    // 用户余额查询
+		// 	'BankCardUnbind'				=> 'quickPayApi',	  // 解绑银行卡
+		// 	'BankCardbindList'				=> 'quickPayApi',    // 用户绑定银行卡信息查询（仅限于交易卡）
+		// );
+
 		$type_list = array(
-			'QuickPayBankCardPay' 			=> 'quickPayApi', // 银行卡支付下单
-			'QuickPayBindPay'				=> 'quickPayApi', // 绑卡支付 同时记录下绑卡
-			'QuickPayBindPayValidateCode'	=> 'quickPayApi', // 绑卡支付短信
+			'bankBind' 			=> 'QuickPayBindCard', // 绑卡
+			'bankBindCode'  	=> 'QuickPayBindCardValidateCode', // 绑卡短信
+			'bankUnbind'		=> 'BankCardUnbind', // 解绑银行卡
+			'bankList'			=> 'BankCardbindList', // 用户绑定银行卡信息查询（仅限于交易卡）
 
-			'QuickPayBindCard' 				=> 'quickPayApi', // 绑卡
-			'QuickPayBindCardValidateCode'  => 'quickPayApi', // 绑卡短信
+			'pay'				=> 'QuickPayBindPay', // 绑卡支付
+			'payCode'			=> 'QuickPayBindPayValidateCode', // 绑卡支付短信
 
-			'QuickPayQuery'					=> 'quickPayApi', // 订单查询
+			'payQuery'			=> 'QuickPayQuery', // 订单查询
+			
+			'repay'				=> 'CreditCardRepayment', // 信用卡还款	
+			'repayQuery'		=> 'TransferQuery', // 信用卡还款查询
 
-			'CreditCardRepayment'			=> 'transfer', 	  // 信用卡还款	
-			'TransferQuery'					=> 'transfer',	  // 信用卡还款查询
-			'AccountQuery'					=> 'transfer',    // 用户余额查询
-			'BankCardUnbind'				=> 'transfer',	  // 解绑银行卡
-			'BankCardbindList'				=> 'transfer',    // 用户绑定银行卡信息查询（仅限于交易卡）
+			'account'			=> 'AccountQuery', // 用户余额查询
+
 		);
 
-		$params['P1_bizType'] = $type;
+		$params['P1_bizType'] = $type_list[$this->type];
 
-		$this->pay_gateway .= $type_list[$type].'/interface.action';
-		$this->huan_gateway .= $type_list[$type].'/interface.action';
-
-		if ($type_list[$type] == 'transfer') {
-			$this->send_url = $this->huan_gateway;
-		} else  if ($type_list[$type] == 'quickPayApi') {
-			$this->send_url = $this->pay_gateway;
-		}
-
-		call_user_func(array($this, $type), $params);
+		call_user_func(array($this, $type_list[$this->type]), $params);
 	}
 
 	function sendRequest()
 	{
+		if ($this->type == 'TransferQuery' || $this->type == 'CreditCardRepayment') {
+			$this->ras_sign();
+		} else {
+			$this->md5_sign();
+		}
+
 		$pageContents = HttpClient::quickPost($this->send_url, $this->send_data);
 		$this->response = $pageContents;
 		$result = json_decode($pageContents, 1);
-		$this->result = $pageContents;
+		$this->result = $result;
 	}
 
 	function getResult()
 	{
-		if ($this->result['retCode'] == '0000') {
 
-			return array('action'=> true, 'code'=> '0000', 'msg'=> '成功', 'result'=> $this->result);
+		// 验证签名
+		$tmp_result = $this->result;
+		$rt_sign = $tmp_result['sign'];
+		unset($tmp_result['sign'], $tmp_result['rt3_retMsg']);
+		ksort($tmp_result);
+
+		$sign_str = '';
+
+		foreach ($tmp_result as $key => $value) {
+			$sign_str .= '&'.$value;
+		}
+		$sign_str .= '&'.$this->signkey;
+
+		if (md5($sign_str) != $rt_sign) {
+			return array('action'=> 0, 'code'=> 'error', 'msg'=> '返回数据签名失败，请注意您所在的网络环境是否安全', 'result'=> array());
+		}
+
+		if ($this->result['rt2_retCode'] == '0000') {
+
+			return array('action'=> 1, 'code'=> '0000', 'msg'=> '成功', 'result'=> $this->result);
 
 		} else {
-			switch ($this->result['retCode']) {
+			switch ($this->result['rt2_retCode']) {
 				case '8000':
 					$msg = '失败';
 					break;
@@ -184,7 +226,7 @@ class HLBPay
 
 			}
 
-			return array('action'=> false, 'code'=> $this->result['retCode'], 'msg'=> $msg, 'result'=> $this->result);
+			return array('action'=> 0, 'code'=> $this->result['rt2_retCode'], 'msg'=> $msg, 'result'=> $this->result);
 		}	
 	}
 
@@ -201,6 +243,12 @@ class HLBPay
 
 		$this->send_data['sign'] = $sign;
 		$this->sign = $sign;
+	}
+
+	// 导入RSA类
+	function setRSA($crypt_rsa)
+	{
+		$this->crypt_rsa = $crypt_rsa;	
 	}
 
 	// rsa 签名
@@ -231,7 +279,7 @@ class HLBPay
 			'P5_timestamp' 			=> date('YmdHis'),
 			'P6_payerName' 			=> $params['user_name'],
 			'P7_idCardType'			=> 'IDCARD',
-			'P8_idCardNo'			=> $params['card_number'],
+			'P8_idCardNo'			=> $params['id_card_number'],
 			'P9_cardNo'				=> $params['bank_number'],
 			'P10_year'				=> $params['bank_year'],
 			'P11_month'				=> $params['bank_month'],
@@ -264,7 +312,7 @@ class HLBPay
 			'P5_timestamp'		=> date('YmdHis'),
 			'P6_payerName'		=> $params['user_name'],
 			'P7_idCardType'		=> 'IDCARD',
-			'P8_idCardNo'		=> $params['card_number'],
+			'P8_idCardNo'		=> $params['id_card_number'],
 			'P9_cardNo'			=> $params['bank_number'],
 			'P10_year'			=> $params['bank_year'],
 			'P11_month'			=> $params['bank_month'],
@@ -339,6 +387,7 @@ class HLBPay
 			'P2_orderId'			=> $params['out_order_id'],
 			'P3_customerNumber'		=> $this->customer_number,
 		);
+		$this->md5_sign();
 	}
 
 	/*信用卡还款*/
@@ -356,6 +405,7 @@ class HLBPay
 			'P9_feeType'			=> $params['feeType'],
 			'P10_summary'			=> $params['remark'],
 		);
+
 	}
 
 	/*信用卡还款查询*/

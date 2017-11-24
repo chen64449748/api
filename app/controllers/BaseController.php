@@ -17,7 +17,11 @@ class BaseController extends Controller {
 	function __construct()
 	{
 
+		// jm4in9on4p4lfpn4rshj9r28v1
+		// echo Session::getId(); 
+		// Session::put('user', 12);
 
+		// echo Session::get('user');exit;
 		try {
 			$data = Input::get('data');
 
@@ -34,13 +38,12 @@ class BaseController extends Controller {
 			} else {
 				session_start();
 			}
-
+			
+			
 			$this->data = $data;
 
-		} catch (\Exception $e) {
-			
-			return Response::json(array('code'=> $e->getCode(), 'msg'=> $e->getMessage()));
-
+		} catch (Exception $e) {
+			return json_encode(array('code'=> $e->getCode(), 'msg'=> $e->getMessage()));
 		}
 
 	}
