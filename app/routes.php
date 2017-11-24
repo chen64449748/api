@@ -18,7 +18,7 @@ Route::get('/a', function () {
 Route::get('/', array('as'=> '/', 'uses'=> 'IndexController@index'));
 Route::get('news', array('as'=> 'news', 'uses'=> 'NewsController@news'));
 Route::get('news/detail', array('as'=> 'news.detail', 'uses'=> 'NewsController@newsDetail'));
-
+Route::controller('news','NewsController');
 
 Route::group(array('prefix'=>'admin/'), function () {
 	Route::get('news', array('as'=> 'admin.news', 'uses' => 'AdminNewsController@news'));
