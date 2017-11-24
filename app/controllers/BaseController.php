@@ -19,10 +19,10 @@ class BaseController extends Controller {
 
 
 		try {
-			$data = I('request.data');
+			$data = Input::get('data');
 
 			if (!$data) {
-				throw new \Exception("data参数必传", 9999);
+				throw new Exception("data参数必传", 9999);
 			}
 
 			$data = $this->cbc_decode($data);
@@ -39,7 +39,7 @@ class BaseController extends Controller {
 
 		} catch (\Exception $e) {
 			
-			return $this->ajaxReturn(array('code'=> $e->getCode(), 'msg'=> $e->getMessage()));
+			return Response::json(array('code'=> $e->getCode(), 'msg'=> $e->getMessage()));
 
 		}
 
