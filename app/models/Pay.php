@@ -53,4 +53,10 @@ class Pay
 	{
 		$this->pay_obj->setType('payCode');
 	}
+
+	// 还款
+	function repay()
+	{
+		$this->pay_obj->setType('repay');
+	}
 }

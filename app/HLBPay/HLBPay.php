@@ -19,6 +19,7 @@ class HLBPay
 	
 	// 测试
 	private $customer_number = 'C1800001107';
+	private $credit_number = 'C1800001108';
 
 	private $type; // 业务类型
 	public $send_url; // 发送接口
@@ -34,7 +35,7 @@ class HLBPay
 		$this->type = $type;
 		$url_t = '';
 		// TransferQuery  CreditCardRepayment 需要RSA
-		if ($type == 'CreditCardRepayment' || $type == 'TransferQuery') {
+		if ($type == 'repay' || $type == 'repayQuery') {
 			$this->setRSA(new Crypt_RSA);
 			$this->send_url = $this->huan_gateway . 'transfer/interface.action';
 		} else {
@@ -88,15 +89,21 @@ class HLBPay
 
 	function sendRequest()
 	{
-		if ($this->type == 'TransferQuery' || $this->type == 'CreditCardRepayment') {
+		if ($this->type == 'repayQuery' || $this->type == 'repay') {
 			$this->ras_sign();
 		} else {
 			$this->md5_sign();
 		}
 
 		$pageContents = HttpClient::quickPost($this->send_url, $this->send_data);
+		
+		if ($this->type == 'repay') {
+			$pageContents = iconv('UTF-8','GBK//IGNORE', $pageContents);
+		}
+
 		$this->response = $pageContents;
-		$result = json_decode($pageContents, 1);
+		$result = json_decode($pageContents);
+		print_r($result);exit;
 		$this->result = $result;
 	}
 
@@ -260,7 +267,8 @@ class HLBPay
 		$this->crypt_rsa->setSignatureMode(CRYPT_RSA_SIGNATURE_PKCS1);
 		$this->crypt_rsa->loadKey($this->rsa_signkey);
 
-		$sign= base64_encode($this->crypt_rsa->sign($sign_str));
+		$sign = base64_encode($this->crypt_rsa->sign($sign_str));
+
 		$this->send_data['sign'] = $sign;
 		$this->sign = $sign;
 	}
@@ -395,7 +403,7 @@ class HLBPay
 	{
 		$this->send_data = array(
 			'P1_bizType'			=> $params['P1_bizType'],
-			'P2_customerNumber'		=> $this->customer_number,
+			'P2_customerNumber'		=> $this->credit_number,
 			'P3_userId'				=> $params['user_id'],
 			'P4_bindId'				=> $params['hlb_bindId'],
 			'P5_orderId'			=> $this->getOrderId(),
