@@ -53,4 +53,16 @@ class Pay
 	{
 		$this->pay_obj->setType('payCode');
 	}
+
+	// 还款
+	function repay()
+	{
+		$this->pay_obj->setType('repay');
+	}
+
+	// 解绑
+	function unBindBank()
+	{
+		$this->pay_obj->setType('bankUnbind');
+	}
 }

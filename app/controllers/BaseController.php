@@ -16,12 +16,14 @@ class BaseController extends Controller {
 
 	function __construct()
 	{
-
+		// header('Content-type:text/html;charset=utf-8');
 		// jm4in9on4p4lfpn4rshj9r28v1
 		// echo Session::getId(); 
 		// Session::put('user', 12);
 
 		// echo Session::get('user');exit;
+
+		
 		try {
 			$data = Input::get('data');
 

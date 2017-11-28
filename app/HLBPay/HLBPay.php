@@ -19,6 +19,7 @@ class HLBPay
 	
 	// 测试
 	private $customer_number = 'C1800001107';
+	private $credit_number = 'C1800001108';
 
 	private $type; // 业务类型
 	public $send_url; // 发送接口
@@ -34,7 +35,7 @@ class HLBPay
 		$this->type = $type;
 		$url_t = '';
 		// TransferQuery  CreditCardRepayment 需要RSA
-		if ($type == 'CreditCardRepayment' || $type == 'TransferQuery') {
+		if ($type == 'repay' || $type == 'repayQuery') {
 			$this->setRSA(new Crypt_RSA);
 			$this->send_url = $this->huan_gateway . 'transfer/interface.action';
 		} else {
@@ -44,24 +45,6 @@ class HLBPay
 
 	function setParams($params)
 	{
-		// 接口列表
-		// key 参数type， value api地址
-		// $type_list = array(
-		// 	'QuickPayBankCardPay' 			=> 'quickPayApi', // 银行卡支付下单
-		// 	'QuickPayBindPay'				=> 'quickPayApi', // 绑卡支付
-		// 	'QuickPayBindPayValidateCode'	=> 'quickPayApi', // 绑卡支付短信
-
-		// 	'QuickPayBindCard' 				=> 'quickPayApi', // 绑卡
-		// 	'QuickPayBindCardValidateCode'  => 'quickPayApi', // 绑卡短信
-
-		// 	'QuickPayQuery'					=> 'quickPayApi', // 订单查询
-
-		// 	'CreditCardRepayment'			=> 'transfer', 	  // 信用卡还款	
-		// 	'TransferQuery'					=> 'transfer',	  // 信用卡还款查询
-		// 	'AccountQuery'					=> 'quickPayApi',    // 用户余额查询
-		// 	'BankCardUnbind'				=> 'quickPayApi',	  // 解绑银行卡
-		// 	'BankCardbindList'				=> 'quickPayApi',    // 用户绑定银行卡信息查询（仅限于交易卡）
-		// );
 
 		$type_list = array(
 			'bankBind' 			=> 'QuickPayBindCard', // 绑卡
@@ -88,7 +71,7 @@ class HLBPay
 
 	function sendRequest()
 	{
-		if ($this->type == 'TransferQuery' || $this->type == 'CreditCardRepayment') {
+		if ($this->type == 'repayQuery' || $this->type == 'repay') {
 			$this->ras_sign();
 		} else {
 			$this->md5_sign();
@@ -98,6 +81,13 @@ class HLBPay
 		$this->response = $pageContents;
 		$result = json_decode($pageContents, 1);
 		$this->result = $result;
+
+		// if ($this->type == 'repay') {
+		// 	foreach ($this->result as &$value) {
+		// 		$value = iconv('GBK', 'UTF-8//IGNORE', $value);
+		// 	}
+		// }
+
 	}
 
 	function getResult()
@@ -114,10 +104,15 @@ class HLBPay
 		foreach ($tmp_result as $key => $value) {
 			$sign_str .= '&'.$value;
 		}
-		$sign_str .= '&'.$this->signkey;
+		
+		$signkey = '';
+
+		$signkey = $this->signkey;
+
+		$sign_str .= '&'.$signkey;
 
 		if (md5($sign_str) != $rt_sign) {
-			return array('action'=> 0, 'code'=> 'error', 'msg'=> '返回数据签名失败，请注意您所在的网络环境是否安全', 'result'=> array());
+			return array('action'=> 0, 'code'=> '8000', 'msg'=> '返回数据签名失败，请注意您所在的网络环境是否安全', 'result'=> array());
 		}
 
 		if ($this->result['rt2_retCode'] == '0000') {
@@ -260,7 +255,8 @@ class HLBPay
 		$this->crypt_rsa->setSignatureMode(CRYPT_RSA_SIGNATURE_PKCS1);
 		$this->crypt_rsa->loadKey($this->rsa_signkey);
 
-		$sign= base64_encode($this->crypt_rsa->sign($sign_str));
+		$sign = base64_encode($this->crypt_rsa->sign($sign_str));
+
 		$this->send_data['sign'] = $sign;
 		$this->sign = $sign;
 	}
@@ -395,7 +391,7 @@ class HLBPay
 	{
 		$this->send_data = array(
 			'P1_bizType'			=> $params['P1_bizType'],
-			'P2_customerNumber'		=> $this->customer_number,
+			'P2_customerNumber'		=> $this->credit_number,
 			'P3_userId'				=> $params['user_id'],
 			'P4_bindId'				=> $params['hlb_bindId'],
 			'P5_orderId'			=> $this->getOrderId(),

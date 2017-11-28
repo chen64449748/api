@@ -223,7 +223,7 @@ define('CRYPT_RSA_PUBLIC_FORMAT_OPENSSH', 6);
 define('CRYPT_RSA_PUBLIC_FORMAT_PKCS1', 7);
 /**#@-*/
 
-define('CRYPT_RANDOM_IS_WINDOWS', strtoupper(substr(PHP_OS, 0, 3)) === 'WIN');
+// define('CRYPT_RANDOM_IS_WINDOWS', strtoupper(substr(PHP_OS, 0, 3)) === 'WIN');
 
 /**
  * Pure-PHP PKCS#1 compliant implementation of RSA.
