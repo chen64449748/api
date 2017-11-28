@@ -104,10 +104,15 @@ class HLBPay
 		foreach ($tmp_result as $key => $value) {
 			$sign_str .= '&'.$value;
 		}
-		$sign_str .= '&'.$this->signkey;
+		
+		$signkey = '';
+
+		$signkey = $this->signkey;
+
+		$sign_str .= '&'.$signkey;
 
 		if (md5($sign_str) != $rt_sign) {
-			return array('action'=> 0, 'code'=> 'error', 'msg'=> '返回数据签名失败，请注意您所在的网络环境是否安全', 'result'=> array());
+			return array('action'=> 0, 'code'=> '8000', 'msg'=> '返回数据签名失败，请注意您所在的网络环境是否安全', 'result'=> array());
 		}
 
 		if ($this->result['rt2_retCode'] == '0000') {

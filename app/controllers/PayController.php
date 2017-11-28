@@ -7,7 +7,7 @@ class PayController extends BaseController
 {
 	function __construct()
 	{
-
+		header('Content-type:text/html;charset=utf-8');
 	}
 
 	function getBankcode()
@@ -187,17 +187,24 @@ class PayController extends BaseController
 	{
 		try {
 
-			$bank_card = BankdCard::where('UserId', $this->user->UserId)->where('CreditId', $this->data['bindId'])->first();
+			// $bank_card = BankdCard::where('UserId', $this->user->UserId)->where('CreditId', $this->data['bindId'])->first();
 
-			if (!$bank_card) {
-				throw new Exception("没有找到该卡", 8996);
-			}
+			// if (!$bank_card) {
+			// 	throw new Exception("没有找到该卡", 8996);
+			// }
+
+			// $params = array(
+			// 	'hlb_bindId' => $bank_card->CreditId,
+			// 	'user_id'	=> $this->user->UserId,
+			// 	'money'	=> $this->data['money'],
+			// 	'user_phone' => $this->user->Moblie,
+			// );
 
 			$params = array(
-				'hlb_bindId' => $bank_card->CreditId,
-				'user_id'	=> $this->user->UserId,
-				'money'	=> $this->data['money'],
-				'user_phone' => $this->user->Moblie,
+				'hlb_bindId' => '12345',
+				'user_id'	=> '132',
+				'money'	=> '123.00',
+				'user_phone' => '18320904848',
 			);
 
 			$pay = new Pay('HLBPay');
@@ -206,7 +213,7 @@ class PayController extends BaseController
 			$pay->sendRequest();
 			
 			$result = $pay->getResult();
-
+print_r($result);exit;
 			if ($result['action'] != 1) { throw new Exception($result['msg'], $result['code']);}
 		
 			return $this->cbc_encode(json_encode(array('code'=> '200', 'msg'=> '发送成功!')));
@@ -219,6 +226,23 @@ class PayController extends BaseController
 	function getRepay()
 	{
 		try {
+
+			$bank_card = BankdCard::where('UserId', $this->user->UserId)->where('CreditId', $this->data['bindId'])->first();
+
+			if (!$bank_card) {
+				throw new Exception("没有找到该卡", 8996);
+			}
+
+			$repay_id = Repay::insertGetId(array(
+				'OrderNum' => $result['result']['rt6_orderId'],
+				'Money' => $params['money'],
+				'UserId' => $params['user_id'],
+				'SerialNum' => $result['result']['rt7_serialNumber'],
+				'BankId' => $bank_card->Id,
+				'FeeType' => $params['feeType'],
+				'created_at' => date('Y-m-d H:i:s'),
+			));
+
 			$params = array(
 				'user_id' => 1,
 				'hlb_bindId' => '12324',
@@ -233,10 +257,16 @@ class PayController extends BaseController
 			$pay->sendRequest();
 
 			$result = $pay->getResult();
-print_r($result);exit;
-			if ($result['action'] != 1) { throw new Exception($result['msg'], $result['code']);}
-			
 
+			if ($result['action'] != 1) { throw new Exception($result['msg'], $result['code']);}
+	
+
+			// 还款成功  生成套现计划
+			Repay::where('Id', $repay_id)->update(array(
+				'status' => 1,
+			));
+
+			
 
 		} catch (Exception $e) {
 			return json_encode(array('code'=> $e->getCode(), 'msg'=> '错误代码：'.$e->getCode().','.$e->getMessage()));		
@@ -266,11 +296,17 @@ print_r($result);exit;
 			$pay->sendRequest();
 
 			$result = $pay->getResult();
-print_r($result);exit;
+
 			if ($result['action'] != 1) { throw new Exception($result['msg'], $result['code']);}
 
+			BankdCard::where('Id', $bank_card->Id)->update(array(
+				'status' => 2,
+			));
+
+			return Response::json(array('code'=> '200', 'msg'=> '解绑成功'));
+
 		} catch (Exception $e) {
-			return json_encode(array('code'=> $e->getCode(), 'msg'=> '错误代码：'.$e->getCode().','.$e->getMessage()));
+			return Response::json(array('code'=> $e->getCode(), 'msg'=> '错误代码：'.$e->getCode().','.$e->getMessage()));
 		}
 
 	}

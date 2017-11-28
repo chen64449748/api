@@ -22,6 +22,8 @@ class BaseController extends Controller {
 		// Session::put('user', 12);
 
 		// echo Session::get('user');exit;
+
+		
 		try {
 			$data = Input::get('data');
 
