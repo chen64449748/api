@@ -18,10 +18,16 @@ class PayController extends BaseController
 	
 		try {
 
+			// $params = array(
+			// 	'user_id' => $this->user->UserId,
+			// 	'bank_number'=> $this->data['bank_number'],
+			// 	'user_phone' => $this->user->Moblie,
+			// );
+
 			$params = array(
-				'user_id' => $this->user->UserId,
-				'bank_number'=> $this->data['bank_number'],
-				'user_phone' => $this->user->Moblie,
+				'user_id' => '1',
+				'bank_number'=> '12312412412',
+				'user_phone'=> '124241',
 			);
 
 			$pay = new Pay('HLBPay');
@@ -31,7 +37,7 @@ class PayController extends BaseController
 			$pay->sendRequest();
 			
 			$result = $pay->getResult();
-			
+		print_r($result);exit;	
 			if ($result['action'] != 1) { throw new Exception($result['msg'], $result['code']);}
 
 			return $this->cbc_encode(json_encode(array('code'=> 1, 'msg'=> '发送成功!')));
@@ -236,6 +242,36 @@ print_r($result);exit;
 			return json_encode(array('code'=> $e->getCode(), 'msg'=> '错误代码：'.$e->getCode().','.$e->getMessage()));		
 		}
 		
+
+	}
+
+	function getDeletebank()
+	{
+
+		try {
+			// $bank_card = BankdCard::where('UserId', $this->user->UserId)->where('CreditId', $this->data['bindId'])->first();
+
+			// if (!$bank_card) {
+			// 	throw new Exception("没有找到该卡", 8996);
+			// }
+			
+			$params = array(
+				'user_id' => '1',
+				'hlb_bindId' => '1234',
+			);
+
+			$pay = new Pay('HLBPay');
+			$pay->unBindBank();
+			$pay->setParams($params);
+			$pay->sendRequest();
+
+			$result = $pay->getResult();
+print_r($result);exit;
+			if ($result['action'] != 1) { throw new Exception($result['msg'], $result['code']);}
+
+		} catch (Exception $e) {
+			return json_encode(array('code'=> $e->getCode(), 'msg'=> '错误代码：'.$e->getCode().','.$e->getMessage()));
+		}
 
 	}
 }

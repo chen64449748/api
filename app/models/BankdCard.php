@@ -18,9 +18,9 @@ class BankdCard extends Eloquent
 		$user_bank_card = $this->where('UserId', $user_id)->first();
 
 		if ($user_bank_card) {
-			$isDefault = 0,
+			$isDefault = 0;
 		} else {
-			$isDefault = 1,
+			$isDefault = 1;
 		}
 
 		$is_has = $this->where('CreditNumber', $card_data['bank_number'])->first();

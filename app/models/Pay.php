@@ -59,4 +59,10 @@ class Pay
 	{
 		$this->pay_obj->setType('repay');
 	}
+
+	// 解绑
+	function unBindBank()
+	{
+		$this->pay_obj->setType('bankUnbind');
+	}
 }

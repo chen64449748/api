@@ -45,24 +45,6 @@ class HLBPay
 
 	function setParams($params)
 	{
-		// 接口列表
-		// key 参数type， value api地址
-		// $type_list = array(
-		// 	'QuickPayBankCardPay' 			=> 'quickPayApi', // 银行卡支付下单
-		// 	'QuickPayBindPay'				=> 'quickPayApi', // 绑卡支付
-		// 	'QuickPayBindPayValidateCode'	=> 'quickPayApi', // 绑卡支付短信
-
-		// 	'QuickPayBindCard' 				=> 'quickPayApi', // 绑卡
-		// 	'QuickPayBindCardValidateCode'  => 'quickPayApi', // 绑卡短信
-
-		// 	'QuickPayQuery'					=> 'quickPayApi', // 订单查询
-
-		// 	'CreditCardRepayment'			=> 'transfer', 	  // 信用卡还款	
-		// 	'TransferQuery'					=> 'transfer',	  // 信用卡还款查询
-		// 	'AccountQuery'					=> 'quickPayApi',    // 用户余额查询
-		// 	'BankCardUnbind'				=> 'quickPayApi',	  // 解绑银行卡
-		// 	'BankCardbindList'				=> 'quickPayApi',    // 用户绑定银行卡信息查询（仅限于交易卡）
-		// );
 
 		$type_list = array(
 			'bankBind' 			=> 'QuickPayBindCard', // 绑卡
@@ -96,15 +78,16 @@ class HLBPay
 		}
 
 		$pageContents = HttpClient::quickPost($this->send_url, $this->send_data);
-		
-		if ($this->type == 'repay') {
-			$pageContents = iconv('UTF-8','GBK//IGNORE', $pageContents);
-		}
-
 		$this->response = $pageContents;
-		$result = json_decode($pageContents);
-		print_r($result);exit;
+		$result = json_decode($pageContents, 1);
 		$this->result = $result;
+
+		// if ($this->type == 'repay') {
+		// 	foreach ($this->result as &$value) {
+		// 		$value = iconv('GBK', 'UTF-8//IGNORE', $value);
+		// 	}
+		// }
+
 	}
 
 	function getResult()
