@@ -139,7 +139,7 @@ class PayController extends BaseController
 	{
 		try {
 
-			$bank_card = BankdCard::where('UserId', $this->user->UserId)->where('CreditId', $this->data['bindId'])->first();
+			$bank_card = BankdCard::where('UserId', $this->user->UserId)->where('Id', $this->data['bank_id'])->first();
 
 			if (!$bank_card) {
 				throw new Exception("没有找到该卡", 8996);
@@ -187,7 +187,7 @@ class PayController extends BaseController
 	{
 		try {
 
-			// $bank_card = BankdCard::where('UserId', $this->user->UserId)->where('CreditId', $this->data['bindId'])->first();
+			// $bank_card = BankdCard::where('UserId', $this->user->UserId)->where('Id', $this->data['bank_id'])->first();
 
 			// if (!$bank_card) {
 			// 	throw new Exception("没有找到该卡", 8996);

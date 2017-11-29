@@ -12,3 +12,4 @@
 */
 Route::controller('news','NewsController');
 Route::controller('pay','PayController');
+Route::controller('plan', 'PlanController');
