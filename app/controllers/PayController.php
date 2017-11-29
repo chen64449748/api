@@ -25,9 +25,9 @@ class PayController extends BaseController
 			// );
 
 			$params = array(
-				'user_id' => '1',
-				'bank_number'=> '12312412412',
-				'user_phone'=> '124241',
+				'user_id' => '82',
+				'bank_number'=> '6225768758046880',
+				'user_phone'=> '18329042977',
 			);
 
 			$pay = new Pay('HLBPay');
@@ -69,14 +69,28 @@ class PayController extends BaseController
 		*/
 
 		try {
+			// $params = array(
+			// 	'user_id' => $this->user->UserId,
+			// 	'user_name' => $this->user->Username,
+			// 	'id_card_number' => $this->IDCard,
+			// 	'bank_number' => $this->data['bank_number'],
+			// 	'user_phone' => $this->user->Moblie,
+			// 	'validateCode' => $this->data['validateCode'],
+			// );
+
 			$params = array(
-				'user_id' => $this->user->UserId,
-				'user_name' => $this->user->Username,
-				'id_card_number' => $this->IDCard,
-				'bank_number' => $this->data['bank_number'],
-				'user_phone' => $this->user->Moblie,
-				'validateCode' => $this->data['validateCode'],
+				'user_id' => '82',
+				'user_name' => '陈文越',
+				'id_card_number' => '330327199312022158',
+				'bank_number' => '6225768758046880',
+				'user_phone'=> '18329042977',
+				'validateCode' => '952313',
 			);
+			$this->data['bank_year'] = '20';
+			$this->data['bank_month'] = '11';
+			$this->data['cvv2'] = '449';
+			$this->data['quota'] = '15000';
+
 
 			isset($this->data['bank_year']) && $params['bank_year'] = $this->data['bank_year'];
 			isset($this->data['bank_month']) && $params['bank_month'] = $this->data['bank_month'];
@@ -93,8 +107,8 @@ class PayController extends BaseController
 			$result = $pay->getResult();
 
 			if ($result['action'] != 1) { throw new Exception($result['msg'], $result['code']);}
-
-			if ($result['rt7_bindStatus'] == 'FAILED') {
+print_r($result);
+			if ($result['rt7_bindStatus'] == 'FAIL') {
 				throw new Exception('绑卡失败，请重试', 8999);
 			}
 
@@ -115,14 +129,15 @@ class PayController extends BaseController
 						'bank_number' => $params['bank_number'],
 						'cvv2' => $params['cvv2'],
 						'quota' => $this->data['quota'],
-						'account_date' => $this->data['account_date'],
-						'repayment_date' => $this->data['repayment_date'],
 						'type' => $type,
 					);
 
-					$bank_card_m->addUserCard($user_id, $card_data);
+					isset($this->data['account_date']) && $card_data['account_date'] = $this->data['account_date'];
+					isset($this->data['repayment_date']) && $card_data['repayment_date'] = $this->data['repayment_date'];
 
-					return $this->cbc_encode(json_encode(array('code'=> 200, 'msg'=> '添加成功')));
+					$bank_card_m->addUserCard($params['user_id'], $card_data);
+
+					return json_encode(array('code'=> 200, 'msg'=> '添加成功'));
 
 				} catch (Exception $e) {
 					throw new Exception("数据库添加失败，请重试", 8997);
@@ -130,7 +145,7 @@ class PayController extends BaseController
 			}	
 
 		} catch (Exception $e) {
-			return $this->cbc_encode(json_encode(array('code'=> $e->getCode(), 'msg'=> '失败：错误代码：'.$e->getCode().','.$e->getMessage())));
+			return json_encode(array('code'=> $e->getCode(), 'msg'=> '失败：错误代码：'.$e->getCode().','.$e->getMessage()));
 		}
 		
 	}
