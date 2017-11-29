@@ -13,3 +13,5 @@
 Route::controller('news','NewsController');
 Route::controller('pay','PayController');
 Route::controller('plan', 'PlanController');
+Route::controller('bindcard','BindCardController');
+Route::controller('banner','BannerController');
