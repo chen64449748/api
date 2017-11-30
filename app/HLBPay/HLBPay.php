@@ -543,6 +543,29 @@ class HLBPay
 
 	}
 
+	/*信用卡还款 验签*/
+	function rtCreditCardRepayment($params)
+	{
+		$rt_sign_arr = array(
+			'rt1_bizType'           => $params['rt1_bizType'],
+			'rt2_retCode'			=> $params['rt2_retCode'],
+			'rt4_customerNumber'	=> $params['rt4_customerNumber'],
+			'rt5_userId'			=> $params['rt5_userId'],
+			'rt6_orderId'			=> $params['rt6_orderId'],
+			'rt7_serialNumber'		=> $params['rt7_serialNumber'],
+			'rt8_bindId'			=> $params['rt8_bindId'],
+		);
+
+		$sign_str = '';
+
+		foreach ($rt_sign_arr as $key => $value) {
+			$sign_str .= '&'.$value;
+		}
+
+		$sign_str .= '&'.$this->signkey;
+		$this->rt_sign = md5($sign_str);
+	}
+
 	/*信用卡还款查询*/
 	function TransferQuery($params)
 	{
