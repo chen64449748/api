@@ -120,5 +120,28 @@ class PlanController extends BaseController
 		
 
 	}
+	
+	/**
+	 * 还款计划列表
+	 */
+	public function getPlanlist(){
+	    $offset = $this->data['offset'] ? $this->data['offset'] : '0';
+	    $limit = $this->data['limit'] ? $this->data['limit'] : '20';
+	    $planList = Plan::where('UserId',$this->data['userId'])->orderBy('created_at','desc')->skip($offset)->take($limit)->get();
+	    
+	    return array('planList'=>$planList);
+	}
+	
+	/**
+	 * 计划详情
+	 */
+	public function getPlandetail(){
+	    $offset = $this->data['offset'] ? $this->data['offset'] : '0';
+	    $limit = $this->data['limit'] ? $this->data['limit'] : '20';
+	    $planId = $this->data['planId'] ? $this->data['planId'] : '1';
+	    $planDetail = PlanDetail::where('PlanId',$planId)->orderBy('created_at','desc')->skip($offset)->take($limit)->get();
+	     
+	    return $planDetail;
+	}
 
 }
