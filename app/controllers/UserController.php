@@ -16,14 +16,20 @@
 //      密码错误：1103
 //      手机号码未修改：1104
 //      手机号码不一致：1105
+//      身份认证接口请求失败：1106
+//      身份认证不一致：1107
+//      身份证认证无结果：1108
 //----------------------------------
 
 class UserController extends BaseController
 {
-    // 数据库添加token字段
+    // 姓名，余额，头像
 	public function index()
 	{
+        $token = $this->data['token'];
+        $user = User::where('token', $token)->first();
 
+        return $this->ajaxReturn(array('code'=> 200, 'msg'=> '数据请求成功', 'data'=> $user));
 	}
 
 	/**
@@ -75,6 +81,7 @@ class UserController extends BaseController
     	User::where("UserId", $user['id'])
     		->update("token='%s'", $session_id);
         $user['token'] = $session_id;
+        $this->user = $user;
 
     	return $this->ajaxReturn(array('code'=> 200, 'msg'=> '登录成功', 'data'=> $user));
     }
@@ -119,8 +126,10 @@ class UserController extends BaseController
     		return $this->ajaxReturn(array('code'=> 1002, 'msg'=> '手机号格式错误'));
     	}
 
-    	$ary = session('verify_code');
-    	if ($ary[$mobile] != $code) {
+    	$ary = Verify::where('mobile', $mobile)
+            ->orderBy('time', 'desc')
+            ->first();
+    	if ($ary['time'] < time() || $ary['code'] != $code) {
     		return $this->ajaxReturn(array('code'=> 1001, 'msg'=> '验证码错误'));
     	}
 
@@ -198,7 +207,6 @@ class UserController extends BaseController
     	try {
     		$code = rand(100000,999999);
     		if ($this->sendSMS($mobile, $code)) {
-    			session(array('verify_code'=> compact("mobile", "code"), 'expire'=> 300));
     			return $this->ajaxReturn(array('code'=> 200, 'msg'=> '验证码发送成功'));
     		}
     		return $this->ajaxReturn(array('code'=> 1003, 'msg'=> '验证码发送失败'));
@@ -221,6 +229,8 @@ class UserController extends BaseController
      */
     public function sendSMS($mobile, $code)
     {
+        $time = time() + 600;
+        Verify::insert(compact("mobile", "code", "time"));
     	return true;
     }
 
@@ -243,6 +253,7 @@ class UserController extends BaseController
         $code = $this->data['code'];
         $password = $this->data['password'];
         $pay_password = $this->data['pay_password'];
+        $avator = $this->data['avator'];
 
         $user = User::where("UserId", $id)->find();
 
@@ -286,6 +297,9 @@ class UserController extends BaseController
                 }
                 $pay_password = md5($pay_password);
                 break;
+            case 'avator':
+
+                break;
             default:
                 return $this->ajaxReturn(array('code'=> 200, 'msg'=> '信息修改成功'));
                 break;
@@ -295,13 +309,116 @@ class UserController extends BaseController
             'UserName'      => $name,
             'Mobile'        => $mobile,
             'Password'      => $password,
-            'PayPassword'   => $pay_password
+            'PayPassword'   => $pay_password,
+            'UserAvator'    => $avator
         ));
         return $this->ajaxReturn(array('code'=> 200, 'msg'=> '信息修改成功'));
     }
 
+    /**
+     * 身份证绑定
+     * @AuthorHTL
+     * @DateTime  2017-11-29T20:49:45+0800
+     * Typecho Blog Platform
+     * @param 
+     * @return    [type]                   [description]
+     */
     public function idCard()
     {
+        $name = $this->data['name'];
+        $no = $this->data['no'];
 
+        $contact = new UserContact();
+        $result = $contact->checkIdCard($no, $name);
+
+        if ($result['code'] != 200) {
+            return $this->ajaxReturn(array('code'=> $result['code'], 'msg'=> $result['msg']));
+        }
+        $user_id = $this->user->UserId;
+        $contact->insert(array(
+            'UserId'        => $user_id,
+            'Contact'       => $name,
+            'CertType'      => 1,
+            'CertNo'        => $no,
+            'Isvalid'       => 1,
+            'IsActivated'   => 1,
+            'AddTime'       => time(),
+            'UpdateTime'    => time()
+        ));
+        $this->IdCard = $no;
+        return $this->ajaxReturn(array('code'=> 200, 'msg'=> '身份证绑定成功'));
+    }
+
+    /**
+     * 我的卡包
+     * @AuthorHTL
+     * @DateTime  2017-11-29T21:01:53+0800
+     * Typecho Blog Platform
+     * @copyright [copyright]
+     * @license   [license]
+     * @version   [version]
+     * @return    [type]                   [description]
+     */
+    public function myCards()
+    {
+        $user_id = $this->data['user_id'];
+        $type = $this->data['type'];
+
+        switch ($type) {
+            case 'value':
+                # code...
+                break;
+            
+            default:
+                # code...
+                break;
+        }
+
+        $cards = UserContact::where("UserId", $user_id)->get();
+
+        return $this->ajaxReturn(array('code'=> 200, 'msg'=> '请求成功', 'data'=> $cards));
+    }
+
+    /**
+     * 我的分享
+     * @AuthorHTL
+     * @DateTime  2017-11-29T21:02:28+0800
+     * Typecho Blog Platform
+     * @copyright [copyright]
+     * @license   [license]
+     * @version   [version]
+     * @return    [type]                   [description]
+     */
+    public function myShare()
+    {
+        $money = Profit::where("user_id", $user_id)
+            ->sum('money');
+        $first_ids = Users::where("InviteOne", $user_id)
+            ->lists('id');
+        $second_ids = Users::where("InviteTwo", $user_id)
+            ->lists('id');
+
+        $firsts = $seconds = array();
+
+        if ($first_ids) {
+            $firsts = Users::whereIn("id", $first_ids)
+            ->get();
+        }
+        if ($second_ids) {
+            $seconds = Users::whereIn("id", $second_ids)
+            ->get();
+        }
+        return $this->ajaxReturn(array('code'=> 200, 'msg'=> '请求成功', 'data'=> compact("firsts", "seconds", "money")));
+    }
+
+    public function profits()
+    {
+        $profits = Profit::where("user_id", $user_id)
+            ->get();
+        foreach ($profits as $k => $v) {
+            $profits[$k]['first'] = Users::whereIn("id", $v['first_id'])->get();
+            $profits[$k]['second'] = Users::whereIn("id", $v['second_id'])->get();
+        }
+        return $this->ajaxReturn(array('code'=> 200, 'msg'=> '请求成功', 'data'=> $profits));
     }
 }

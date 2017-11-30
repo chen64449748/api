@@ -14,7 +14,8 @@ class User extends Eloquent {
     		->find();
     	if ($first) {
     		$first_id = $first->id;
-			$second_id = Inviter::where("user_id", $first_id)    	}
+			$second_id = Inviter::where("user_id", $first_id)
+        }
     	
     }
 

@@ -10,6 +10,7 @@ class BaseController extends Controller {
 	
 	protected $data = '';
     protected $key = 'xinyongka';
+    protected $user;
 
     protected $privateKey = "1234567812345678";  
 	protected $iv = "1234567812345678"; 
