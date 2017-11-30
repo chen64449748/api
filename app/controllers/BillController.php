@@ -22,7 +22,10 @@ class BillController extends BaseController
 	 */
 	public function getBilldetail()
 	{
-	    $billDetail = BillDetail::select('xyk_billdetails.*','CreditNmuber')->leftJoin('xyk_userbinddcard','xyk_billdetails.CreditId','=','xyk_userbinddcard.CreditId')->where('BillId',$this->data['billId'])->get();
+	    $billDetail = BillDetail::select('xyk_billdetails.*','CreditNmuber')
+	                               ->leftJoin('xyk_userbinddcard','xyk_billdetails.CreditId','=','xyk_userbinddcard.CreditId')
+	                               ->where('BillId',$this->data['billId'])
+	                               ->get();
 	     
 	    return array('billDetail'=>$billDetail);
 	}
