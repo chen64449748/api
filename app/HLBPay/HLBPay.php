@@ -30,6 +30,8 @@ class HLBPay
 	public $response; // 返回
 	public $result; // 返回结果
 
+	public $rt_sign;
+
 	function setType($type)
 	{
 		$this->type = $type;
@@ -94,24 +96,11 @@ class HLBPay
 	{
 
 		// 验证签名
-		$tmp_result = $this->result;
-		$rt_sign = $tmp_result['sign'];
-		unset($tmp_result['sign'], $tmp_result['rt3_retMsg']);
-		ksort($tmp_result);
+		$rt_sign = $this->result['sign'];
+		print_r($this->result);
+		call_user_func(array($this, 'rt'.$this->result['rt1_bizType']), $this->result);
 
-		$sign_str = '';
-
-		foreach ($tmp_result as $key => $value) {
-			$sign_str .= '&'.$value;
-		}
-		
-		$signkey = '';
-
-		$signkey = $this->signkey;
-
-		$sign_str .= '&'.$signkey;
-
-		if (md5($sign_str) != $rt_sign) {
+		if ($this->rt_sign != $rt_sign) {
 			return array('action'=> 0, 'code'=> '8000', 'msg'=> '返回数据签名失败，请注意您所在的网络环境是否安全', 'result'=> array());
 		}
 
@@ -125,7 +114,7 @@ class HLBPay
 					$msg = '失败';
 					break;
 				case '8001': // 输入参数错误
-					$msg = '输入参数错误';
+					$msg = $this->result['rt3_retMsg'];
 					break;
 
 				case '8002': // 订单号不唯一
@@ -218,7 +207,9 @@ class HLBPay
 				case '8999': // 系统异常，请联系管理员
 					$msg = '系统异常，请联系管理员';
 					break;
-
+				default :
+					$msg = $this->result['rt3_retMsg'];
+					break;
 			}
 
 			return array('action'=> 0, 'code'=> $this->result['rt2_retCode'], 'msg'=> $msg, 'result'=> $this->result);
@@ -294,6 +285,26 @@ class HLBPay
 		);
 	}
 
+	// 验签名
+	function rtQuickPayBankCardPay($params)
+	{
+		$rt_sign_arr = array(
+			'rt1_bizType'           => $params['rt1_bizType'],
+			'rt2_retCode'			=> $params['rt2_retCode'],
+			'rt4_customerNumber'	=> $params['rt4_customerNumber'],
+			'rt5_orderId'			=> $params['rt5_orderId'],
+		);
+
+		$sign_str = '';
+
+		foreach ($rt_sign_arr as $key => $value) {
+			$sign_str .= '&'.$value;
+		}
+
+		$sign_str .= '&'.$this->signkey;
+		$this->rt_sign = md5($sign_str);
+	}
+
 	/*
 	鉴权绑卡
 	params 下标参数必填
@@ -318,6 +329,32 @@ class HLBPay
 		);
 	}
 
+	// 验签
+	function rtQuickPayBindCard($params)
+	{
+		$rt_sign_arr = array(
+			'rt1_bizType'           => $params['rt1_bizType'],
+			'rt2_retCode'			=> $params['rt2_retCode'],
+			'rt4_customerNumber'	=> $params['rt4_customerNumber'],
+			'rt5_userId'			=> $params['rt5_userId'],
+			'rt6_orderId'			=> $params['rt6_orderId'],
+			'rt7_bindStatus'		=> $params['rt7_bindStatus'],
+			'rt8_bankId'			=> $params['rt8_bankId'],
+			'rt9_cardAfterFour'		=> $params['rt9_cardAfterFour'],
+			'rt10_bindId'			=> $params['rt10_bindId'],
+			'rt11_serialNumber'		=> $params['rt11_serialNumber'],
+		);
+
+		$sign_str = '';
+
+		foreach ($rt_sign_arr as $key => $value) {
+			$sign_str .= '&'.$value;
+		}
+
+		$sign_str .= '&'.$this->signkey;
+		$this->rt_sign = md5($sign_str);
+	}
+
 	/*
 	鉴权绑卡短信
 	*/
@@ -334,6 +371,31 @@ class HLBPay
 		);
 	}
 
+	// 验签
+	function rtPayBindCardValidateCode($params)
+	{
+		$rt_sign_arr = array(
+			'rt1_bizType'           => $params['rt1_bizType'],
+			'rt2_retCode'			=> $params['rt2_retCode'],
+			'rt4_customerNumber'	=> $params['rt4_customerNumber'],
+			'rt5_userId'			=> $params['rt5_userId'],
+			'rt6_orderId'			=> $params['rt6_orderId'],
+			'rt7_bindStatus'		=> $params['rt7_bindStatus'],
+			'rt8_bankId'			=> $params['rt8_bankId'],
+			'rt9_cardAfterFour'		=> $params['rt9_cardAfterFour'],
+			'rt10_bindId'			=> $params['rt10_bindId'],
+			'rt11_serialNumber'		=> $params['rt11_serialNumber'],
+		);
+
+		$sign_str = '';
+
+		foreach ($rt_sign_arr as $key => $value) {
+			$sign_str .= '&'.$value;
+		}
+
+		$sign_str .= '&'.$this->signkey;
+		$this->rt_sign = md5($sign_str);
+	}
 
 	/*绑卡支付短信*/
 	function QuickPayBindPayValidateCode($params)
@@ -349,6 +411,26 @@ class HLBPay
 			'P8_orderAmount' 	=> round($params['money'], 2),
 			'P9_phone'			=> $params['user_phone'],
 		);
+	}
+
+	function rtQuickPayBindPayValidateCode($params)
+	{
+		$rt_sign_arr = array(
+			'rt1_bizType'           => $params['rt1_bizType'],
+			'rt2_retCode'			=> $params['rt2_retCode'],
+			'rt4_customerNumber'	=> $params['rt4_customerNumber'],
+			'rt5_orderId'			=> $params['rt5_orderId'],
+			'rt6_phone'				=> $params['rt6_phone'],
+		);
+
+		$sign_str = '';
+
+		foreach ($rt_sign_arr as $key => $value) {
+			$sign_str .= '&'.$value;
+		}
+
+		$sign_str .= '&'.$this->signkey;
+		$this->rt_sign = md5($sign_str);
 	}
 
 	/*绑卡支付*/
@@ -375,6 +457,34 @@ class HLBPay
 		);
 	}
 
+	function rtQuickPayBindPay($params)
+	{
+		$rt_sign_arr = array(
+			'rt1_bizType'           => $params['rt1_bizType'],
+			'rt2_retCode'			=> $params['rt2_retCode'],
+			'rt4_customerNumber'	=> $params['rt4_customerNumber'],
+			'rt5_orderId'			=> $params['rt5_orderId'],
+			'rt6_serialNumber'		=> $params['rt6_serialNumber'],
+			'rt7_completeDate'		=> $params['rt7_completeDate'],
+			'rt8_orderAmount'		=> $params['rt8_orderAmount'],
+			'rt9_orderStatus'		=> $params['rt9_orderStatus'],
+			'rt10_bindId'			=> $params['rt10_bindId'],
+			'rt11_bankId'			=> $params['rt11_bankId'],
+			'rt12_onlineCardType'	=> $params['rt12_onlineCardType'],
+			'rt13_cardAfterFour'	=> $params['rt13_cardAfterFour'],
+			'rt14_userId'			=> $params['rt14_userId'],
+		);
+
+		$sign_str = '';
+
+		foreach ($rt_sign_arr as $key => $value) {
+			$sign_str .= '&'.$value;
+		}
+
+		$sign_str .= '&'.$this->signkey;
+		$this->rt_sign = md5($sign_str);
+	}
+
 	/*订单查询*/
 	function QuickPayQuery($params)
 	{
@@ -384,6 +494,35 @@ class HLBPay
 			'P3_customerNumber'		=> $this->customer_number,
 		);
 		$this->md5_sign();
+	}
+
+	function rtQuickPayQuery($params)
+	{
+		$rt_sign_arr = array(
+			'rt1_bizType'           => $params['rt1_bizType'],
+			'rt2_retCode'			=> $params['rt2_retCode'],
+			'rt4_customerNumber'	=> $params['rt4_customerNumber'],
+			'rt5_orderId'			=> $params['rt5_orderId'],
+			'rt6_orderAmount'		=> $params['rt6_orderAmount'],
+			'rt7_createDate'		=> $params['rt7_createDate'],
+			'rt8_completeDate'		=> $params['rt8_completeDate'],
+			'rt9_orderStatus'		=> $params['rt9_orderStatus'],
+			'rt10_serialNumber'		=> $params['rt10_serialNumber'],
+			'rt11_bankId'			=> $params['rt11_bankId'],
+			'rt12_onlineCardType'	=> $params['rt12_onlineCardType'],
+			'rt13_cardAfterFour'	=> $params['rt13_cardAfterFour'],
+			'rt14_bindId'			=> $params['rt14_bindId'],
+			'rt15_userId'			=> $params['rt15_userId'],
+		);
+
+		$sign_str = '';
+
+		foreach ($rt_sign_arr as $key => $value) {
+			$sign_str .= '&'.$value;
+		}
+
+		$sign_str .= '&'.$this->signkey;
+		$this->rt_sign = md5($sign_str);
 	}
 
 	/*信用卡还款*/
@@ -404,6 +543,29 @@ class HLBPay
 
 	}
 
+	/*信用卡还款 验签*/
+	function rtCreditCardRepayment($params)
+	{
+		$rt_sign_arr = array(
+			'rt1_bizType'           => $params['rt1_bizType'],
+			'rt2_retCode'			=> $params['rt2_retCode'],
+			'rt4_customerNumber'	=> $params['rt4_customerNumber'],
+			'rt5_userId'			=> $params['rt5_userId'],
+			'rt6_orderId'			=> $params['rt6_orderId'],
+			'rt7_serialNumber'		=> $params['rt7_serialNumber'],
+			'rt8_bindId'			=> $params['rt8_bindId'],
+		);
+
+		$sign_str = '';
+
+		foreach ($rt_sign_arr as $key => $value) {
+			$sign_str .= '&'.$value;
+		}
+
+		$sign_str .= '&'.$this->signkey;
+		$this->rt_sign = md5($sign_str);
+	}
+
 	/*信用卡还款查询*/
 	function TransferQuery($params)
 	{
@@ -412,6 +574,27 @@ class HLBPay
 			'P2_orderId'			=> $params['out_order_id'],
 			'P3_customerNumber'		=> $this->customer_number,
 		);
+	}
+
+	function rtTransferQuery($params)
+	{
+		$rt_sign_arr = array(
+			'rt1_bizType'           => $params['rt1_bizType'],
+			'rt2_retCode'			=> $params['rt2_retCode'],
+			'rt4_customerNumber'	=> $params['rt4_customerNumber'],
+			'rt5_orderId'			=> $params['rt5_orderId'],
+			'rt6_serialNumber'		=> $params['rt6_serialNumber'],
+			'rt7_orderStatus'		=> $params['rt7_orderStatus'],
+		);
+
+		$sign_str = '';
+
+		foreach ($rt_sign_arr as $key => $value) {
+			$sign_str .= '&'.$value;
+		}
+
+		$sign_str .= '&'.$this->signkey;
+		$this->rt_sign = md5($sign_str);
 	}
 
 	/*用户余额查询*/
@@ -423,6 +606,33 @@ class HLBPay
 			'P3_userId'				=> $params['user_id'],
 			'P4_timestamp'			=> date('YmdHis'),
 		);
+	}
+
+	function rtAccountQuery($params)
+	{
+		$rt_sign_arr = array(
+			'rt1_bizType'           => $params['rt1_bizType'],
+			'rt2_retCode'			=> $params['rt2_retCode'],
+			'rt4_customerNumber'	=> $params['rt4_customerNumber'],
+			'rt5_userId'			=> $params['rt5_userId'],
+			'rt6_accountName'		=> $params['rt6_accountName'],
+			'rt7_idCardNo'			=> $params['rt7_idCardNo'],
+			'rt8_accountStatus'		=> $params['rt8_accountStatus'],
+			'rt9_accountBalance'	=> $params['rt9_accountBalance'],
+			'rt10_accountFrozenBalance' => $params['rt10_accountFrozenBalance'],
+			'rt11_currency'			=> $params['rt11_currency'],
+			'rt12_createDate'		=> $params['rt12_createDate'],
+			'rt13_desc'				=> $params['rt13_desc'],
+		);
+
+		$sign_str = '';
+
+		foreach ($rt_sign_arr as $key => $value) {
+			$sign_str .= '&'.$value;
+		}
+
+		$sign_str .= '&'.$this->signkey;
+		$this->rt_sign = md5($sign_str);
 	}
 
 	/*银行卡解绑*/
@@ -438,6 +648,24 @@ class HLBPay
 		);
 	}
 
+	function rtBankCardUnbind($params)
+	{
+		$rt_sign_arr = array(
+			'rt1_bizType'           => $params['rt1_bizType'],
+			'rt2_retCode'			=> $params['rt2_retCode'],
+			'rt4_customerNumber'	=> $params['rt4_customerNumber'],
+		);
+
+		$sign_str = '';
+
+		foreach ($rt_sign_arr as $key => $value) {
+			$sign_str .= '&'.$value;
+		}
+
+		$sign_str .= '&'.$this->signkey;
+		$this->rt_sign = md5($sign_str);
+	}
+
 	function BankCardbindList($params)
 	{
 		$this->send_data = array(
@@ -447,5 +675,24 @@ class HLBPay
 			'P4_bindId'				=> $params['hlb_bindId'],
 			'P5_timestamp'			=> date('YmdHis'),
 		);
+	}
+
+	function rtBankCardbindList($params)
+	{
+		$rt_sign_arr = array(
+			'rt1_bizType'           => $params['rt1_bizType'],
+			'rt2_retCode'			=> $params['rt2_retCode'],
+			'rt4_customerNumber'	=> $params['rt4_customerNumber'],
+			'rt5_bindCardList'		=> $params['rt5_bindCardList'],
+		);
+
+		$sign_str = '';
+
+		foreach ($rt_sign_arr as $key => $value) {
+			$sign_str .= '&'.$value;
+		}
+
+		$sign_str .= '&'.$this->signkey;
+		$this->rt_sign = md5($sign_str);
 	}
 }	
