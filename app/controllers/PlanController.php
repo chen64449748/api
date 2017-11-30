@@ -141,7 +141,7 @@ class PlanController extends BaseController
 	    $planId = $this->data['planId'] ? $this->data['planId'] : '1';
 	    $planDetail = PlanDetail::where('PlanId',$planId)->orderBy('created_at','desc')->skip($offset)->take($limit)->get();
 	     
-	    return $planDetail;
+	    return array('planDetail'=>$planDetail);
 	}
 
 }
