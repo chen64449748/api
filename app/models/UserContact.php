@@ -16,14 +16,15 @@ class UserContact extends Eloquent {
      */
     public function checkIdCard($idNo, $idName)
     {
-        $key = '';
-        $value = '';
+        $key = '4d5da73518ef402b93c074ad62b918e3';
+        $value = '35c166c283ed47a09453bd0b51f7454b';
         $rcaRequestType = 1;
         
         $data = compact("key", "value", "rcaRequestType", "idNo", "idName");
         $url = 'https://authentic.yunhetong.com/authentic/authenticationPersonal';
         $result = json_decode($this->curlPost($url, $data));
-        if ($result->code != 200) {
+
+        if (!$result || $result->code != 200) {
             return array('code' => 1106, 'msg' => '请求失败');
         }
         switch ($result->data->status) {
