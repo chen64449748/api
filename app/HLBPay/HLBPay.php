@@ -13,17 +13,18 @@ class HLBPay
 	// private $huan_gateway = 'http://transfer.trx.helipay.com/trx/';
 
 	// 私钥 测试
-	private $signkey = 't7rjXvj5yW3qyRa0Y2HOqcz830Bp3bM3'; 
+	private $signkey = 'aFn0C3OTNYFAiKIK842uKt4kU58HueRL'; 
 	// rsa 私钥
 	private $rsa_signkey = 'MIICdgIBADANBgkqhkiG9w0BAQEFAASCAmAwggJcAgEAAoGBAK5GQSOPqzt7o4xcgygdikqN1uY13J7Uu0nJdm/BtxPH1Y1qolPUw/lSCd83f7KnS/xS/THCVEwvUm2iOtQKIDj2A/SC7Jy+bZbbbrJqkx+61pgjuIFsKo7Wf/2OX59Nj1qQlWa99J3ZH/kEFxKd5V1moV9cCNpBZVoEYyhmBbajAgMBAAECgYAIDqt4T24lQ+Qd2zEdK7B3HfOvlRHsLf2yvaPCKvyh531SGnoC0jV1U3utXE2FHwL+WX/nSwrGsvFmrDd4EjfHFsqRvHm+TJfXoHtmkfvbVGI7bFl/3NbYdi76tqbth6W8k0gkPUsACs2ix8a4K7zxOO+UpOeUBIXrchDxFmj9sQJBAOgSHQAI5hr/3+rSQXlq2lET87Ew9Ib72Lwqri3vsHO/sysVTLAznuA+V8s+a4tUeA839a/tGLp1SaJhvma9/30CQQDAPoNFw4rYTm9vbQnrCb6Mm0l9GNpCD1c4ShTxHJyt8Gql0e1Sl3vc28AxyqHLq66abYDzOpnPGJ8AIpri4qifAkArJsMRsJXoy089gJ8ADqhNjyIu/mVZfBbO1jjQ/dKXkzujdTBvSwnttGnqts6Ud75jRgp/Dd0dPpXUhcw7mnSZAkEAmYeTKP0Afr0tS6ymNhojHoHJz+kwLX+45VBspx51loghc+pSgRpPplOti1ZLnq+uktAPIrDTM0xzdxUr4zSm+wJAV54yRQsZBkRmhPibmLeoe3lM6hcAwLqS+E1H09X92fBLqCtBAybDnf++hT2ATgtW+xgI+tFVbOqbi1QbLyw1kA==';
 	
 	// 测试
-	private $customer_number = 'C1800001107';
+	private $customer_number = 'C1800001108';
 	private $credit_number = 'C1800001108';
 
 	private $type; // 业务类型
 	public $send_url; // 发送接口
 	public $send_data; // 发送的参数
+	private $sign_str;
 	private $sign; // 签名
 	private $out_order_id; // 生成单号
 
@@ -80,16 +81,10 @@ class HLBPay
 		}
 
 		$pageContents = HttpClient::quickPost($this->send_url, $this->send_data);
+		echo $pageContents;
 		$this->response = $pageContents;
 		$result = json_decode($pageContents, 1);
 		$this->result = $result;
-
-		// if ($this->type == 'repay') {
-		// 	foreach ($this->result as &$value) {
-		// 		$value = iconv('GBK', 'UTF-8//IGNORE', $value);
-		// 	}
-		// }
-
 	}
 
 	function getResult()
@@ -97,7 +92,6 @@ class HLBPay
 
 		// 验证签名
 		$rt_sign = $this->result['sign'];
-		print_r($this->result);
 		call_user_func(array($this, 'rt'.$this->result['rt1_bizType']), $this->result);
 
 		if ($this->rt_sign != $rt_sign) {
@@ -225,6 +219,7 @@ class HLBPay
 	function md5_sign()
 	{
 		$sign_str = '&'.implode('&', array_values($this->send_data)).'&'.$this->signkey;
+		$this->sign_str = $sign_str;
 		$sign = md5($sign_str);
 
 		$this->send_data['sign'] = $sign;
@@ -241,7 +236,7 @@ class HLBPay
 	function ras_sign()
 	{
 		$sign_str = '&'.implode('&', array_values($this->send_data));
-
+		$this->sign_str = $sign_str;
 		$this->crypt_rsa->setHash('md5');
 		$this->crypt_rsa->setSignatureMode(CRYPT_RSA_SIGNATURE_PKCS1);
 		$this->crypt_rsa->loadKey($this->rsa_signkey);
@@ -369,6 +364,26 @@ class HLBPay
 			'P6_cardNo'			=> $params['bank_number'],
 			'P7_phone'  		=> $params['user_phone'],
 		);
+	}
+
+	function rtQuickPayBindCardValidateCode($params)
+	{
+		$rt_sign_arr = array(
+			'rt1_bizType'           => $params['rt1_bizType'],
+			'rt2_retCode'			=> $params['rt2_retCode'],
+			'rt4_customerNumber'	=> $params['rt4_customerNumber'],
+			'rt5_orderId'			=> $params['rt5_orderId'],
+			'rt6_phone'				=> $params['rt6_phone'],
+		);
+
+		$sign_str = '';
+
+		foreach ($rt_sign_arr as $key => $value) {
+			$sign_str .= '&'.$value;
+		}
+
+		$sign_str .= '&'.$this->signkey;
+		$this->rt_sign = md5($sign_str);
 	}
 
 	// 验签
@@ -668,13 +683,24 @@ class HLBPay
 
 	function BankCardbindList($params)
 	{
-		$this->send_data = array(
-			'P1_bizType'			=> $params['P1_bizType'],
-			'P2_customerNumber'		=> $this->customer_number,
-			'P3_userId'				=> $params['user_id'],
-			'P4_bindId'				=> $params['hlb_bindId'],
-			'P5_timestamp'			=> date('YmdHis'),
-		);
+		if (isset($params['hlb_bindId'])) {
+			$this->send_data = array(
+				'P1_bizType'			=> $params['P1_bizType'],
+				'P2_customerNumber'		=> $this->customer_number,
+				'P3_userId'				=> $params['user_id'],
+				'P4_bindId'				=> $params['hlb_bindId'],
+				'P5_timestamp'			=> date('YmdHis'),
+			);
+		} else {
+			$this->send_data = array(
+				'P1_bizType'			=> $params['P1_bizType'],
+				'P2_customerNumber'		=> $this->customer_number,
+				'P3_userId'				=> $params['user_id'],
+				'P5_timestamp'			=> date('YmdHis'),
+			);
+		}
+
+		
 	}
 
 	function rtBankCardbindList($params)

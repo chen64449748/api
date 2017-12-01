@@ -24,8 +24,11 @@ class BankdCard extends Eloquent
 		}
 
 		$is_has = $this->where('CreditNumber', $card_data['bank_number'])->first();
-		$this->where('Id', $is_has->Id)->delete();
-
+		if ($is_has) {
+			$this->where('Id', $is_has->Id)->delete();
+	
+		}
+		
 
 		$this->insert(array(
 			'CreditId' => $card_data['bindId'],
