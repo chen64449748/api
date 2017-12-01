@@ -65,4 +65,10 @@ class Pay
 	{
 		$this->pay_obj->setType('bankUnbind');
 	}
+
+	// 绑卡列表
+	function bankList()
+	{
+		$this->pay_obj->setType('bankList');
+	}
 }
