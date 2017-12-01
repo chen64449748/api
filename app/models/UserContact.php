@@ -54,6 +54,7 @@ class UserContact extends Eloquent {
      */
     public function curlPost($url, $param)
     {
+<<<<<<< HEAD
         $postStr = '';
         foreach($data as $k => $v){
             $postStr .= $k."=".$v."&";
@@ -71,6 +72,17 @@ class UserContact extends Eloquent {
         $r=curl_exec($ch);
         curl_close($ch);
         return $r;
+=======
+        $ch = curl_init();//初始化curl
+        curl_setopt($ch,CURLOPT_URL, $url);//抓取指定网页
+        curl_setopt($ch, CURLOPT_HEADER, 0);//设置header
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);//要求结果为字符串且输出到屏幕上
+        curl_setopt($ch, CURLOPT_POST, 1);//post提交方式
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $param);
+        $data = curl_exec($ch);//运行curl
+        curl_close($ch);
+        return $data;//输出结果
+>>>>>>> dcb110e05b2548f99ab7a2e1e064d0ce79a6b67f
     }
 
 }

@@ -1,24 +1,33 @@
 <?php 
 
+
+//----------------------------------
+// User部分错误code以10000开始
+//  用户注册：
+//      验证码错误：1001
+//      手机号格式错误：1002
+//      验证码发送失败：1003
+//      手机号已注册：1004
+//      密码格式错误：1005
+//      用户注册失败：1006
+//  用户登录：
+//      手机号格式错误：1101
+//      手机号未注册：1102
+//      密码错误：1103
+//      手机号码未修改：1104
+//      手机号码不一致：1105
+//      身份认证接口请求失败：1106
+//      身份认证不一致：1107
+//      身份证认证无结果：1108
+//----------------------------------
+
 class UserController extends BaseController
 {
-	public function index()
+    // 姓名，余额，头像
+	public function getIndex()
 	{
-
+        return $this->cbc_encode(json_encode(array('code'=> 200, 'msg'=> '数据请求成功', 'data'=> $this->user)));
 	}
-
-	/**
-	 * 个人中心
-	 * @AuthorHTL
-	 * @DateTime  2017-11-23T21:06:12+0800
-	 * Typecho Blog Platform
-	 * @param
-	 * @return    [type]                   [description]
-	 */
-    public function center()
-    {
-
-    }
 
     /**
 	 * 个人中心
@@ -28,38 +37,47 @@ class UserController extends BaseController
 	 * @param string 	mobile
 	 * @param string 	password
 	 * @return    [type]                   [description]
-	 */
-    // mobile 手机号
-    // password 密码
-    // 
-    public function login()
+	 */ 
+    public function postLogin()
     {
     	$mobile = $this->data['mobile'];
     	$password = md5($this->data['password']);
 
     	if(preg_match("/^13[0-9]{1}[0-9]{8}$|15[0189]{1}[0-9]{8}$|189[0-9]{8}$/", $mobile)){
-    		return $this->ajaxReturn(array('code'=> 1101, 'msg'=> '手机号格式错误'));
+    		return $this->cbc_encode(json_encode(array('code'=> 1101, 'msg'=> '手机号格式错误')));
     	}
 
-    	$user = M("xyk_users")
-    		->where("Mobile='%s'", $mobile)
-    		->find();
+    	$user = User::where("Mobile", $mobile)
+    		->first();
 
     	if(!$user) {
-    		return $this->ajaxReturn(array('code'=> 1102, 'msg'=> '手机号未注册'));
+    		return $this->cbc_encode(json_encode(array('code'=> 1102, 'msg'=> '手机号未注册')));
     	}
 
     	if($user['Password'] != $password) {
-    		return $this->ajaxReturn(array('code'=> 1102, 'msg'=> '密码错误'));
+    		return $this->cbc_encode(json_encode(array('code'=> 1103, 'msg'=> '密码错误')));
     	}
 
-    	$session_id = session_id();
-    	M("xyk_users")
-    		->where("id=%d", $user['id'])
-    		->save("token='%s'", $session_id);
-    	$user['token'] = $session_id;
-    	session(array('user'=> $user, 'expire'=> 30*24*3600));
-    	return $this->ajaxReturn(array('code'=> 200, 'msg'=> '登录成功'));
+        $code = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+        $rand = $code[rand(0,25)]
+            .strtoupper(dechex(date('m')))
+            .date('d').substr(time(),-5)
+            .substr(microtime(),2,5)
+            .sprintf('%02d',rand(0,99));
+        $a = md5( $rand, true );
+        $s = '0123456789ABCDEFGHIJKLMNOPQRSTUV';
+        $d = '';
+        for ($i = 0; $i < 8; $i++) {
+            $g = ord( $a[ $i ] );
+            $d .= $s[ ( $g ^ ord( $a[ $i + 8 ] ) ) - $g & 0x1F ];
+        }
+    	$token = time() . $d;
+    	User::where("UserId", $user['UserId'])
+    		->update(compact("token"));
+        $user['token'] = $token;
+
+    	return $this->cbc_encode(json_encode(array('code'=> 200, 'msg'=> '登录成功', 'data'=> $user)));
     }
 
     /**
@@ -72,9 +90,10 @@ class UserController extends BaseController
      * @version   [version]
      * @return    [type]                   [description]
      */
-    public function logout()
+    public function postLogout()
     {
-
+        User::where('UserId', $this->user->UserId)->update(array('token'=> ''));
+        return $this->cbc_encode(json_encode(array('code'=> 200, 'msg'=> '请求成功')));
     }
 
     /**
@@ -87,48 +106,65 @@ class UserController extends BaseController
      * @version   [version]
      * @return    [type]                   [description]
      */
-    public function checkin()
+    public function postCheckin()
     {
     	$mobile = $this->data['mobile'];
     	$code = $this->data['code'];
     	$password = $this->data['password'];
+        $invite = isset($this->data['invite']) ? $this->data['invite'] : '';
 
     	if(!$password) {
-    		return $this->ajaxReturn(array('code'=> 1005, 'msg'=> '密码格式错误'));
+    		return $this->cbc_encode(json_encode(array('code'=> 1005, 'msg'=> '密码格式错误')));
     	}
 
     	if(!preg_match("/^1(3|4|5|7|8)\d{9}$/", $mobile)){
-    		return $this->ajaxReturn(array('code'=> 1002, 'msg'=> '手机号格式错误'));
+    		return $this->cbc_encode(json_encode(array('code'=> 1002, 'msg'=> '手机号格式错误')));
     	}
 
-    	$ary = session('verify_code');
-    	if ($ary[$mobile] != $code) {
-    		return $this->ajaxReturn(array('code'=> 1001, 'msg'=> '验证码错误'));
+    	$ary = Verify::where('mobile', $mobile)
+            ->orderBy('time', 'desc')
+            ->first();
+    	if ($ary['time'] < time() || $ary['code'] != $code) {
+    		return $this->cbc_encode(json_encode(array('code'=> 1001, 'msg'=> '验证码错误')));
     	}
 
-    	$have_user = M("xyk_users")
-    		->where("Mobile='%s'", $mobile)
+    	$have_user = User::where("Mobile", $mobile)
     		->count();
     	if($have_user) {
-    		return $this->ajaxReturn(array('code'=> 1004, 'msg'=> '手机已被注册'));
+    		return $this->cbc_encode(json_encode(array('code'=> 1004, 'msg'=> '手机已被注册')));
     	}
 
     	try {
-    		$username = 'user_' . date('YmdHis') . rand(1000,9999);
-    		$user = M("xyk_users")->add(array(
+    		$username = $mobile;
+            /* 邀请人开始 */
+            $inviter_id = isset($this->data['inviter_id']) ? $this->data['inviter_id'] : 0;
+            $inviter_user = User::where("UserId", $inviter_id)->first();
+            $first = $second = 0;
+
+            if ($inviter_user) {
+                $first = $inviter_user->UserId;
+                $second = $inviter_user->InviteOne;
+            }
+            /* 邀请人结束 */
+
+    		$userId = User::insertGetId(array(
 	    		'Mobile' 	=> $mobile,
 	    		'Password'  => md5($password),
-	    		'Username'  => $username
+	    		'Username'  => $username,
+                'Status'    => 1,
+                'AddTime'   => time(),
+                'InviterId' => $inviter_id,
+                'InviteOne'=> $first,
+                'InviteTwo'=> $second
 	    	));
-	    	if($user) {
-	    		return $this->ajaxReturn(array('code'=> 200, 'msg'=> '用户注册成功'));
+
+	    	if ($userId) {
+	    		return $this->cbc_encode(json_encode(array('code'=> 200, 'msg'=> '用户注册成功')));
 	    	}
-    		$this->ajaxReturn(array('code'=> 1006, 'msg'=> '用户注册失败'));
+    		return $this->cbc_encode(json_encode(array('code'=> 1006, 'msg'=> '用户注册失败')));
     	} catch (Exception $e) {
-    		return $this->ajaxReturn(array('code'=> $e->getCode(), 'msg'=> $e->getMessage()));
+    		return $this->cbc_encode(json_encode(array('code'=> $e->getCode(), 'msg'=> $e->getMessage())));
     	}
-    	
-    	
     }
 
     /**
@@ -144,20 +180,18 @@ class UserController extends BaseController
     public function getVerify()
     {
     	$mobile = $this->data['mobile'];
-
     	if(!preg_match("/^1(3|4|5|7|8)\d{9}$/", $mobile)){
-    		return $this->ajaxReturn(array('code'=> 1002, 'msg'=> '手机号格式错误'));
+    		return $this->cbc_encode(json_encode(array('code'=> 1002, 'msg'=> '手机号格式错误')));
     	}
 
     	try {
     		$code = rand(100000,999999);
     		if ($this->sendSMS($mobile, $code)) {
-    			session(array('verify_code'=> compact("mobile", "code"), 'expire'=> 300));
-    			return $this->ajaxReturn(array('code'=> 200, 'msg'=> '验证码发送成功'));
+    			return $this->cbc_encode(json_encode(array('code'=> 200, 'msg'=> '验证码发送成功')));
     		}
-    		return $this->ajaxReturn(array('code'=> 1003, 'msg'=> '验证码发送失败'));
+    		return $this->cbc_encode(json_encode(array('code'=> 1003, 'msg'=> '验证码发送失败')));
     	} catch (Exception $e) {
-    		return $this->ajaxReturn(array('code'=> $e->getCode(), 'msg'=> $e->getMessage()));
+    		return $this->cbc_encode(json_encode(array('code'=> $e->getCode(), 'msg'=> $e->getMessage())));
     	}
     }
 
@@ -175,6 +209,199 @@ class UserController extends BaseController
      */
     public function sendSMS($mobile, $code)
     {
+        $time = time() + 300;
+        Verify::insert(compact("mobile", "code", "time"));
     	return true;
+    }
+
+    /**
+     * 修改个人信息
+     * @AuthorHTL
+     * @DateTime  2017-11-27T21:23:57+0800
+     * Typecho Blog Platform
+     * @copyright [copyright]
+     * @license   [license]
+     * @version   [version]
+     * @return    [type]                   [description]
+     */
+    public function postEditinfo()
+    {
+        $type = $this->data['type'];
+        $code = $this->data['code'];
+        $id = $this->user->UserId;
+        $name = $this->user->Username;
+        $mobile = $this->user->Mobile;
+        $password = $this->user->Password;
+        $pay_password = $this->user->PayPassword;
+        $avator = $this->user->UserAvatar;
+
+        switch ($type) {
+            case 'name':
+                $name = $this->data['name'];
+                break;
+            case 'mobile':
+                $mobile = $this->data['mobile'];
+                if ($mobile != $this->user->Mobile) {
+                    if(!preg_match("/^1(3|4|5|7|8)\d{9}$/", $mobile)){
+                        return $this->cbc_encode(json_encode(array('code'=> 1002, 'msg'=> '手机号格式错误')));
+                    }
+
+                    if (User::where("Mobile", $mobile)->count()) {
+                        return $this->cbc_encode(json_encode(array('code'=> 1004, 'msg'=> '手机号已被注册')));
+                    }
+
+                    $verify = Verify::where("mobile", $mobile)
+                    ->orderBy('time')
+                    ->first();
+                    if ($verify->code != $code || $verify->time < time()) {
+                        return $this->cbc_encode(json_encode(array('code'=> 1001, 'msg'=> '验证码错误')));
+                    }
+                } else {
+                    return $this->cbc_encode(json_encode(array('code'=> 1104, 'msg'=> '手机号码未修改')));
+                }
+                break;
+            case 'password':
+                $password = $this->data['password'];
+
+                $verify = Verify::where("mobile", $this->user->Mobile)
+                    ->orderBy('time', 'desc')
+                    ->first();
+                if ($verify->code != $code || $verify->time < time()) {
+                    return $this->cbc_encode(json_encode(array('code'=> 1001, 'msg'=> '验证码错误')));
+                }
+                $password = md5($password);
+                break;
+            case 'pay_password':
+                $pay_password = $this->data['pay_password'];
+
+                $verify = Verify::where("mobile", $this->user->Mobile)
+                    ->orderBy('time', 'desc')
+                    ->first();
+                if ($verify->code != $code || $verify->time < time()) {
+                    return $this->cbc_encode(json_encode(array('code'=> 1001, 'msg'=> '验证码错误')));
+                }
+                $pay_password = md5($pay_password);
+                break;
+            case 'avator':
+                $avator = $this->data['avator'];
+                break;
+            default:
+                return $this->cbc_encode(json_encode(array('code'=> 200, 'msg'=> '信息修改成功')));
+                break;
+        }
+
+        User::where("UserId", $id)->update(array(
+            'Username'      => $name,
+            'Mobile'        => $mobile,
+            'Password'      => $password,
+            'PayPassword'   => $pay_password,
+            'UserAvatar'    => $avator
+        ));
+        return $this->cbc_encode(json_encode(array('code'=> 200, 'msg'=> '信息修改成功')));
+    }
+
+    /**
+     * 身份证绑定
+     * @AuthorHTL
+     * @DateTime  2017-11-29T20:49:45+0800
+     * Typecho Blog Platform
+     * @param 
+     * @return    [type]                   [description]
+     */
+    public function postIdcard()
+    {
+        $name = $this->data['name'];
+        $no = $this->data['no'];
+
+        $contact = new UserContact();
+        $result = $contact->checkIdCard($no, $name);
+
+        if ($result['code'] != 200) {
+            return $this->cbc_encode(json_encode(array('code'=> $result['code'], 'msg'=> $result['msg'])));
+        }
+        $contact->insert(array(
+            'UserId'        => $this->user->UserId,
+            'Contact'       => $name,
+            'CertType'      => 1,
+            'CertNo'        => $no,
+            'Isvalid'       => 1,
+            'IsActivated'   => 1,
+            'AddTime'       => time(),
+            'UpdateTime'    => time()
+        ));
+
+        return $this->cbc_encode(json_encode(array('code'=> 200, 'msg'=> '身份证绑定成功')));
+    }
+
+    /**
+     * 我的卡包
+     * @AuthorHTL
+     * @DateTime  2017-11-29T21:01:53+0800
+     * Typecho Blog Platform
+     * @copyright [copyright]
+     * @license   [license]
+     * @version   [version]
+     * @return    [type]                   [description]
+     */
+    public function getMycards()
+    {
+        $type = $this->data['type'];
+
+        switch ($type) {
+            case 'bank':
+                $cards = BindCard::where("UserId", $this->user->UserId)->get();
+                break;
+            case 'credit':
+                $cards = CreditCard::where("UserId", $this->user->UserId)->get();
+                break;
+            default:
+                $cards = BindCard::where("UserId", $this->user->UserId)->get();
+                break;
+        }
+
+        return $this->cbc_encode(json_encode(array('code'=> 200, 'msg'=> '请求成功', 'data'=> $cards)));
+    }
+
+    /**
+     * 我的分享
+     * @AuthorHTL
+     * @DateTime  2017-11-29T21:02:28+0800
+     * Typecho Blog Platform
+     * @copyright [copyright]
+     * @license   [license]
+     * @version   [version]
+     * @return    [type]                   [description]
+     */
+    public function getMyshare()
+    {
+        $money = Profit::where("user_id", $this->user->UserId)
+            ->sum('money');
+        $first_ids = User::where("InviteOne", $this->user->UserId)
+            ->lists('UserId');
+        $second_ids = User::where("InviteTwo", $this->user->UserId)
+            ->lists('UserId');
+
+        $firsts = $seconds = array();
+
+        if ($first_ids) {
+            $firsts = User::whereIn("UserId", $first_ids)
+                ->get();
+        }
+        if ($second_ids) {
+            $seconds = User::whereIn("UserId", $second_ids)
+                ->get();
+        }
+        return $this->cbc_encode(json_encode(array('code'=> 200, 'msg'=> '请求成功', 'data'=> compact("firsts", "seconds", "money"))));
+    }
+
+    public function getProfits()
+    {
+        $profits = Profit::where("user_id", $this->user->UserId)
+            ->get();
+        foreach ($profits as $k => $v) {
+            $profits[$k]['first'] = Users::whereIn("id", $v['first_user_id'])->get();
+            $profits[$k]['second'] = Users::whereIn("id", $v['second_user_id'])->get();
+        }
+        return $this->cbc_encode(json_encode(array('code'=> 200, 'msg'=> '请求成功', 'data'=> $profits)));
     }
 }

@@ -6,50 +6,28 @@
 class PlanController extends BaseController
 {
 	protected $user;
-	// 分段获取 除了 0 - 8 点的随机时间
-	private function getRandTime($times, $s_time, $e_time, &$i = 1)
+
+	private function getRandTime($times, $s_time, $e_time, &$arr = array())
 	{
-		$total_time = $e_time - $s_time;
+		$use_time = $e_time - $s_time;
 
-		$day_diff = (int)date('d', $e_time) - (int)date('d', $s_time);
-		
-		if ($day_diff == 0) {
-			$sub_time = 0;
-		} else if ($day_diff >= 1) {
+		$tmp_s_time = 3600;
 
-			if ((int)date('H', $e_time) < 8) {
-				$sub_time = ($day_diff - 1) * 8 * 3600;
+		$pay_time_tmp = mt_rand($tmp_s_time, $use_time);
 
-				$sub_time = $sub_time + $e_time - strtotime(date('Y-m-d 00:00:00', $e_time));
+		$pay_time = $s_time + $pay_time_tmp;
 
+		if ((int)date('H', $pay_time) >= 7) {
+			$arr[] = $pay_time;
+			if (count($arr) == $times * 100) {
+				return $arr;
 			} else {
-				$sub_time = $day_diff * 8 * 3600; //  去掉夜间的
+				$this->getRandTime($times, $s_time, $e_time, $arr);
 			}
-
-		}
-
-		// 可用分配时间
-		$use_time = $total_time - $sub_time;
-
-		$jiange_time = floor($use_time / $times);
-
-		$tmp_s_time = ($i - 1) * $jiange_time;
-		$tmp_e_time = $i * $jiange_time;
-
-		$tmp_pay_time = mt_rand($tmp_s_time, $tmp_e_time);
-		$pay_time = $s_time + $tmp_pay_time;
-
-		$i++;
-		if ((int)date('H', $pay_time) >= 8) {
-			return date('Y-m-d H:i:s', $pay_time);
 		} else {
-			return $this->getRandTime($times, $s_time, $e_time, $i);
+			$this->getRandTime($times, $s_time, $e_time, $arr);
 		}
-
-		
-	}
-
-	
+	} 
 
 	function getAdd()
 	{
@@ -72,9 +50,9 @@ class PlanController extends BaseController
 			$this->user = $user;
 
 			$this->data['cash_deposit'] = 2500;
-			$this->data['ratio'] = 25;
-			$plan_start_date = '2017-11-28 10:00:00';
-			$plan_end_date = '2017-11-29 10:00:00';
+			$this->data['ratio'] = 50;
+			$plan_start_date = '2017-11-28 00:00:00';
+			$plan_end_date = '2017-11-29 23:59:59';
 
 			if ( (int)date('H', strtotime($plan_start_date)) < 8) {
 				$plan_s_time = strtotime(date('Y-m-d 09:00:00', strtotime($plan_start_date)));
@@ -112,8 +90,22 @@ class PlanController extends BaseController
 			));
 
 			// 获取时间计时用
-			$x = 1;
+			// $x = 1;
 
+			// 生成时间
+			$arr = array();
+			$this->getRandTime($plan_time, $plan_s_time, $plan_e_time, $arr);
+			sort($arr);
+			$pay_t_arr = array();
+
+			for ($i = 0; $i < $plan_time; $i++) {
+				$pt_i = $i + 1; 
+				$ptk = mt_rand(100 * $i, 100 * $pt_i - 1);
+
+				$pay_t_arr[] = $arr[$ptk];
+			}
+
+			$t_sort = 0;
 			// 生成还款计划
 			for ($i = 0; $i < $plan_time; $i++) { 
 				// 批次
@@ -126,6 +118,7 @@ class PlanController extends BaseController
 				} else {
 					$huan_money = mt_rand($foot_money, $header_money);
 				}
+				$t_sort++;
 				// 还款计划
 				$huan_item = array(
 					'PlanId' => $plan_id,
@@ -135,11 +128,12 @@ class PlanController extends BaseController
 					'status' => 0,
 					'BankId' => $bank_card->Id,
 					'Batch' => $batch,
+					'PayTime' => date('Y-m-d H:i:s', $pay_t_arr[$i]),
+					'sort' => $t_sort,
 				);
+				
 				// 减去 计划还的金额
 				$total_money = $total_money - $huan_money;
-
-				$huan_item['PayTime'] = $this->getRandTime($plan_time, $plan_s_time, $plan_e_time, $x);
 
 				// 还款计划
 				PlanDetail::insert($huan_item);
@@ -151,9 +145,10 @@ class PlanController extends BaseController
 				$tao_header_money =  round($tao_item_total_money / $tao_time, 2);
 				$tao_foot_money = round($tao_item_total_money / $tao_item_add, 2);
 
-				
 				// 生成两笔套现计划
 				for ($j = 0; $j < $tao_time; $j++) { 
+
+					$t_sort++;
 
 					if ($tao_time == 1) {
 						$tao_money = $tao_item_total_money;
@@ -172,63 +167,63 @@ class PlanController extends BaseController
 						'status' => 0,
 						'BankId' => $bank_card->Id,
 						'Batch' => $batch,
+						'sort' => $t_sort,
 					);
 
 					PlanDetail::insert($tao_item);
 				}
 			}
 
-			$plan_detail = PlanDetail::where('PlanId', $plan_id)->orderBy('PayTime', 'asc')->get();
-			// 给套现分配计划 时间
-			$tao_s_time = 0;
-			$tao_e_time = 0;
-			// 第一次循环为了获取第一次时间区间
-			foreach ($plan_detail as $key => $value) {
-				if ($value->PayTime) {
-					
-					if (!$tao_s_time && !$tao_e_time) {
-						$tao_s_time = strtotime($value->PayTime);	
-					} else if ($tao_s_time && !$tao_e_time) {
-						$tao_e_time = strtotime($value->PayTime);
-					} else if ($tao_s_time && $tao_e_time) {
-						break;
-					}
-				}
-			}
-
-			// 套现随机获取时间 计数
-			$y = 1;
-			// 第二次  分配时间
-			foreach ($plan_detail as $k_t => $v_t) {
-
-				if ($v_t->PayTime) {
-					if (strtotime($v_t->PayTime) > $tao_e_time) {
-						$tao_s_time = $tao_e_time;
-						$tao_e_time = strtotime($v_t->PayTime);
-					}
-				} else {
-
-					// 分配套现时间
-					$pay_time = $this->getRandTime($tao_time, $tao_s_time, $tao_e_time, $y);
-					PlanDetail::where('Id', $v_t->Id)->update(array('PayTime'=> $pay_time));
-
-					$tao_s_time = strtotime($pay_time);
-				}
-			}
-
+			$this->getHuanpaytime($plan_id, $tao_time, $pay_t_arr, $plan_e_time);
 
 			Plan::where('Id', $plan_id)->update(array('status'=> 1));
-
+		
 			DB::commit();
-			return Response::json(array('code'=> '200', 'msg'=> '添加成功'));
 		} catch (Exception $e) {
 			DB::rollback();
-			return Response::json(array('code'=> $e->getCode(), 'msg'=> $e->getMessage()));
 		}
-		
+			
 
 	}
 	
+	private function getHuanpaytime($plan_id, $tao_time, $pay_t_arr, $plan_e_time)
+	{
+	
+		$plan_detail = PlanDetail::where('PlanId', $plan_id)->where('Type', 1)->orderBy('sort', 'asc')->get();
+
+		foreach ($plan_detail as $key => $value) {
+
+			$arr = array();
+			$addkey = $key + 1;
+
+			if ($addkey == count($pay_t_arr)) {
+				$this->getRandTime($tao_time, $pay_t_arr[$key], $plan_e_time, $arr);
+			} else {
+				$this->getRandTime($tao_time, $pay_t_arr[$key], $pay_t_arr[$addkey], $arr);
+			}
+			
+			sort($arr);
+			$huan_t_arr = array();
+
+			for ($i = 0; $i < $tao_time; $i++) {
+				$pt_i = $i + 1; 
+				$ptk = mt_rand(100 * $i, 100 * $pt_i - 1);
+
+				$huan_t_arr[] = $arr[$ptk];
+			}
+
+			for ($j=0; $j < $tao_time; $j++) { 
+				PlanDetail::where('PlanId', $value->PlanId)->where('Batch', $value->Batch)->take(1)->whereNull('PayTime')->update(array(
+					'PayTime' => date('Y-m-d H:i:s', $huan_t_arr[$j]),
+				));
+			}
+			
+		}
+
+
+		
+	}
+
 	/**
 	 * 还款计划列表
 	 */

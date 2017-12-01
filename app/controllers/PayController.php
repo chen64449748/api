@@ -76,6 +76,8 @@ class PayController extends BaseController
 			// 	'bank_number' => $this->data['bank_number'],
 			// 	'user_phone' => $this->user->Moblie,
 			// 	'validateCode' => $this->data['validateCode'],
+			// 	'account_date' => date('Y-m-d 00:00:00', strtotime($this->data['account_date'])),
+			// 	'repayment_date' => date('Y-m-d 00:00:00', strtotime($this->data['repayment_date'])),
 			// );
 
 			$params = array(
@@ -85,6 +87,8 @@ class PayController extends BaseController
 				'bank_number' => '6225768758046880',
 				'user_phone'=> '18329042977',
 				'validateCode' => '952313',
+				'account_date' => '2017-11-28 10:00:00',
+				'repayment_date' => '2017-11-29 23:59:59',
 			);
 			$this->data['bank_year'] = '20';
 			$this->data['bank_month'] = '11';
