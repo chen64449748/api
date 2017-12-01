@@ -11,7 +11,7 @@ class BindCardController extends BaseController
 	    $offset = $this->data['offset'] ? $this->data['offset'] : '0';
 	    $limit = $this->data['limit'] ? $this->data['limit'] : '20';
 	   
-	    $bindCards = BindCard::skip($offset)->take($limit)->get();
+	    $bindCards = BankdCard::skip($offset)->take($limit)->get();
 	    
         return array('bindCards'=>$bindCards);
 	}
