@@ -71,4 +71,16 @@ class Pay
 	{
 		$this->pay_obj->setType('bankList');
 	}
+
+	// 绑定结算卡
+	function settleBind()
+	{
+		$this->pay_obj->setType('settleBind');
+	}
+
+	// 结算卡提现
+	function settle()
+	{
+		$this->pay_obj->setType('settle');
+	}
 }

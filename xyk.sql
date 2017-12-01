@@ -10,7 +10,7 @@ Target Server Type    : MYSQL
 Target Server Version : 50553
 File Encoding         : 65001
 
-Date: 2017-12-01 16:24:56
+Date: 2017-12-01 17:51:22
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -926,20 +926,20 @@ CREATE TABLE `xyk_smstemplates` (
 DROP TABLE IF EXISTS `xyk_userbindccard`;
 CREATE TABLE `xyk_userbindccard` (
   `Id` int(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '银行卡ID',
-  `BankId` int(11) unsigned DEFAULT '0' COMMENT '银行卡id',
+  `BankId` varchar(50) DEFAULT '0' COMMENT '银行卡id',
   `UserId` int(11) unsigned NOT NULL COMMENT '用户id',
   `BankName` varchar(100) DEFAULT NULL COMMENT '银行卡名称',
-  `BankNmuber` int(50) unsigned NOT NULL DEFAULT '0' COMMENT '银行卡号',
+  `BankNumber` varchar(50) NOT NULL DEFAULT '0' COMMENT '银行卡号',
   `IsDefault` tinyint(1) DEFAULT '0' COMMENT '是否默认（1|默认，0|不默认）',
-  `statue` int(11) DEFAULT '0' COMMENT '状态; 0|正常 ； 1|冻结',
-  `Isvalid` tinyint(1) DEFAULT NULL COMMENT '有效性，1|有效； 2|无效',
+  `status` int(11) DEFAULT '0' COMMENT '状态; 1|正常 ； 0|冻结',
   `AddTime` int(50) DEFAULT '0',
   PRIMARY KEY (`Id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COMMENT='用户绑定的银行卡';
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COMMENT='用户绑定的银行卡';
 
 -- ----------------------------
 -- Records of xyk_userbindccard
 -- ----------------------------
+INSERT INTO `xyk_userbindccard` VALUES ('6', '8a6019b556ad4cf7a79a61d388989a68', '82', '中信银行', '6217710804856110', '0', '1', '1512121593');
 
 -- ----------------------------
 -- Table structure for xyk_userbinddcard
@@ -950,8 +950,8 @@ CREATE TABLE `xyk_userbinddcard` (
   `CreditId` varchar(60) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT '0' COMMENT '信用卡id',
   `UserId` int(11) unsigned DEFAULT NULL COMMENT '用户id',
   `CreditName` varchar(100) DEFAULT NULL COMMENT '信用卡名称',
-  `CreditNumber` int(50) unsigned DEFAULT '0' COMMENT '信用卡号',
-  `status` int(11) unsigned DEFAULT '0' COMMENT '状态; 0|正常 ； 1|冻结  2|解绑',
+  `CreditNumber` varchar(50) DEFAULT '0' COMMENT '信用卡号',
+  `status` int(11) unsigned DEFAULT '0' COMMENT '状态; 1|正常 ； 0|冻结  2|解绑',
   `IsDefault` tinyint(1) unsigned DEFAULT '0' COMMENT '是否默认（1|默认；0|不默认）',
   `AddTime` int(50) DEFAULT '0',
   `CVN` int(10) unsigned DEFAULT NULL COMMENT 'SVN2码',

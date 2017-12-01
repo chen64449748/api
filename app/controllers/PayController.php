@@ -178,6 +178,95 @@ class PayController extends BaseController
 		}
 		
 	}
+	// 结算卡绑定
+	function getSettlebind()
+	{
+		try {
+			
+			$params = array(
+				'user_id' => '82',
+				'user_name' => '陈文越',
+				'id_card_number' => '330327199312022158',
+				'bank_number' => '6217710804856110',
+				'user_phone' => '18329042977',
+			);
+
+			$pay = new Pay('HLBPay');
+
+			$pay->settleBind();
+			$pay->setParams($params);
+			$pay->sendRequest();
+
+			$result = $pay->getResult();
+		
+			if ($result['action'] != 1) { throw new Exception($result['msg'], $result['code']);}
+			$card_data = $result['result'];
+			$bank = DB::table('xyk_bankcard')->where('BankCode', $card_data['rt8_bankId'])->first();
+
+			// 如果不存在 
+			if (!$bank) {
+				throw new Exception("系统不支持该银行卡，请换卡重试", 8998);
+			}
+
+			$isDefault = 1;
+
+			$user_bank_card = BankcCard::where('UserId', $params['user_id'])->first();
+
+			if ($user_bank_card) {
+				$isDefault = 0;
+			} else {
+				$isDefault = 1;
+			}
+
+			$is_has = BankcCard::where('BankNumber', $params['bank_number'])->first();
+			if ($is_has) {
+				BankcCard::where('Id', $is_has->Id)->delete();
+			}
+
+			$card = array(
+				'BankId' => $card_data['rt10_bindId'],
+				'UserId' => $card_data['rt5_userId'],
+				'BankName' => $bank->BankName,
+				'BankNumber' => $params['bank_number'],
+				'status' => 1,
+				'AddTime' => time(),
+			);
+
+			BankcCard::insert($card);
+			return json_encode(array('code'=> '200', 'msg'=> '绑卡成功'));
+		} catch (Exception $e) {
+			return json_encode(array('code'=> $e->getCode(), 'msg'=> '失败：错误代码：'.$e->getCode().','.$e->getMessage()));
+		}
+	}
+
+	// 结算卡提现
+	function getSettle()
+	{
+		// try {
+			$params = array(
+				'user_id' => '82',
+				'money' => '10.00',
+				'feeType' => 'RECEIVER',
+				'remark' => '',
+				'hlb_bindId' => '8a6019b556ad4cf7a79a61d388989a68',
+			);
+
+			$pay = new Pay('HLBPay');
+			// 提现 到借记卡
+			$pay->settle();
+			$pay->setParams($params);
+			$pay->sendRequest();
+
+			$result = $pay->getResult();
+			print_r($result);
+			if ($result['action'] != 1) { throw new Exception($result['msg'], $result['code']);}
+
+
+
+		// } catch (Exception $e) {
+		// 	echo $e->getMessage();
+		// }
+	}
 
 	function getPay()
 	{
