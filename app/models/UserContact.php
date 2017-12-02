@@ -54,6 +54,25 @@ class UserContact extends Eloquent {
      */
     public function curlPost($url, $param)
     {
+<<<<<<< HEAD
+        $postStr = '';
+        foreach($data as $k => $v){
+            $postStr .= $k."=".$v."&";
+        }
+        $postStr=substr($postStr,0,-1);
+        $ch=curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);                //设置访问的url地址
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $postStr);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 15);               //设置超时
+        curl_setopt($ch, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);   //用户访问代理 User-Agent
+        curl_setopt($ch, CURLOPT_REFERER,$_SERVER['HTTP_HOST']);        //设置 referer
+        curl_setopt($ch,CURLOPT_FOLLOWLOCATION,1);          //跟踪301
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);        //返回结果
+        $r=curl_exec($ch);
+        curl_close($ch);
+        return $r;
+=======
         $ch = curl_init();//初始化curl
         curl_setopt($ch,CURLOPT_URL, $url);//抓取指定网页
         curl_setopt($ch, CURLOPT_HEADER, 0);//设置header
@@ -63,6 +82,7 @@ class UserContact extends Eloquent {
         $data = curl_exec($ch);//运行curl
         curl_close($ch);
         return $data;//输出结果
+>>>>>>> dcb110e05b2548f99ab7a2e1e064d0ce79a6b67f
     }
 
 }
