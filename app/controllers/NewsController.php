@@ -10,7 +10,7 @@ class NewsController extends BaseController
 	{
 	    $offset = $this->data['offset'] ? $this->data['offset'] : '0';
 	    $limit = $this->data['limit'] ? $this->data['limit'] : '20';
-	    $news = News::skip($offset)->take($limit)->get();
+	    $news = News::where('IsDisplay','1')->skip($offset)->take($limit)->get();
 	    
         return array('news'=>$news);
 	}
