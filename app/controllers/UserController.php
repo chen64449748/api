@@ -348,7 +348,7 @@ class UserController extends BaseController
         $type = $this->data['type'];
 
         try {
-            $cards = BindCard::where("UserId", $this->user->UserId)
+            $cards = BankdCard::where("UserId", $this->user->UserId)
                 ->where("type", $type)
                 ->get();
             return $this->cbc_encode(json_encode(array('code'=> 200, 'msg'=> '请求成功', 'data'=> $cards)));
