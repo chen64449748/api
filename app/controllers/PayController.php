@@ -242,10 +242,10 @@ class PayController extends BaseController
 	// 结算卡提现
 	function getSettle()
 	{
-		// try {
+		try {
 			$params = array(
 				'user_id' => '82',
-				'money' => '10.00',
+				'money' => '1.00',
 				'feeType' => 'RECEIVER',
 				'remark' => '',
 				'hlb_bindId' => '8a6019b556ad4cf7a79a61d388989a68',
@@ -258,14 +258,14 @@ class PayController extends BaseController
 			$pay->sendRequest();
 
 			$result = $pay->getResult();
-			print_r($result);
-			if ($result['action'] != 1) { throw new Exception($result['msg'], $result['code']);}
+
+			if ($result['action'] != 1) { throw new Exception('错误代码：'.$result['code'].','.$result['msg'], $result['code']);}
 
 
 
-		// } catch (Exception $e) {
-		// 	echo $e->getMessage();
-		// }
+		} catch (Exception $e) {
+			return json_encode(array('code'=> (string)$e->getCode(), 'msg'=> $e->getMessage()));
+		}
 	}
 
 	function getPay()

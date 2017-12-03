@@ -35,7 +35,7 @@ class BankdCard extends Eloquent
 			'UserId' => $user_id,
 			'CreditName' => $bank->BankName,
 			'CreditNumber' => $card_data['bank_number'],
-			'status' => 0,
+			'status' => 1, // 1 正常 0 冻结  2解绑
 			'isDefault' => $isDefault,
 			'AddTime' => time(),
 			'CVN' => $card_data['cvv2'], // 安全码

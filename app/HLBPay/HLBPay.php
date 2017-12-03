@@ -14,6 +14,7 @@ class HLBPay
 
 	// 私钥 测试
 	private $signkey = 'aFn0C3OTNYFAiKIK842uKt4kU58HueRL'; 
+	private $rt_signkey = 'WUiTnxTecFt5hhUdoJ7aQjjgaIuYAjUS';
 	// rsa 私钥
 	private $rsa_signkey = 'MIICdgIBADANBgkqhkiG9w0BAQEFAASCAmAwggJcAgEAAoGBAK5GQSOPqzt7o4xcgygdikqN1uY13J7Uu0nJdm/BtxPH1Y1qolPUw/lSCd83f7KnS/xS/THCVEwvUm2iOtQKIDj2A/SC7Jy+bZbbbrJqkx+61pgjuIFsKo7Wf/2OX59Nj1qQlWa99J3ZH/kEFxKd5V1moV9cCNpBZVoEYyhmBbajAgMBAAECgYAIDqt4T24lQ+Qd2zEdK7B3HfOvlRHsLf2yvaPCKvyh531SGnoC0jV1U3utXE2FHwL+WX/nSwrGsvFmrDd4EjfHFsqRvHm+TJfXoHtmkfvbVGI7bFl/3NbYdi76tqbth6W8k0gkPUsACs2ix8a4K7zxOO+UpOeUBIXrchDxFmj9sQJBAOgSHQAI5hr/3+rSQXlq2lET87Ew9Ib72Lwqri3vsHO/sysVTLAznuA+V8s+a4tUeA839a/tGLp1SaJhvma9/30CQQDAPoNFw4rYTm9vbQnrCb6Mm0l9GNpCD1c4ShTxHJyt8Gql0e1Sl3vc28AxyqHLq66abYDzOpnPGJ8AIpri4qifAkArJsMRsJXoy089gJ8ADqhNjyIu/mVZfBbO1jjQ/dKXkzujdTBvSwnttGnqts6Ud75jRgp/Dd0dPpXUhcw7mnSZAkEAmYeTKP0Afr0tS6ymNhojHoHJz+kwLX+45VBspx51loghc+pSgRpPplOti1ZLnq+uktAPIrDTM0xzdxUr4zSm+wJAV54yRQsZBkRmhPibmLeoe3lM6hcAwLqS+E1H09X92fBLqCtBAybDnf++hT2ATgtW+xgI+tFVbOqbi1QbLyw1kA==';
 	
@@ -84,7 +85,6 @@ class HLBPay
 		}
 
 		$pageContents = HttpClient::quickPost($this->send_url, $this->send_data);
-		echo $pageContents;exit;
 		$this->response = $pageContents;
 		$result = json_decode($pageContents, 1);
 		$this->result = $result;
@@ -204,12 +204,16 @@ class HLBPay
 				case '8999': // 系统异常，请联系管理员
 					$msg = '系统异常，请联系管理员';
 					break;
+
+				case '0002':
+					$msg = '接受失败';
+					break;
 				default :
 					$msg = $this->result['rt3_retMsg'];
 					break;
 			}
-
-			return array('action'=> 0, 'code'=> $this->result['rt2_retCode'], 'msg'=> $msg, 'result'=> $this->result);
+			
+			return array('action'=> 0, 'code'=> (string)$this->result['rt2_retCode'], 'msg'=> $msg, 'result'=> $this->result);
 		}	
 	}
 
@@ -228,7 +232,9 @@ class HLBPay
 			unset($tmp_sign_data['P8_bindId']);
 		}
 
-		$sign_str = '&'.implode('&', array_values($tmp_sign_data)).'&'.$this->signkey;
+		$signkey = $this->signkey;
+		
+		$sign_str = '&'.implode('&', array_values($tmp_sign_data)).'&'.$signkey;
 		$this->sign_str = $sign_str;
 		$sign = md5($sign_str);
 
@@ -787,7 +793,7 @@ class HLBPay
 			'P5_amount'				=> round($params['money'], 2),
 			'P6_feeType'			=> $params['feeType'],
 			'P7_summary'			=> $params['remark'],
-			'P8_bindId'				=> $params['hlb_bindId'],
+			// 'P8_bindId'				=> $params['hlb_bindId'],
 		);
 	}
 
@@ -809,7 +815,7 @@ class HLBPay
 			$sign_str .= '&'.$value;
 		}
 
-		$sign_str .= '&'.$this->signkey;
+		$sign_str .= '&'.$this->rt_signkey;
 		$this->rt_sign = md5($sign_str);
 	}
 }	
