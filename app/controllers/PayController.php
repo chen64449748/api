@@ -12,15 +12,25 @@ class PayController extends BaseController
 
 	function getBankcode()
 	{	
-		// $user_id = $this->data['user_id'];
-		// $bank_number = $this->data['bank_number'];
-		// $user_phone = $this->data['user_phone'];
 	
 		try {
+
+			if (!$this->user) {
+				throw new Exception("请先登录", '1000');
+			}
+
+			if (!$this->IdCard) {
+				throw new Exception("请先实名认证", '1001');
+			}
 
 			if (!isset($this->data['bank_number'])) {
 				throw new Exception("银行卡号必填", '8020');
 			}
+
+			if (!$this->user) {
+
+			}
+
 			$params = array(
 				'user_id' => $this->user->UserId,
 				'bank_number'=> $this->data['bank_number'],
@@ -43,17 +53,17 @@ class PayController extends BaseController
 		
 			if ($result['action'] != 1) { throw new Exception($result['msg'], $result['code']);}
 
-			return json_encode(array('code'=> 1, 'msg'=> '发送成功!'));
+			return $this->cbc_encode(json_encode(array('code'=> '200', 'msg'=> '发送成功!')));
 
 		} catch (Exception $e) {
 			
-			return json_encode(array('code'=> 0, 'msg'=> '失败！错误代码：'.$e->getCode().','.$e->getMessage()));
+			return $this->cbc_encode(json_encode(array('code'=> $e->getCode(), 'msg'=> '失败！错误代码：'.$e->getCode().','.$e->getMessage())));
 		}
 		
 
 
 	}
-
+	// 绑卡
 	function getBankbind()
 	{
 		/*
@@ -126,6 +136,21 @@ class PayController extends BaseController
 			isset($this->data['cvv2']) && $params['cvv2'] = $this->data['cvv2'];
 			isset($this->data['quota']) && $params['quota'] = $this->data['quota'];
 
+			if (isset($this->data['bank_year'])) {
+				// 贷记卡 信用卡
+				$type = 2;
+			} else {
+				// 借记卡 银行卡
+				$type = 1;
+			}
+
+			if ($type == 2) {
+
+				if (!isset($this->data['account_date']) || !isset($this->data['repayment_date'])) {
+					throw new Exception("绑定信用卡必须填还款日 账单日", 8991);
+				}
+
+			}
 			$pay = new Pay('HLBPay');
 			$pay->bankBind(); // 绑卡
 			$pay->setParams($params);
@@ -141,13 +166,7 @@ class PayController extends BaseController
 
 			if ($result['result']['rt7_bindStatus'] == 'SUCCESS') {
 				try {
-					if (isset($this->data['bank_year'])) {
-						// 贷记卡 信用卡
-						$type = 2;
-					} else {
-						// 借记卡 银行卡
-						$type = 1;
-					}
+					
 
 					$bank_card_m = new BankdCard();
 
@@ -158,15 +177,13 @@ class PayController extends BaseController
 						'quota' => $this->data['quota'],
 						'type' => $type,
 						'bankId' => $result['result']['rt8_bankId'],
-						'account_date' => '2017-11-28 10:00:00',
-						'repayment_date' => '2017-11-29 23:59:59',
 					);
 
-					isset($this->data['account_date']) && $card_data['account_date'] = $this->data['account_date'];
-					isset($this->data['repayment_date']) && $card_data['repayment_date'] = $this->data['repayment_date'];
+					isset($this->data['account_date']) && $card_data['account_date'] = $params['account_date'];
+					isset($this->data['repayment_date']) && $card_data['repayment_date'] = $params['repayment_date'];
 					$bank_card_m->addUserCard($params['user_id'], $card_data);
 
-					return json_encode(array('code'=> 200, 'msg'=> '添加成功'));
+					return $this->cbc_encode(json_encode(array('code'=> 200, 'msg'=> '添加成功')));
 
 				} catch (Exception $e) {
 					throw new Exception('数据库错误:'.$e->getMessage(), 8997);
@@ -174,7 +191,7 @@ class PayController extends BaseController
 			}	
 
 		} catch (Exception $e) {
-			return json_encode(array('code'=> $e->getCode(), 'msg'=> '失败：错误代码：'.$e->getCode().','.$e->getMessage()));
+			return $this->cbc_encode(json_encode(array('code'=> $e->getCode(), 'msg'=> '失败：错误代码：'.$e->getCode().','.$e->getMessage())));
 		}
 		
 	}
@@ -183,13 +200,29 @@ class PayController extends BaseController
 	{
 		try {
 			
+			if (!$this->user) {
+				throw new Exception("请先登录", '1000');
+			}
+
+			if (!$this->IdCard) {
+				throw new Exception("请先实名认证", '1001');
+			}
+
 			$params = array(
-				'user_id' => '82',
-				'user_name' => '陈文越',
-				'id_card_number' => '330327199312022158',
-				'bank_number' => '6217710804856110',
-				'user_phone' => '18329042977',
+				'user_id' => $this->user->UserId,
+				'user_name' => $this->user->Username,
+				'id_card_number' => $this->IdCard,
+				'bank_number' => $this->data['bank_number'],
+				'user_phone' => $this->user->Moblie,
 			);
+
+			// $params = array(
+			// 	'user_id' => '82',
+			// 	'user_name' => '陈文越',
+			// 	'id_card_number' => '330327199312022158',
+			// 	'bank_number' => '6217710804856110',
+			// 	'user_phone' => '18329042977',
+			// );
 
 			$pay = new Pay('HLBPay');
 
@@ -233,44 +266,98 @@ class PayController extends BaseController
 			);
 
 			BankcCard::insert($card);
-			return json_encode(array('code'=> '200', 'msg'=> '绑卡成功'));
+			return $this->cbc_encode(json_encode(array('code'=> '200', 'msg'=> '绑卡成功')));
 		} catch (Exception $e) {
-			return json_encode(array('code'=> $e->getCode(), 'msg'=> '失败：错误代码：'.$e->getCode().','.$e->getMessage()));
+			return $this->cbc_encode(json_encode(array('code'=> $e->getCode(), 'msg'=> '错误代码：'.$e->getCode().','.$e->getMessage())));
 		}
 	}
 
 	// 结算卡提现
 	function getSettle()
 	{
-		// try {
+		try {
+
+			$bank_card = BankcCard::where('UserId', $this->user->UserId)->where('Id', $this->data['bank_id'])->first();
+
+			if (!$bank_card) {
+				throw new Exception("没有找到该卡", 8996);
+			}
+
+			$money = (float)$this->data['money'];
+
+			$user = User::where('Id', $this->user->UserId)->first();
+
+			if ($user->Account > $money) {
+				throw new Exception("最多可提现".$user->Account, 1003);
+			}
+
 			$params = array(
-				'user_id' => '82',
-				'money' => '10.00',
+				'user_id' => $this->user->UserId,
+				'money' => $money,
 				'feeType' => 'RECEIVER',
 				'remark' => '',
-				'hlb_bindId' => '8a6019b556ad4cf7a79a61d388989a68',
+				'hlb_bindId' => $bank_card->BankId,
 			);
+
+			// $params = array(
+			// 	'user_id' => '82',
+			// 	'money' => '1.00',
+			// 	'feeType' => 'RECEIVER',
+			// 	'remark' => '',
+			// 	'hlb_bindId' => '8a6019b556ad4cf7a79a61d388989a68',
+			// );
 
 			$pay = new Pay('HLBPay');
 			// 提现 到借记卡
 			$pay->settle();
 			$pay->setParams($params);
+
+			// 生成账单
+			$bill_id = Bill::createBill(array(
+				'CreditId' => $bank_card->Id,
+				'UserId' => $params['user_id'],
+				'money' => $params['money'],
+				'Type' => 2, // 提现
+				'bank_number' => $bank_card->BankNumber,
+				'OrderNum' => $pay->getOrderId(),
+				'feeType' => $params['feeType'],
+			));
+
 			$pay->sendRequest();
 
 			$result = $pay->getResult();
-			print_r($result);
-			if ($result['action'] != 1) { throw new Exception($result['msg'], $result['code']);}
 
+			if ($result['action'] != 1) { throw new Exception('错误代码：'.$result['code'].','.$result['msg'], $result['code']);}
 
+			// 扣除余额
 
-		// } catch (Exception $e) {
-		// 	echo $e->getMessage();
-		// }
+			Bill::billUpdate($bill_id, 'SUCCESS');
+
+			User::where('Id', $this->user->UserId)->decrement('Account', (float)$money);
+
+			return json_encode(array('code'=> '200', 'msg'=> '提现成功!'));
+		} catch (Exception $e) {
+			return json_encode(array('code'=> (string)$e->getCode(), 'msg'=> $e->getMessage()));
+		}
 	}
 
+	// 支付  通过银行卡还款  通过
 	function getPay()
 	{
 		try {
+
+			// 测试数据
+			// $this->data['bank_id'] = 1;
+			// $this->data['money'] = '1.00';
+			// $this->data['goods_name'] = '特产';
+			// $this->data['goods_desc'] = '特色产品';
+			// $this->data['server_mac'] = '00-50-56-C0-00-08';
+			// $this->data['validateCode'] = '184216';
+			// $user = new stdClass();
+			// $user->UserId = 82;
+			// $this->user = $user;
+			
+			$money = (float)$this->data['money'];
 
 			$bank_card = BankdCard::where('UserId', $this->user->UserId)->where('Id', $this->data['bank_id'])->first();
 
@@ -278,8 +365,12 @@ class PayController extends BaseController
 				throw new Exception("没有找到该卡", 8996);
 			}
 
-			if (is_numeric($this->data['money'])) {
+			if (!is_numeric($money)) {
 				throw new Exception("金额必须为数字", 8995);
+			}
+
+			if ($money < 1) {
+				throw new Exception("金额过低，最小金额1", 8995);
 			}
 
 			$params = array(
@@ -290,20 +381,39 @@ class PayController extends BaseController
 				'goods_desc' => $this->data['goods_desc'],
 				'server_mac' => $this->data['server_mac'],
 				'server_ip'	 => $_SERVER['SERVER_ADDR'],
-				'callback_url' => $_SERVER['HTTP_HOST']. '/', // backurl
+				'callback_url' => $_SERVER['HTTP_HOST']. '/dopay', // backurl
 				'validateCode' => $this->data['validateCode'],
 			);
 
 			$pay = new Pay('HLBPay');
 			$pay->pay(); // 支付
 			$pay->setParams($params);
+
+			// 生成账单
+			$bill_id = Bill::createBill(array(
+				'CreditId' => $bank_card->Id,
+				'UserId' => $params['user_id'],
+				'money' => $params['money'],
+				'Type' => 1, //  支付
+				'bank_number' => $bank_card->CreditNumber,
+				'OrderNum' => $pay->getOrderId(),
+				'feeType' => '', // 绑卡支付没有手续费
+			));
+
 			$pay->sendRequest();
 			
 			$result = $pay->getResult();
 
 			if ($result['action'] != 1) { throw new Exception($result['msg'], $result['code']);}
+			
+			Bill::billUpdate($bill_id, 'DOING'); //  账单修改为处理中
+			
+			// 成功数据测试
+			// $result = '{"rt10_bindId":"48cfb204ba8b4a3f870ea4c567399272","sign":"e50f22d892b279a4cd1e9137cc08def0","rt1_bizType":"QuickPayBindPay","rt9_orderStatus":"SUCCESS","rt6_serialNumber":"QUICKPAY1712041013326IF6","rt14_userId":"82","rt2_retCode":"0000","rt12_onlineCardType":"CREDIT","rt11_bankId":"CMBCHINA","rt13_cardAfterFour":"6880","rt5_orderId":"20171204101332499782","rt4_customerNumber":"C1800001108","rt8_orderAmount":"1.00","rt3_retMsg":"成功","rt7_completeDate":"2017-12-04 10:13:36"}';
+			// $result = json_decode($result, 1);
+			
 
-
+			return json_encode(array('code'=> '200', 'msg'=> '支付请求已发送'));
 
 		} catch (Exception $e) {
 			return $this->cbc_encode(json_encode(array('code'=> 0, 'msg'=> '错误代码：'.$e->getCode().','.$e->getMessage())));
@@ -311,34 +421,73 @@ class PayController extends BaseController
 		
 	}
 
+	// 验证支付成功 普通处理方式
 	function getDopay()
 	{
+		try {
+			DB::beginTransaction();
+			$rt_result = Input::all();
+			$pay = new Pay('HLBPay');
+			$result = $pay->getResult($rt_result);
 
+			if ($result['action'] != 1) { throw new Exception($result['msg'], $result['code']);}
+
+			// 获取账单 id
+			$bill_detail = BillDetail::where('OrderNum', $result['result']['rt5_orderId'])->first();
+			if (!$bill_detail) {
+				throw new Exception("没有找到账单", 2001);
+			}
+			$bill = Bill::where('Id', $bill_detail->BillId)->first();
+
+			if ($bill->status != 2) {
+				throw new Exception("账单已完成", 2002);
+			}
+
+			Bill::where('Id', $bill->Id)->update(array('status'=> 1));
+
+			// 添加余额
+			User::where('Id', $bill->UserId)->increment('Account', (float)$result['result']['rt8_orderAmount']);
+
+
+			DB::commit();
+			echo  'success';exit;
+		} catch (Exception $e) {
+			DB::rallback();
+			echo $e->getMessage().PHP_EOL;
+		}
 	}
-
+	// 支付短信  接口文档完成
 	function getPaycode()
 	{
 		try {
 
-			// $bank_card = BankdCard::where('UserId', $this->user->UserId)->where('Id', $this->data['bank_id'])->first();
+			// $this->data['bank_id'] = 1;
+			// $this->data['money'] = '1.00';
+			// $user = new stdClass();
+			// $user->UserId = 82;
+			// $user->Moblie = '18329042977';
+			// $this->user = $user;
 
-			// if (!$bank_card) {
-			// 	throw new Exception("没有找到该卡", 8996);
-			// }
+			$bank_card = BankdCard::where('UserId', $this->user->UserId)->where('Id', $this->data['bank_id'])->first();
 
-			// $params = array(
-			// 	'hlb_bindId' => $bank_card->CreditId,
-			// 	'user_id'	=> $this->user->UserId,
-			// 	'money'	=> $this->data['money'],
-			// 	'user_phone' => $this->user->Moblie,
-			// );
+			if (!$bank_card) {
+				throw new Exception("没有找到该卡", 8996);
+			}
 
+			$money = (float)$this->data['money'];
+
+			if ($money < 1) {
+				throw new Exception("金额过低，最小金额1", 8995);
+			}
+
+			
 			$params = array(
-				'hlb_bindId' => '12345',
-				'user_id'	=> '132',
-				'money'	=> '123.00',
-				'user_phone' => '18320904848',
+				'hlb_bindId' => $bank_card->CreditId,
+				'user_id'	=> $this->user->UserId,
+				'money'	=> $money,
+				'user_phone' => $this->user->Moblie,
 			);
+
 
 			$pay = new Pay('HLBPay');
 			$pay->payCode(); // 支付短信
@@ -346,7 +495,7 @@ class PayController extends BaseController
 			$pay->sendRequest();
 			
 			$result = $pay->getResult();
-print_r($result);exit;
+
 			if ($result['action'] != 1) { throw new Exception($result['msg'], $result['code']);}
 		
 			return $this->cbc_encode(json_encode(array('code'=> '200', 'msg'=> '发送成功!')));
@@ -356,6 +505,7 @@ print_r($result);exit;
 		
 	}
 
+	// 信用卡还款
 	function getRepay()
 	{
 		try {
@@ -366,20 +516,12 @@ print_r($result);exit;
 				throw new Exception("没有找到该卡", 8996);
 			}
 
-			$repay_id = Repay::insertGetId(array(
-				'OrderNum' => $result['result']['rt6_orderId'],
-				'Money' => $params['money'],
-				'UserId' => $params['user_id'],
-				'SerialNum' => $result['result']['rt7_serialNumber'],
-				'BankId' => $bank_card->Id,
-				'FeeType' => $params['feeType'],
-				'created_at' => date('Y-m-d H:i:s'),
-			));
+			$money = (float)$this->data['money'];
 
 			$params = array(
-				'user_id' => 1,
-				'hlb_bindId' => '12324',
-				'money' => '1.00',
+				'user_id' => $this->user->UserId,
+				'hlb_bindId' => $this->data['bindId'],
+				'money' => $money,
 				'feeType' => 'RECEIVER', // RECEIVER 收款方 自己      PAYER 付款方  用户
 				'remark' => '',
 			);
@@ -387,19 +529,43 @@ print_r($result);exit;
 			$pay = new Pay('HLBPay');
 			$pay->repay();
 			$pay->setParams($params);
+
+			// 生成账单
+			$bill_id = Bill::createBill(array(
+				'CreditId' => $bank_card->Id,
+				'UserId' => $params['user_id'],
+				'money' => $params['money'],
+				'Type' => 3, // 还款
+				'bank_number' => $bank_card->CreditNumber,
+				'OrderNum' => $pay->getOrderId(),
+				'feeType' => $params['feeType'],
+			));
+
+
 			$pay->sendRequest();
 
 			$result = $pay->getResult();
 
 			if ($result['action'] != 1) { throw new Exception($result['msg'], $result['code']);}
-	
 
-			// 还款成功  生成套现计划
-			Repay::where('Id', $repay_id)->update(array(
-				'status' => 1,
-			));
+			// 还款成功	
+			Bill::billUpdate($bill_id, 'SUCCESS');
 
-			
+			// $repay_id = Repay::insertGetId(array(
+			// 	'OrderNum' => $result['result']['rt6_orderId'],
+			// 	'Money' => $params['money'],
+			// 	'UserId' => $params['user_id'],
+			// 	// 'SerialNum' => $result['result']['rt7_serialNumber'],
+			// 	'BankId' => $bank_card->Id,
+			// 	'FeeType' => $params['feeType'],
+			// 	'created_at' => date('Y-m-d H:i:s'),
+			// 	'status' => 1,
+			// 	'SerialNum' => $result['result']['rt7_serialNumber'],
+			// ));
+
+			// 还款成功 
+
+			return json_encode(array('code'=> '200', 'msg'=> '还款成功!'));
 
 		} catch (Exception $e) {
 			return json_encode(array('code'=> $e->getCode(), 'msg'=> '错误代码：'.$e->getCode().','.$e->getMessage()));		
@@ -446,7 +612,7 @@ print_r($result);exit;
 			}
 			
 			$params = array(
-				'user_id' => '82',
+				'user_id' => $this->user->UserId,
 				'hlb_bindId' => $this->data['bindId'],
 			);
 

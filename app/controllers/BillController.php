@@ -11,7 +11,7 @@ class BillController extends BaseController
 	    $offset = $this->data['offset'] ? $this->data['offset'] : '0';
 	    $limit = $this->data['limit'] ? $this->data['limit'] : '20';
 	   
-	    $billList = Bill::where('UserId',$this->data['userId'])->skip($offset)->take($limit)->get();
+	    $billList = Bill::where('UserId',$this->user['UserId'])->skip($offset)->take($limit)->get();
 	    
         return array('billList'=>$billList);
 	}
@@ -27,7 +27,7 @@ class BillController extends BaseController
 	                               ->where('BillId',$this->data['billId'])
 	                               ->get();
 	     
-	    return array('billDetail'=>$billDetail);
+	    return $billDetail;
 	}
 
 

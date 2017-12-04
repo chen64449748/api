@@ -32,7 +32,7 @@ class BaseController extends Controller {
 			$token = $this->data['token'];
         	$this->user = User::where('token', $token)->first();
         	if ($this->user) {
-        		$this->id_card = UserContact::where("UserId", $this->user->UserId)
+        		$this->IdCard = UserContact::where("UserId", $this->user->UserId)
         			->where("CertType", 1)
         			->where("Isvalid", 1)
         			->where("IsActivated", 1)

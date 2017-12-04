@@ -15,6 +15,11 @@ class Pay
 		$this->pay_obj = $obj;
 	}
 
+	function getOrderId()
+	{
+		return $this->pay_obj->out_order_id;
+	}
+
 	function setParams($params)
 	{
 		$this->pay_obj->setParams($params);
@@ -25,9 +30,9 @@ class Pay
 		$this->pay_obj->sendRequest();
 	}
 
-	function getResult()
+	function getResult($result = null)
 	{
-		return $this->pay_obj->getResult();
+		return $this->pay_obj->getResult($result);
 	}
 
 	// 绑卡

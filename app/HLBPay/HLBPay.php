@@ -14,6 +14,7 @@ class HLBPay
 
 	// 私钥 测试
 	private $signkey = 'aFn0C3OTNYFAiKIK842uKt4kU58HueRL'; 
+	private $rt_signkey = 'WUiTnxTecFt5hhUdoJ7aQjjgaIuYAjUS';
 	// rsa 私钥
 	private $rsa_signkey = 'MIICdgIBADANBgkqhkiG9w0BAQEFAASCAmAwggJcAgEAAoGBAK5GQSOPqzt7o4xcgygdikqN1uY13J7Uu0nJdm/BtxPH1Y1qolPUw/lSCd83f7KnS/xS/THCVEwvUm2iOtQKIDj2A/SC7Jy+bZbbbrJqkx+61pgjuIFsKo7Wf/2OX59Nj1qQlWa99J3ZH/kEFxKd5V1moV9cCNpBZVoEYyhmBbajAgMBAAECgYAIDqt4T24lQ+Qd2zEdK7B3HfOvlRHsLf2yvaPCKvyh531SGnoC0jV1U3utXE2FHwL+WX/nSwrGsvFmrDd4EjfHFsqRvHm+TJfXoHtmkfvbVGI7bFl/3NbYdi76tqbth6W8k0gkPUsACs2ix8a4K7zxOO+UpOeUBIXrchDxFmj9sQJBAOgSHQAI5hr/3+rSQXlq2lET87Ew9Ib72Lwqri3vsHO/sysVTLAznuA+V8s+a4tUeA839a/tGLp1SaJhvma9/30CQQDAPoNFw4rYTm9vbQnrCb6Mm0l9GNpCD1c4ShTxHJyt8Gql0e1Sl3vc28AxyqHLq66abYDzOpnPGJ8AIpri4qifAkArJsMRsJXoy089gJ8ADqhNjyIu/mVZfBbO1jjQ/dKXkzujdTBvSwnttGnqts6Ud75jRgp/Dd0dPpXUhcw7mnSZAkEAmYeTKP0Afr0tS6ymNhojHoHJz+kwLX+45VBspx51loghc+pSgRpPplOti1ZLnq+uktAPIrDTM0xzdxUr4zSm+wJAV54yRQsZBkRmhPibmLeoe3lM6hcAwLqS+E1H09X92fBLqCtBAybDnf++hT2ATgtW+xgI+tFVbOqbi1QbLyw1kA==';
 	
@@ -26,12 +27,19 @@ class HLBPay
 	public $send_data; // 发送的参数
 	private $sign_str;
 	private $sign; // 签名
-	private $out_order_id; // 生成单号
+	protected $out_order_id; // 生成单号
 
 	public $response; // 返回
 	public $result; // 返回结果
 
 	public $rt_sign;
+
+	function __get($name)
+	{
+		if ($name == 'out_order_id') {
+			return $this->out_order_id;
+		}
+	}
 
 	function setType($type)
 	{
@@ -84,13 +92,17 @@ class HLBPay
 		}
 
 		$pageContents = HttpClient::quickPost($this->send_url, $this->send_data);
+		echo $pageContents;exit;
 		$this->response = $pageContents;
 		$result = json_decode($pageContents, 1);
 		$this->result = $result;
 	}
 
-	function getResult()
+	function getResult($result = null)
 	{
+		if (!is_null($result)) {
+			$this->result = $result;
+		}
 
 		// 验证签名
 		$rt_sign = $this->result['sign'];
@@ -203,12 +215,16 @@ class HLBPay
 				case '8999': // 系统异常，请联系管理员
 					$msg = '系统异常，请联系管理员';
 					break;
+
+				case '0002':
+					$msg = '接受失败';
+					break;
 				default :
 					$msg = $this->result['rt3_retMsg'];
 					break;
 			}
-
-			return array('action'=> 0, 'code'=> $this->result['rt2_retCode'], 'msg'=> $msg, 'result'=> $this->result);
+			
+			return array('action'=> 0, 'code'=> (string)$this->result['rt2_retCode'], 'msg'=> $msg, 'result'=> $this->result);
 		}	
 	}
 
@@ -227,7 +243,14 @@ class HLBPay
 			unset($tmp_sign_data['P8_bindId']);
 		}
 
-		$sign_str = '&'.implode('&', array_values($tmp_sign_data)).'&'.$this->signkey;
+		if ($this->type == 'pay') {
+			unset($tmp_sign_data['P17_validateCode'], $tmp_sign_data['P18_isIntegral'], $tmp_sign_data['P19_integralType'], $tmp_sign_data['P20_aptitudeCode']);
+		}
+
+
+		$signkey = $this->signkey;
+		
+		$sign_str = '&'.implode('&', array_values($tmp_sign_data)).'&'.$signkey;
 		$this->sign_str = $sign_str;
 		$sign = md5($sign_str);
 
@@ -473,7 +496,7 @@ class HLBPay
 			'P4_userId'				=> $params['user_id'],
 			'P5_orderId'			=> $this->getOrderId(),
 			'P6_timestamp'			=> date('YmdHis'),
-			'P7_currenc'			=> 'CNY',
+			'P7_currency'			=> 'CNY',
 			'P8_orderAmount'		=> round($params['money'], 2),
 			'P9_goodsName'      	=> $params['goods_name'],
 			'P10_goodsDesc'			=> $params['goods_desc'],
@@ -484,6 +507,9 @@ class HLBPay
 			'P15_periodUnit'		=> 'Hour',
 			'P16_serverCallbackUrl' => $params['callback_url'],
 			'P17_validateCode'		=> $params['validateCode'],
+			'P18_isIntegral'		=> 'TRUE',
+			'P19_integralType'		=> 'DISCOUNTS',
+			'P20_aptitudeCode'		=> '',
 		);
 	}
 
@@ -814,10 +840,37 @@ class HLBPay
 			$sign_str .= '&'.$value;
 		}
 
+		$sign_str .= '&'.$this->rt_signkey;
+		$this->rt_sign = md5($sign_str);
+	}
+
+	/*异步通知确认*/
+
+	function rtQuickPayConfirmPay($params)
+	{
+		$rt_sign_arr = array(
+			'rt1_bizType' 			=> $params['rt1_bizType'],
+			'rt2_retCode' 			=> $params['rt2_retCode'],
+			'rt4_customerNumber'	=> $params['rt4_customerNumber'],
+			'rt5_orderId'			=> $params['rt5_orderId'],
+			'rt6_serialNumber'		=> $params['rt6_serialNumber'],
+			'rt7_completeDate'		=> $params['rt7_completeDate'],
+			'rt8_orderAmount'		=> $params['rt8_orderAmount'],
+			'rt9_orderStatus' 		=> $params['rt9_orderStatus'],
+			'rt10_bindId'			=> $params['rt10_bindId'],
+			'rt11_bankId'			=> $params['rt11_bankId'],
+			'rt12_onlineCardType'	=> $params['rt12_onlineCardType'],
+			'rt13_cardAfterFour'	=> $params['rt13_cardAfterFour'],
+			'rt14_userId'			=> $params['rt14_userId'],
+		);
+
+		$sign_str = '';
+
+		foreach ($rt_sign_arr as $key => $value) {
+			$sign_str .= '&'.$value;
+		}
+
 		$sign_str .= '&'.$this->signkey;
-		echo $sign_str; #待签名字符串
-		echo $this->send_data['P4_orderId']; # 订单号
-		exit;
 		$this->rt_sign = md5($sign_str);
 	}
 }	

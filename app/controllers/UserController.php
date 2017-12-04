@@ -347,18 +347,16 @@ class UserController extends BaseController
     {
         $type = $this->data['type'];
 
-        switch ($type) {
-            case 'bank':
-                $cards = BindCard::where("UserId", $this->user->UserId)->get();
-                break;
-            case 'credit':
-                $cards = CreditCard::where("UserId", $this->user->UserId)->get();
-                break;
-            default:
-                $cards = BindCard::where("UserId", $this->user->UserId)->get();
-                break;
+        try {
+            $cards = BankdCard::where("UserId", $this->user->UserId)
+                ->where("type", $type)
+                ->get();
+            return $this->cbc_encode(json_encode(array('code'=> 200, 'msg'=> '请求成功', 'data'=> $cards)));
+        } catch (Exception $e) {
+            return $this->cbc_encode(json_encode(array('code'=> $e->getCode(), 'msg'=> $e->getMessage())));
         }
 
+        $cards = BinkdCard::where("UserId", $this->user->UserId)->get();
         return $this->cbc_encode(json_encode(array('code'=> 200, 'msg'=> '请求成功', 'data'=> $cards)));
     }
 

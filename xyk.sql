@@ -10,7 +10,7 @@ Target Server Type    : MYSQL
 Target Server Version : 50553
 File Encoding         : 65001
 
-Date: 2017-12-01 17:51:22
+Date: 2017-12-04 17:51:41
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -21,16 +21,16 @@ SET FOREIGN_KEY_CHECKS=0;
 DROP TABLE IF EXISTS `xyk_adminlog`;
 CREATE TABLE `xyk_adminlog` (
   `LogId` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `UserId` int(10) unsigned NOT NULL,
-  `LogType` int(11) NOT NULL DEFAULT '0',
+  `UserId` int(10) unsigned DEFAULT NULL,
+  `LogType` int(11) DEFAULT '0',
   `Description` text,
   `LoginIp` varchar(15) DEFAULT NULL,
-  `AddTime` datetime NOT NULL,
+  `AddTime` datetime DEFAULT NULL,
   `Ext1` varchar(50) DEFAULT NULL,
   `Ext2` varchar(50) DEFAULT NULL,
   `Ext3` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`LogId`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COMMENT='后台用户日志表';
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8 COMMENT='后台用户日志表';
 
 -- ----------------------------
 -- Records of xyk_adminlog
@@ -150,20 +150,23 @@ DROP TABLE IF EXISTS `xyk_billdetails`;
 CREATE TABLE `xyk_billdetails` (
   `Id` int(11) unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
   `BillId` int(11) unsigned NOT NULL COMMENT '账单ID',
-  `CreditId` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '信用卡id',
-  `BankId` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '银行卡id',
+  `CreditId` int(11) unsigned DEFAULT '0' COMMENT '信用卡id',
+  `BankId` int(11) unsigned DEFAULT '0' COMMENT '银行卡id',
   `UserId` int(11) unsigned DEFAULT NULL COMMENT '用户id',
-  `OrderNum` varchar(100) DEFAULT NULL COMMENT '订单编号',
-  `CardId` varchar(100) DEFAULT NULL COMMENT '交易卡号',
+  `OrderNum` varchar(100) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '订单编号',
+  `CardId` varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '交易卡号',
   `CreateTime` int(50) unsigned DEFAULT '0' COMMENT '创建时间',
   `AddTime` int(50) unsigned DEFAULT '0',
   `Amount` decimal(10,2) unsigned DEFAULT NULL COMMENT '交易金额',
+  `created_at` datetime DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL,
   PRIMARY KEY (`Id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COMMENT='账单详情表';
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='账单详情表';
 
 -- ----------------------------
 -- Records of xyk_billdetails
 -- ----------------------------
+INSERT INTO `xyk_billdetails` VALUES ('11', '13', '1', '0', '82', '20171204172311443364', '4294967295', '1512379391', '1512379391', '1.00', null, null);
 
 -- ----------------------------
 -- Table structure for xyk_billlistlog
@@ -171,19 +174,24 @@ CREATE TABLE `xyk_billdetails` (
 DROP TABLE IF EXISTS `xyk_billlistlog`;
 CREATE TABLE `xyk_billlistlog` (
   `Id` int(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '账单ID',
-  `CreditId` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '信用卡id',
-  `BankId` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '银行卡id',
+  `CreditId` int(11) DEFAULT NULL COMMENT '交易卡 id  ',
+  `BankId` int(11) DEFAULT NULL COMMENT '结算卡 id',
   `UserId` int(11) unsigned DEFAULT NULL COMMENT '用户id',
   `BackTime` int(50) unsigned DEFAULT '0' COMMENT '还款时间',
-  `statue` int(11) unsigned DEFAULT '0' COMMENT '还款状态; 0|失败；1|成功',
+  `status` int(11) unsigned DEFAULT '0' COMMENT '还款状态; 0|失败；1|成功; 2|处理中',
   `AddTime` int(50) unsigned DEFAULT '0',
   `Amount` decimal(10,2) unsigned DEFAULT NULL COMMENT '账单金额',
+  `created_at` datetime DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL,
+  `Type` int(11) DEFAULT NULL COMMENT '1 支付 2 提现',
+  `feeType` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '手续费类型',
   PRIMARY KEY (`Id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COMMENT='账单列表';
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='账单列表';
 
 -- ----------------------------
 -- Records of xyk_billlistlog
 -- ----------------------------
+INSERT INTO `xyk_billlistlog` VALUES ('13', '1', '0', '82', '0', '2', '1512379391', '1.00', '2017-12-04 17:23:11', '2017-12-04 17:23:11', '1', null);
 
 -- ----------------------------
 -- Table structure for xyk_category
@@ -931,7 +939,7 @@ CREATE TABLE `xyk_userbindccard` (
   `BankName` varchar(100) DEFAULT NULL COMMENT '银行卡名称',
   `BankNumber` varchar(50) NOT NULL DEFAULT '0' COMMENT '银行卡号',
   `IsDefault` tinyint(1) DEFAULT '0' COMMENT '是否默认（1|默认，0|不默认）',
-  `status` int(11) DEFAULT '0' COMMENT '状态; 1|正常 ； 0|冻结',
+  `status` int(11) DEFAULT '0' COMMENT '状态; 0|正常 ； 1|冻结',
   `AddTime` int(50) DEFAULT '0',
   PRIMARY KEY (`Id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COMMENT='用户绑定的银行卡';
@@ -950,8 +958,8 @@ CREATE TABLE `xyk_userbinddcard` (
   `CreditId` varchar(60) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT '0' COMMENT '信用卡id',
   `UserId` int(11) unsigned DEFAULT NULL COMMENT '用户id',
   `CreditName` varchar(100) DEFAULT NULL COMMENT '信用卡名称',
-  `CreditNumber` varchar(50) DEFAULT '0' COMMENT '信用卡号',
-  `status` int(11) unsigned DEFAULT '0' COMMENT '状态; 1|正常 ； 0|冻结  2|解绑',
+  `CreditNumber` varchar(100) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT '0' COMMENT '信用卡号',
+  `status` int(11) unsigned DEFAULT '0' COMMENT '状态; 0|正常 ； 1|冻结  2|解绑',
   `IsDefault` tinyint(1) unsigned DEFAULT '0' COMMENT '是否默认（1|默认；0|不默认）',
   `AddTime` int(50) DEFAULT '0',
   `CVN` int(10) unsigned DEFAULT NULL COMMENT 'SVN2码',
@@ -965,7 +973,7 @@ CREATE TABLE `xyk_userbinddcard` (
 -- ----------------------------
 -- Records of xyk_userbinddcard
 -- ----------------------------
-INSERT INTO `xyk_userbinddcard` VALUES ('1', '48cfb204ba8b4a3f870ea4c567399272', '82', '招商银行', '4294967295', '0', '1', '1512114970', '449', '15000.00', '0000-00-00 00:00:00', '0000-00-00 00:00:00', '2');
+INSERT INTO `xyk_userbinddcard` VALUES ('1', '48cfb204ba8b4a3f870ea4c567399272', '82', '招商银行', '6225768758046880', '0', '1', '1512114970', '449', '15000.00', '0000-00-00 00:00:00', '0000-00-00 00:00:00', '2');
 
 -- ----------------------------
 -- Table structure for xyk_userblacklist
