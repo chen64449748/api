@@ -36,11 +36,11 @@ class BillController extends BaseController
 	    
  	    if(!$billList->isEmpty()){
 	        foreach ($billList as $key => &$val){
-	            $val->creditNumber = '';
+	            $val->CreditNumber = '';
 	            $val->BankNumber = '';
 	            //获取信用卡号
 	            if($val->CreditId != ''){
-	                $val->creditNumber = BankdCard::where('Id',$val['CreditId'])->where('Type',2)->pluck('CreditNumber');
+	                $val->CreditNumber = BankdCard::where('Id',$val['CreditId'])->where('Type',2)->pluck('CreditNumber');
 	            }
 	            //获取银行卡号
 	            if($val->BankId != ''){

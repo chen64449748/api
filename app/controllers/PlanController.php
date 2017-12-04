@@ -230,7 +230,27 @@ class PlanController extends BaseController
 	public function getPlanlist(){
 	    $offset = $this->data['offset'] ? $this->data['offset'] : '0';
 	    $limit = $this->data['limit'] ? $this->data['limit'] : '20';
-	    $planList = Plan::where('UserId',$this->data['userId'])->orderBy('created_at','desc')->skip($offset)->take($limit)->get();
+	    $planList = Plan::where('UserId',$this->user['UserId'])
+            	    ->orderBy('created_at','desc')
+            	    ->skip($offset)
+            	    ->take($limit)
+            	    ->get();
+	    
+	    if(!$planList->isEmpty()){
+	        foreach ($planList as $key => &$val){
+	            $val->BankNumber = '';
+	            $val->UserName = '';
+	            //获取银行卡卡号
+	            if($val->BankId != ''){
+	                $val->BankNumber = BankcCard::where('Id',$val['BankId'])->pluck('BankNumber');
+	            }
+	            //获取用户名
+	            if($val->UserId != ''){
+	                $val->UserName = User::where('UserId',$val['UserId'])->pluck('Username');
+	            }
+	            
+	        }
+	    }
 	    
 	    return array('planList'=>$planList);
 	}
@@ -239,11 +259,20 @@ class PlanController extends BaseController
 	 * 计划详情
 	 */
 	public function getPlandetail(){
-	    $offset = $this->data['offset'] ? $this->data['offset'] : '0';
-	    $limit = $this->data['limit'] ? $this->data['limit'] : '20';
 	    $planId = $this->data['planId'] ? $this->data['planId'] : '1';
-	    $planDetail = PlanDetail::where('PlanId',$planId)->orderBy('created_at','desc')->skip($offset)->take($limit)->get();
-	     
+	    $planDetail = PlanDetail::where('PlanId',$planId)->orderBy('created_at','desc')->get();
+	    
+	    if(!$planDetail->isEmpty()){
+	        foreach ($planDetail as $key => &$val){
+	            $val->BankNumber = '';
+	            //获取银行卡卡号
+	            if($val->BankId != ''){
+	                $val->BankNumber = BankcCard::where('Id',$val['BankId'])->pluck('BankNumber');
+	            }
+	             
+	        }
+	    }
+	    
 	    return array('planDetail'=>$planDetail);
 	}
 
