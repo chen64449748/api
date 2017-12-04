@@ -84,7 +84,6 @@ class HLBPay
 		}
 
 		$pageContents = HttpClient::quickPost($this->send_url, $this->send_data);
-		echo $pageContents;exit;
 		$this->response = $pageContents;
 		$result = json_decode($pageContents, 1);
 		$this->result = $result;
@@ -245,7 +244,13 @@ class HLBPay
 	// rsa 签名
 	function ras_sign()
 	{
-		$sign_str = '&'.implode('&', array_values($this->send_data));
+		$tmp_sign_data = $this->send_data;
+
+		if ($this->type == 'settle') {
+			unset($tmp_sign_data['P8_bindId']);
+		}
+
+		$sign_str = '&'.implode('&', array_values($tmp_sign_data));
 		$this->sign_str = $sign_str;
 		$this->crypt_rsa->setHash('md5');
 		$this->crypt_rsa->setSignatureMode(CRYPT_RSA_SIGNATURE_PKCS1);
@@ -802,7 +807,7 @@ class HLBPay
 			'rt6_orderId'			=> $params['rt6_orderId'],
 			'rt7_serialNumber'		=> $params['rt7_serialNumber'],
 		);
-
+		
 		$sign_str = '';
 
 		foreach ($rt_sign_arr as $key => $value) {
@@ -810,6 +815,9 @@ class HLBPay
 		}
 
 		$sign_str .= '&'.$this->signkey;
+		echo $sign_str; #待签名字符串
+		echo $this->send_data['P4_orderId']; # 订单号
+		exit;
 		$this->rt_sign = md5($sign_str);
 	}
 }	
