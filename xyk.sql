@@ -10,7 +10,7 @@ Target Server Type    : MYSQL
 Target Server Version : 50540
 File Encoding         : 65001
 
-Date: 2017-12-05 22:35:24
+Date: 2017-12-06 00:28:07
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -161,12 +161,24 @@ CREATE TABLE `xyk_billdetails` (
   `created_at` datetime DEFAULT NULL,
   `updated_at` datetime DEFAULT NULL,
   PRIMARY KEY (`Id`)
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='账单详情表';
+) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='账单详情表';
 
 -- ----------------------------
 -- Records of xyk_billdetails
 -- ----------------------------
 INSERT INTO `xyk_billdetails` VALUES ('11', '13', '1', '0', '82', '20171204172311443364', '4294967295', '1512379391', '1512379391', '1.00', null, null);
+INSERT INTO `xyk_billdetails` VALUES ('12', '15', '1', '0', '82', '20171205235905212236', '6225768758046880', '1512489545', '1512489545', '2427.00', null, null);
+INSERT INTO `xyk_billdetails` VALUES ('13', '16', '1', '0', '82', '20171205235906200873', '6225768758046880', '1512489546', '1512489546', '1785.00', null, null);
+INSERT INTO `xyk_billdetails` VALUES ('14', '17', '1', '0', '82', '20171205235906537110', '6225768758046880', '1512489546', '1512489546', '788.00', null, null);
+INSERT INTO `xyk_billdetails` VALUES ('15', '18', '1', '0', '82', '20171206001052740496', '6225768758046880', '1512490252', '1512490252', '2427.00', null, null);
+INSERT INTO `xyk_billdetails` VALUES ('16', '19', '1', '0', '82', '20171206001052357099', '6225768758046880', '1512490252', '1512490252', '1170.00', null, null);
+INSERT INTO `xyk_billdetails` VALUES ('17', '20', '1', '0', '82', '20171206001052594847', '6225768758046880', '1512490252', '1512490252', '1257.00', null, null);
+INSERT INTO `xyk_billdetails` VALUES ('18', '21', '1', '0', '82', '20171206001052833993', '6225768758046880', '1512490252', '1512490252', '1785.00', null, null);
+INSERT INTO `xyk_billdetails` VALUES ('19', '22', '1', '0', '82', '20171206001052992165', '6225768758046880', '1512490252', '1512490252', '765.00', null, null);
+INSERT INTO `xyk_billdetails` VALUES ('20', '23', '1', '0', '82', '20171206001052136874', '6225768758046880', '1512490252', '1512490252', '1020.00', null, null);
+INSERT INTO `xyk_billdetails` VALUES ('21', '24', '1', '0', '82', '20171206001052579486', '6225768758046880', '1512490252', '1512490252', '788.00', null, null);
+INSERT INTO `xyk_billdetails` VALUES ('22', '25', '1', '0', '82', '20171206001052172240', '6225768758046880', '1512490252', '1512490252', '384.00', null, null);
+INSERT INTO `xyk_billdetails` VALUES ('23', '26', '1', '0', '82', '20171206001052512287', '6225768758046880', '1512490252', '1512490252', '404.00', null, null);
 
 -- ----------------------------
 -- Table structure for xyk_billlistlog
@@ -188,13 +200,25 @@ CREATE TABLE `xyk_billlistlog` (
   `TableId` int(11) DEFAULT NULL COMMENT '业务表ID',
   `PayBankId` int(11) DEFAULT NULL COMMENT '如果设置了 使用银行卡来收取保证金 字段为银行卡id',
   PRIMARY KEY (`Id`)
-) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='账单列表';
+) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='账单列表';
 
 -- ----------------------------
 -- Records of xyk_billlistlog
 -- ----------------------------
 INSERT INTO `xyk_billlistlog` VALUES ('13', '1', '0', '82', '0', '2', '1512379391', '1.00', '2017-11-30 23:59:59', '2017-12-04 17:23:11', '1', null, null, null);
 INSERT INTO `xyk_billlistlog` VALUES ('14', '1', '0', '82', '0', '2', '1512379391', '1.00', '2017-12-01 00:00:00', '2017-12-04 17:23:11', '1', '', null, null);
+INSERT INTO `xyk_billlistlog` VALUES ('15', '1', '0', '82', '0', '1', '1512489545', '2427.00', '2017-12-05 23:59:05', '2017-12-05 23:59:06', '3', 'RECEIVER', null, null);
+INSERT INTO `xyk_billlistlog` VALUES ('16', '1', '0', '82', '0', '1', '1512489546', '1785.00', '2017-12-05 23:59:06', '2017-12-05 23:59:06', '3', 'RECEIVER', null, null);
+INSERT INTO `xyk_billlistlog` VALUES ('17', '1', '0', '82', '0', '1', '1512489546', '788.00', '2017-12-05 23:59:06', '2017-12-05 23:59:06', '3', 'RECEIVER', null, null);
+INSERT INTO `xyk_billlistlog` VALUES ('18', '1', '0', '82', '0', '1', '1512490252', '2427.00', '2017-12-06 00:10:52', '2017-12-06 00:10:52', '3', 'RECEIVER', null, null);
+INSERT INTO `xyk_billlistlog` VALUES ('19', '1', '0', '82', '0', '1', '1512490252', '1170.00', '2017-12-06 00:10:52', '2017-12-06 00:10:52', '4', '', null, null);
+INSERT INTO `xyk_billlistlog` VALUES ('20', '1', '0', '82', '0', '1', '1512490252', '1257.00', '2017-12-06 00:10:52', '2017-12-06 00:10:52', '4', '', null, null);
+INSERT INTO `xyk_billlistlog` VALUES ('21', '1', '0', '82', '0', '1', '1512490252', '1785.00', '2017-12-06 00:10:52', '2017-12-06 00:10:52', '3', 'RECEIVER', null, null);
+INSERT INTO `xyk_billlistlog` VALUES ('22', '1', '0', '82', '0', '1', '1512490252', '765.00', '2017-12-06 00:10:52', '2017-12-06 00:10:52', '4', '', null, null);
+INSERT INTO `xyk_billlistlog` VALUES ('23', '1', '0', '82', '0', '1', '1512490252', '1020.00', '2017-12-06 00:10:52', '2017-12-06 00:10:52', '4', '', null, null);
+INSERT INTO `xyk_billlistlog` VALUES ('24', '1', '0', '82', '0', '1', '1512490252', '788.00', '2017-12-06 00:10:52', '2017-12-06 00:10:52', '3', 'RECEIVER', null, null);
+INSERT INTO `xyk_billlistlog` VALUES ('25', '1', '0', '82', '0', '1', '1512490252', '384.00', '2017-12-06 00:10:52', '2017-12-06 00:10:52', '4', '', null, null);
+INSERT INTO `xyk_billlistlog` VALUES ('26', '1', '0', '82', '0', '1', '1512490252', '404.00', '2017-12-06 00:10:52', '2017-12-06 00:10:52', '4', '', null, null);
 
 -- ----------------------------
 -- Table structure for xyk_category
@@ -681,12 +705,12 @@ CREATE TABLE `xyk_plan` (
   `res` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '失败原因 只有状态5 出现',
   `PayBankId` int(11) DEFAULT NULL COMMENT '扣款的银行卡  如果是0  走余额',
   PRIMARY KEY (`Id`)
-) ENGINE=InnoDB AUTO_INCREMENT=114 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=181 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- ----------------------------
 -- Records of xyk_plan
 -- ----------------------------
-INSERT INTO `xyk_plan` VALUES ('107', '2017-11-28 00:00:00', '2017-11-29 23:59:59', '0', '2017-12-05 14:34:23', null, '1', '1', '5000.00', '15', '2500.00', null, null);
+INSERT INTO `xyk_plan` VALUES ('180', '2017-12-05 00:00:00', '2017-12-06 23:59:59', '1', '2017-12-05 23:50:25', '2017-12-06 00:10:52', '82', '1', '5000.00', '15', '2500.00', '', '0');
 
 -- ----------------------------
 -- Table structure for xyk_plan_detail
@@ -707,20 +731,20 @@ CREATE TABLE `xyk_plan_detail` (
   `Batch` varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '批次 用于标注  哪个套现跟哪个还款是一组的',
   `sort` int(11) DEFAULT NULL,
   PRIMARY KEY (`Id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1525 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=1958 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- ----------------------------
 -- Records of xyk_plan_detail
 -- ----------------------------
-INSERT INTO `xyk_plan_detail` VALUES ('1516', '107', '2017-12-05 14:34:23', null, '2452.00', '1', '2017-11-28 10:06:14', '0', null, '1', null, '201712051434236990830', '1');
-INSERT INTO `xyk_plan_detail` VALUES ('1517', '107', '2017-12-05 14:34:23', '2017-12-05 14:34:23', '895.00', '2', '2017-11-28 16:29:54', '0', null, '1', null, '201712051434236990830', '2');
-INSERT INTO `xyk_plan_detail` VALUES ('1518', '107', '2017-12-05 14:34:23', '2017-12-05 14:34:23', '1557.00', '2', '2017-11-28 18:18:42', '0', null, '1', null, '201712051434236990830', '3');
-INSERT INTO `xyk_plan_detail` VALUES ('1519', '107', '2017-12-05 14:34:23', null, '1873.00', '1', '2017-11-28 23:49:13', '0', null, '1', null, '201712051434239718221', '4');
-INSERT INTO `xyk_plan_detail` VALUES ('1520', '107', '2017-12-05 14:34:23', '2017-12-05 14:34:23', '823.00', '2', '2017-11-29 09:14:21', '0', null, '1', null, '201712051434239718221', '5');
-INSERT INTO `xyk_plan_detail` VALUES ('1521', '107', '2017-12-05 14:34:23', '2017-12-05 14:34:23', '1050.00', '2', '2017-11-29 14:52:20', '0', null, '1', null, '201712051434239718221', '6');
-INSERT INTO `xyk_plan_detail` VALUES ('1522', '107', '2017-12-05 14:34:23', null, '675.00', '1', '2017-11-29 20:53:12', '0', null, '1', null, '201712051434239479462', '7');
-INSERT INTO `xyk_plan_detail` VALUES ('1523', '107', '2017-12-05 14:34:23', '2017-12-05 14:34:23', '254.00', '2', '2017-11-29 22:39:36', '0', null, '1', null, '201712051434239479462', '8');
-INSERT INTO `xyk_plan_detail` VALUES ('1524', '107', '2017-12-05 14:34:23', '2017-12-05 14:34:23', '421.00', '2', '2017-11-29 23:08:43', '0', null, '1', null, '201712051434239479462', '9');
+INSERT INTO `xyk_plan_detail` VALUES ('1949', '180', '2017-12-05 23:50:25', '2017-12-06 00:10:52', '2427.00', '1', '2017-12-05 21:47:10', '0', '20171206001052740496', '1', null, '201712052350254842440', '1');
+INSERT INTO `xyk_plan_detail` VALUES ('1950', '180', '2017-12-05 23:50:25', '2017-12-06 00:10:52', '1170.00', '2', '2017-12-05 22:48:45', '0', '20171206001052357099', '1', null, '201712052350254842440', '2');
+INSERT INTO `xyk_plan_detail` VALUES ('1951', '180', '2017-12-05 23:50:25', '2017-12-06 00:10:52', '1257.00', '2', '2017-12-05 22:48:45', '0', '20171206001052594847', '1', null, '201712052350254842440', '3');
+INSERT INTO `xyk_plan_detail` VALUES ('1952', '180', '2017-12-05 23:50:25', '2017-12-06 00:10:52', '1785.00', '1', '2017-12-06 09:16:00', '0', '20171206001052833993', '1', null, '201712052350256257531', '4');
+INSERT INTO `xyk_plan_detail` VALUES ('1953', '180', '2017-12-05 23:50:25', '2017-12-06 00:10:52', '765.00', '2', '2017-12-06 09:21:35', '0', '20171206001052992165', '1', null, '201712052350256257531', '5');
+INSERT INTO `xyk_plan_detail` VALUES ('1954', '180', '2017-12-05 23:50:25', '2017-12-06 00:10:52', '1020.00', '2', '2017-12-06 09:49:53', '0', '20171206001052136874', '1', null, '201712052350256257531', '6');
+INSERT INTO `xyk_plan_detail` VALUES ('1955', '180', '2017-12-05 23:50:25', '2017-12-06 00:10:52', '788.00', '1', '2017-12-06 09:51:46', '0', '20171206001052579486', '1', null, '201712052350253859212', '7');
+INSERT INTO `xyk_plan_detail` VALUES ('1956', '180', '2017-12-05 23:50:25', '2017-12-06 00:10:52', '384.00', '2', '2017-12-06 10:56:21', '0', '20171206001052172240', '1', null, '201712052350253859212', '8');
+INSERT INTO `xyk_plan_detail` VALUES ('1957', '180', '2017-12-05 23:50:25', '2017-12-06 00:10:52', '404.00', '2', '2017-12-06 16:34:18', '0', '20171206001052512287', '1', null, '201712052350253859212', '9');
 
 -- ----------------------------
 -- Table structure for xyk_refund
@@ -993,7 +1017,7 @@ CREATE TABLE `xyk_userbinddcard` (
 -- ----------------------------
 -- Records of xyk_userbinddcard
 -- ----------------------------
-INSERT INTO `xyk_userbinddcard` VALUES ('1', '48cfb204ba8b4a3f870ea4c567399272', '82', '招商银行', '6225768758046880', '0', '1', '1512114970', '449', '15000.00', '2017-11-28 00:00:00', '2017-11-29 23:59:59', '2');
+INSERT INTO `xyk_userbinddcard` VALUES ('1', '48cfb204ba8b4a3f870ea4c567399272', '82', '招商银行', '6225768758046880', '0', '1', '1512114970', '449', '15000.00', '2017-12-05 00:00:00', '2017-12-06 23:59:59', '2');
 
 -- ----------------------------
 -- Table structure for xyk_userblacklist
