@@ -60,6 +60,10 @@ class PayRepay extends Command {
 		    			break; # 处理中状态
 		    		}
 
+		    		if ($value->status == 1) {
+		    			continue; # 已处理的跳过
+		    		}
+
 		    		// 时间未到 不做处理
 		    		if (strtotime($value->PayTime) > time()) {
 		    			continue;
@@ -173,7 +177,7 @@ class PayRepay extends Command {
 		    	}
 
 		    }
-		    
+
 		});
 
 
