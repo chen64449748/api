@@ -112,6 +112,7 @@ class PayRepay extends Command {
 		    		} else if ($value->Type == 2) {
 		    			// 消费 如果还款为成功 一直跳过
 		    			if ($continue_batch == $value->Batch) {
+		    				$this->info('计划ID:'. $plan->Id.', 批次号：'.$value->Batch.'还款不成功跳过');
 		    				continue;
 		    			}
 		    			try {
