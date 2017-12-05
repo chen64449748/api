@@ -10,7 +10,7 @@ Target Server Type    : MYSQL
 Target Server Version : 50553
 File Encoding         : 65001
 
-Date: 2017-12-04 17:51:41
+Date: 2017-12-05 17:29:12
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -183,15 +183,18 @@ CREATE TABLE `xyk_billlistlog` (
   `Amount` decimal(10,2) unsigned DEFAULT NULL COMMENT '账单金额',
   `created_at` datetime DEFAULT NULL,
   `updated_at` datetime DEFAULT NULL,
-  `Type` int(11) DEFAULT NULL COMMENT '1 支付 2 提现',
+  `Type` int(11) DEFAULT NULL COMMENT '1 充值 2 提现 3 还款 4 还款消费 5 保证金收取 6 保证金返还',
   `feeType` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '手续费类型',
+  `TableId` int(11) DEFAULT NULL COMMENT '业务表ID',
+  `PayBankId` int(11) DEFAULT NULL COMMENT '如果设置了 使用银行卡来收取保证金 字段为银行卡id',
   PRIMARY KEY (`Id`)
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='账单列表';
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='账单列表';
 
 -- ----------------------------
 -- Records of xyk_billlistlog
 -- ----------------------------
-INSERT INTO `xyk_billlistlog` VALUES ('13', '1', '0', '82', '0', '2', '1512379391', '1.00', '2017-12-04 17:23:11', '2017-12-04 17:23:11', '1', null);
+INSERT INTO `xyk_billlistlog` VALUES ('13', '1', '0', '82', '0', '2', '1512379391', '1.00', '2017-11-30 23:59:59', '2017-12-04 17:23:11', '1', null, null, null);
+INSERT INTO `xyk_billlistlog` VALUES ('14', '1', '0', '82', '0', '2', '1512379391', '1.00', '2017-12-01 00:00:00', '2017-12-04 17:23:11', '1', '', null, null);
 
 -- ----------------------------
 -- Table structure for xyk_category
@@ -294,6 +297,21 @@ CREATE TABLE `xyk_dictype` (
 -- ----------------------------
 -- Records of xyk_dictype
 -- ----------------------------
+
+-- ----------------------------
+-- Table structure for xyk_fee
+-- ----------------------------
+DROP TABLE IF EXISTS `xyk_fee`;
+CREATE TABLE `xyk_fee` (
+  `Id` int(11) NOT NULL AUTO_INCREMENT,
+  `PlanFee` decimal(10,2) DEFAULT NULL,
+  PRIMARY KEY (`Id`)
+) ENGINE=MyISAM AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+-- ----------------------------
+-- Records of xyk_fee
+-- ----------------------------
+INSERT INTO `xyk_fee` VALUES ('1', '5.00');
 
 -- ----------------------------
 -- Table structure for xyk_jyexception
@@ -652,47 +670,22 @@ CREATE TABLE `xyk_plan` (
   `Id` int(11) NOT NULL AUTO_INCREMENT COMMENT '计划表',
   `StartDate` datetime DEFAULT NULL,
   `EndDate` datetime DEFAULT NULL,
-  `status` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `status` int(11) DEFAULT NULL COMMENT '0 初始化 ； 1 保证金已打， 计划执行中 ； 2 计划完成，等待退保证金； 3 保证金退还完成; 4 保证金收取中； 5 失败',
   `created_at` datetime DEFAULT NULL,
   `updated_at` datetime DEFAULT NULL,
   `UserId` int(11) DEFAULT NULL,
   `BankId` int(11) DEFAULT NULL,
   `TotalMoney` decimal(10,2) DEFAULT NULL COMMENT '还款总金额',
   `fee` decimal(10,0) DEFAULT NULL COMMENT '手续费',
+  `CashDeposit` decimal(10,2) DEFAULT NULL,
+  `res` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '失败原因 只有状态5 出现',
   PRIMARY KEY (`Id`)
-) ENGINE=InnoDB AUTO_INCREMENT=107 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=108 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- ----------------------------
 -- Records of xyk_plan
 -- ----------------------------
-INSERT INTO `xyk_plan` VALUES ('14', '2017-11-28 10:00:00', '2017-11-29 10:00:00', '1', '2017-11-30 16:54:19', '2017-11-30 16:54:19', '1', '1', '10000.00', null);
-INSERT INTO `xyk_plan` VALUES ('15', '2017-11-28 10:00:00', '2017-11-29 10:00:00', '0', '2017-11-30 17:25:45', null, '1', '1', '10000.00', null);
-INSERT INTO `xyk_plan` VALUES ('16', '2017-11-28 10:00:00', '2017-11-29 10:00:00', '0', '2017-11-30 17:26:33', null, '1', '1', '10000.00', null);
-INSERT INTO `xyk_plan` VALUES ('17', '2017-11-28 10:00:00', '2017-11-29 10:00:00', '0', '2017-11-30 17:27:18', null, '1', '1', '10000.00', null);
-INSERT INTO `xyk_plan` VALUES ('18', '2017-11-28 10:00:00', '2017-11-29 10:00:00', '0', '2017-11-30 17:27:54', null, '1', '1', '10000.00', null);
-INSERT INTO `xyk_plan` VALUES ('19', '2017-11-28 10:00:00', '2017-11-29 10:00:00', '0', '2017-11-30 17:28:02', null, '1', '1', '10000.00', null);
-INSERT INTO `xyk_plan` VALUES ('20', '2017-11-28 10:00:00', '2017-11-29 10:00:00', '0', '2017-11-30 17:28:15', null, '1', '1', '10000.00', null);
-INSERT INTO `xyk_plan` VALUES ('21', '2017-11-28 10:00:00', '2017-11-29 10:00:00', '0', '2017-11-30 17:28:48', null, '1', '1', '10000.00', null);
-INSERT INTO `xyk_plan` VALUES ('22', '2017-11-28 10:00:00', '2017-11-29 10:00:00', '0', '2017-11-30 17:28:52', null, '1', '1', '10000.00', null);
-INSERT INTO `xyk_plan` VALUES ('23', '2017-11-28 10:00:00', '2017-11-29 10:00:00', '0', '2017-11-30 17:28:52', null, '1', '1', '10000.00', null);
-INSERT INTO `xyk_plan` VALUES ('24', '2017-11-28 10:00:00', '2017-11-29 10:00:00', '0', '2017-11-30 17:28:53', null, '1', '1', '10000.00', null);
-INSERT INTO `xyk_plan` VALUES ('25', '2017-11-28 10:00:00', '2017-11-29 10:00:00', '0', '2017-11-30 17:28:53', null, '1', '1', '10000.00', null);
-INSERT INTO `xyk_plan` VALUES ('26', '2017-11-28 10:00:00', '2017-11-29 10:00:00', '0', '2017-11-30 17:28:54', null, '1', '1', '10000.00', null);
-INSERT INTO `xyk_plan` VALUES ('27', '2017-11-28 10:00:00', '2017-11-29 10:00:00', '0', '2017-11-30 17:28:54', null, '1', '1', '10000.00', null);
-INSERT INTO `xyk_plan` VALUES ('28', '2017-11-28 10:00:00', '2017-11-29 10:00:00', '0', '2017-11-30 17:28:55', null, '1', '1', '10000.00', null);
-INSERT INTO `xyk_plan` VALUES ('29', '2017-11-28 10:00:00', '2017-11-29 10:00:00', '0', '2017-11-30 17:28:55', null, '1', '1', '10000.00', null);
-INSERT INTO `xyk_plan` VALUES ('30', '2017-11-28 10:00:00', '2017-11-29 10:00:00', '0', '2017-11-30 17:28:56', null, '1', '1', '10000.00', null);
-INSERT INTO `xyk_plan` VALUES ('31', '2017-11-28 10:00:00', '2017-11-29 10:00:00', '0', '2017-11-30 17:28:56', null, '1', '1', '10000.00', null);
-INSERT INTO `xyk_plan` VALUES ('32', '2017-11-28 10:00:00', '2017-11-29 10:00:00', '0', '2017-11-30 17:28:57', null, '1', '1', '10000.00', null);
-INSERT INTO `xyk_plan` VALUES ('33', '2017-11-28 10:00:00', '2017-11-29 10:00:00', '0', '2017-11-30 17:28:57', null, '1', '1', '10000.00', null);
-INSERT INTO `xyk_plan` VALUES ('34', '2017-11-28 10:00:00', '2017-11-29 10:00:00', '0', '2017-11-30 17:28:57', null, '1', '1', '10000.00', null);
-INSERT INTO `xyk_plan` VALUES ('35', '2017-11-28 10:00:00', '2017-11-29 10:00:00', '0', '2017-11-30 17:28:57', null, '1', '1', '10000.00', null);
-INSERT INTO `xyk_plan` VALUES ('36', '2017-11-28 10:00:00', '2017-11-29 10:00:00', '0', '2017-11-30 17:28:58', null, '1', '1', '10000.00', null);
-INSERT INTO `xyk_plan` VALUES ('37', '2017-11-28 10:00:00', '2017-11-29 10:00:00', '0', '2017-11-30 17:28:58', null, '1', '1', '10000.00', null);
-INSERT INTO `xyk_plan` VALUES ('38', '2017-11-28 10:00:00', '2017-11-29 10:00:00', '0', '2017-11-30 17:29:13', null, '1', '1', '10000.00', null);
-INSERT INTO `xyk_plan` VALUES ('39', '2017-11-28 10:00:00', '2017-11-29 10:00:00', '0', '2017-11-30 17:48:11', null, '1', '1', '10000.00', null);
-INSERT INTO `xyk_plan` VALUES ('40', '2017-11-28 10:00:00', '2017-11-29 10:00:00', '0', '2017-11-30 17:48:30', null, '1', '1', '10000.00', null);
-INSERT INTO `xyk_plan` VALUES ('41', '2017-11-28 10:00:00', '2017-11-29 10:00:00', '0', '2017-11-30 17:48:38', null, '1', '1', '10000.00', null);
+INSERT INTO `xyk_plan` VALUES ('107', '2017-11-28 00:00:00', '2017-11-29 23:59:59', '0', '2017-12-05 14:34:23', null, '1', '1', '5000.00', '15', '2500.00', null);
 
 -- ----------------------------
 -- Table structure for xyk_plan_detail
@@ -713,11 +706,20 @@ CREATE TABLE `xyk_plan_detail` (
   `Batch` varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '批次 用于标注  哪个套现跟哪个还款是一组的',
   `sort` int(11) DEFAULT NULL,
   PRIMARY KEY (`Id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1516 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=1525 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- ----------------------------
 -- Records of xyk_plan_detail
 -- ----------------------------
+INSERT INTO `xyk_plan_detail` VALUES ('1516', '107', '2017-12-05 14:34:23', null, '2452.00', '1', '2017-11-28 10:06:14', '0', null, '1', null, '201712051434236990830', '1');
+INSERT INTO `xyk_plan_detail` VALUES ('1517', '107', '2017-12-05 14:34:23', '2017-12-05 14:34:23', '895.00', '2', '2017-11-28 16:29:54', '0', null, '1', null, '201712051434236990830', '2');
+INSERT INTO `xyk_plan_detail` VALUES ('1518', '107', '2017-12-05 14:34:23', '2017-12-05 14:34:23', '1557.00', '2', '2017-11-28 18:18:42', '0', null, '1', null, '201712051434236990830', '3');
+INSERT INTO `xyk_plan_detail` VALUES ('1519', '107', '2017-12-05 14:34:23', null, '1873.00', '1', '2017-11-28 23:49:13', '0', null, '1', null, '201712051434239718221', '4');
+INSERT INTO `xyk_plan_detail` VALUES ('1520', '107', '2017-12-05 14:34:23', '2017-12-05 14:34:23', '823.00', '2', '2017-11-29 09:14:21', '0', null, '1', null, '201712051434239718221', '5');
+INSERT INTO `xyk_plan_detail` VALUES ('1521', '107', '2017-12-05 14:34:23', '2017-12-05 14:34:23', '1050.00', '2', '2017-11-29 14:52:20', '0', null, '1', null, '201712051434239718221', '6');
+INSERT INTO `xyk_plan_detail` VALUES ('1522', '107', '2017-12-05 14:34:23', null, '675.00', '1', '2017-11-29 20:53:12', '0', null, '1', null, '201712051434239479462', '7');
+INSERT INTO `xyk_plan_detail` VALUES ('1523', '107', '2017-12-05 14:34:23', '2017-12-05 14:34:23', '254.00', '2', '2017-11-29 22:39:36', '0', null, '1', null, '201712051434239479462', '8');
+INSERT INTO `xyk_plan_detail` VALUES ('1524', '107', '2017-12-05 14:34:23', '2017-12-05 14:34:23', '421.00', '2', '2017-11-29 23:08:43', '0', null, '1', null, '201712051434239479462', '9');
 
 -- ----------------------------
 -- Table structure for xyk_refund
@@ -929,6 +931,23 @@ CREATE TABLE `xyk_smstemplates` (
 -- ----------------------------
 
 -- ----------------------------
+-- Table structure for xyk_sys
+-- ----------------------------
+DROP TABLE IF EXISTS `xyk_sys`;
+CREATE TABLE `xyk_sys` (
+  `Id` int(11) NOT NULL AUTO_INCREMENT,
+  `mac` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'mac地址',
+  `ip` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `domain` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  PRIMARY KEY (`Id`)
+) ENGINE=MyISAM AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+-- ----------------------------
+-- Records of xyk_sys
+-- ----------------------------
+INSERT INTO `xyk_sys` VALUES ('1', '00-50-56-C0-00-08', '127.0.0.1', 'api.dev');
+
+-- ----------------------------
 -- Table structure for xyk_userbindccard
 -- ----------------------------
 DROP TABLE IF EXISTS `xyk_userbindccard`;
@@ -973,7 +992,7 @@ CREATE TABLE `xyk_userbinddcard` (
 -- ----------------------------
 -- Records of xyk_userbinddcard
 -- ----------------------------
-INSERT INTO `xyk_userbinddcard` VALUES ('1', '48cfb204ba8b4a3f870ea4c567399272', '82', '招商银行', '6225768758046880', '0', '1', '1512114970', '449', '15000.00', '0000-00-00 00:00:00', '0000-00-00 00:00:00', '2');
+INSERT INTO `xyk_userbinddcard` VALUES ('1', '48cfb204ba8b4a3f870ea4c567399272', '82', '招商银行', '6225768758046880', '0', '1', '1512114970', '449', '15000.00', '2017-11-28 00:00:00', '2017-11-29 23:59:59', '2');
 
 -- ----------------------------
 -- Table structure for xyk_userblacklist
