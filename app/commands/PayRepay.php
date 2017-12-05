@@ -57,7 +57,7 @@ class PayRepay extends Command {
 		    	$continue_batch = 0;
 		    	foreach ($plan_details as $key => $value) {
 		    		if ($value->status == 2) {
-		    			break; # 处理中状态
+		    			continue; # 处理中状态
 		    		}
 
 		    		if ($value->status == 1) {
