@@ -6,28 +6,57 @@
 class PlanController extends BaseController
 {
 	protected $user;
-
+	// d_time 同一天存在次数
 	private function getRandTime($times, $s_time, $e_time, &$arr = array())
 	{
 		$use_time = $e_time - $s_time;
 
-		$tmp_s_time = 3600;
+		$tmp_s_time = 1;
 
 		$pay_time_tmp = mt_rand($tmp_s_time, $use_time);
 
 		$pay_time = $s_time + $pay_time_tmp;
 
 		if ((int)date('H', $pay_time) >= 7 && (int)date('H', $pay_time) <= 22) {
+			
 			$arr[] = $pay_time;
 			if (count($arr) == $times * 100) {
-				return $arr;
+				return $pay_time;
 			} else {
 				$this->getRandTime($times, $s_time, $e_time, $arr);
 			}
+			
 		} else {
 			$this->getRandTime($times, $s_time, $e_time, $arr);
 		}
 	} 
+
+	private function getRandTimeDay($arr, $d_time = 2, $times)
+	{
+		$tmp_arr = array();
+		foreach ($arr as $key => $value) {
+			$tmp_arr[date('d', $value)][] = $value;
+		}
+
+		$r_arr = array();
+		$tmp_time = 0;
+		foreach ($tmp_arr as $tk => $tv) {
+			
+			$tmp_count = count($tv) - 1;
+						
+			for ($i=0; $i < $d_time; $i++) { 	
+				if ($tmp_time == $times) {
+					break;
+				}
+
+				$dk = mt_rand(0, $tmp_count);
+				$r_arr[] = $tv[$dk];
+				$tmp_time++;	
+			}
+		}
+
+		return $r_arr;
+	}
 
 	function getAdd()
 	{
@@ -76,14 +105,19 @@ class PlanController extends BaseController
 			
 			$plan_start_date = $bank_card->AccountDate;
 			$plan_end_date = $bank_card->RepaymentDate;
+			$d_time = 2; // 后台获取
 
-			if ( (int)date('H', strtotime($plan_start_date)) < 8) {
-				$plan_s_time = strtotime(date('Y-m-d 09:00:00', strtotime($plan_start_date)));
+			if (date('H') >= 21) {
+				throw new Exception("请在21点以前生成计划", 3003);				
+			}
+
+			if ( (int)date('d', strtotime($plan_start_date)) <= (int)date('d')) {
+				$plan_s_time = time();
 			} else {
 				$plan_s_time = strtotime($plan_start_date);
 			}
 
-			
+			// $plan_s_time = strtotime($plan_start_date);	# 测试		
 			$plan_e_time = strtotime($plan_end_date);
 
 			$this->user->UserId = 1;
@@ -125,16 +159,9 @@ class PlanController extends BaseController
 			// 生成时间
 			$arr = array();
 			$this->getRandTime($plan_time, $plan_s_time, $plan_e_time, $arr);
-			sort($arr);
-			$pay_t_arr = array();
-
-			for ($i = 0; $i < $plan_time; $i++) {
-				$pt_i = $i + 1; 
-				$ptk = mt_rand(100 * $i, 100 * $pt_i - 1);
-
-				$pay_t_arr[] = $arr[$ptk];
-			}
-
+			$pay_t_arr = $this->getRandTimeDay($arr, $d_time, $plan_time);
+			sort($pay_t_arr);
+		
 			$t_sort = 0;
 			// 生成还款计划
 			for ($i = 0; $i < $plan_time; $i++) { 
@@ -204,18 +231,19 @@ class PlanController extends BaseController
 				}
 			}
 
-			$this->getHuanpaytime($plan_id, $tao_time, $pay_t_arr, $plan_e_time);
+			$this->getHuanpaytime($plan_id, $tao_time, $pay_t_arr, $plan_e_time, $d_time);
 		
 			DB::commit();
 			return json_encode(array('code'=> '200', 'msg'=> '计划添加成功!'));
 		} catch (Exception $e) {
 			DB::rollback();
+			return json_encode(array('code'=> $e->getCode(), 'msg'=> $e->getMessage()));
 		}
 			
 
 	}
 	
-	private function getHuanpaytime($plan_id, $tao_time, $pay_t_arr, $plan_e_time)
+	private function getHuanpaytime($plan_id, $tao_time, $pay_t_arr, $plan_e_time, $d_time)
 	{
 	
 		$plan_detail = PlanDetail::where('PlanId', $plan_id)->where('Type', 1)->orderBy('sort', 'asc')->get();
@@ -227,19 +255,21 @@ class PlanController extends BaseController
 
 			if ($addkey == count($pay_t_arr)) {
 				$this->getRandTime($tao_time, $pay_t_arr[$key], $plan_e_time, $arr);
+				$huan_t_arr = $this->getRandTimeDay($arr, $d_time, $tao_time);
 			} else {
 				$this->getRandTime($tao_time, $pay_t_arr[$key], $pay_t_arr[$addkey], $arr);
+				$huan_t_arr = $this->getRandTimeDay($arr, $d_time, $tao_time);
 			}
 			
-			sort($arr);
-			$huan_t_arr = array();
+			sort($huan_t_arr);
+			// $huan_t_arr = array();
 
-			for ($i = 0; $i < $tao_time; $i++) {
-				$pt_i = $i + 1; 
-				$ptk = mt_rand(100 * $i, 100 * $pt_i - 1);
+			// for ($i = 0; $i < $tao_time; $i++) {
+			// 	$pt_i = $i + 1; 
+			// 	$ptk = mt_rand(50 * $i, 50 * $pt_i - 1);
 
-				$huan_t_arr[] = $arr[$ptk];
-			}
+			// 	$huan_t_arr[] = $arr[$ptk];
+			// }
 
 			for ($j=0; $j < $tao_time; $j++) { 
 				PlanDetail::where('PlanId', $value->PlanId)->where('Batch', $value->Batch)->take(1)->whereNull('PayTime')->update(array(

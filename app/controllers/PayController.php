@@ -314,7 +314,7 @@ class PayController extends BaseController
 
 			// 生成账单
 			$bill_id = Bill::createBill(array(
-				'CreditId' => $bank_card->Id,
+				'BankId' => $bank_card->Id,
 				'UserId' => $params['user_id'],
 				'money' => $params['money'],
 				'Type' => 2, // 提现

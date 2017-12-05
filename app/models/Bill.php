@@ -27,7 +27,7 @@ class Bill extends Eloquent
 		$bill_id = Bill::insertGetId(array(
 			'CreditId' => $data['CreditId'],
 			'BankId' => $data['BankId'],
-			'status' => 0,
+			'status' => 2, // 待查询
 			'UserId' => $data['UserId'],
 			'Amount' => $data['money'],
 			'AddTime' => $time,

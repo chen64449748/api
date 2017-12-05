@@ -1,16 +1,16 @@
 /*
 Navicat MySQL Data Transfer
 
-Source Server         : lzh
-Source Server Version : 50553
+Source Server         : local
+Source Server Version : 50540
 Source Host           : localhost:3306
 Source Database       : xyk
 
 Target Server Type    : MYSQL
-Target Server Version : 50553
+Target Server Version : 50540
 File Encoding         : 65001
 
-Date: 2017-12-05 17:29:12
+Date: 2017-12-05 22:35:24
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -679,13 +679,14 @@ CREATE TABLE `xyk_plan` (
   `fee` decimal(10,0) DEFAULT NULL COMMENT '手续费',
   `CashDeposit` decimal(10,2) DEFAULT NULL,
   `res` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '失败原因 只有状态5 出现',
+  `PayBankId` int(11) DEFAULT NULL COMMENT '扣款的银行卡  如果是0  走余额',
   PRIMARY KEY (`Id`)
-) ENGINE=InnoDB AUTO_INCREMENT=108 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=114 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- ----------------------------
 -- Records of xyk_plan
 -- ----------------------------
-INSERT INTO `xyk_plan` VALUES ('107', '2017-11-28 00:00:00', '2017-11-29 23:59:59', '0', '2017-12-05 14:34:23', null, '1', '1', '5000.00', '15', '2500.00', null);
+INSERT INTO `xyk_plan` VALUES ('107', '2017-11-28 00:00:00', '2017-11-29 23:59:59', '0', '2017-12-05 14:34:23', null, '1', '1', '5000.00', '15', '2500.00', null, null);
 
 -- ----------------------------
 -- Table structure for xyk_plan_detail
