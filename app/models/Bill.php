@@ -20,6 +20,10 @@ class Bill extends Eloquent
 			$data['CreditId'] = '';
 		}
 
+		if (!isset($data['TableId'])) {
+			$data['TableId'] = '';
+		}
+
 		$bill_id = Bill::insertGetId(array(
 			'CreditId' => $data['CreditId'],
 			'BankId' => $data['BankId'],

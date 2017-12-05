@@ -351,7 +351,6 @@ class PayController extends BaseController
 			// $this->data['money'] = '1.00';
 			// $this->data['goods_name'] = '特产';
 			// $this->data['goods_desc'] = '特色产品';
-			// $this->data['server_mac'] = '00-50-56-C0-00-08';
 			// $this->data['validateCode'] = '184216';
 			// $user = new stdClass();
 			// $user->UserId = 82;
@@ -360,6 +359,11 @@ class PayController extends BaseController
 			$money = (float)$this->data['money'];
 
 			$bank_card = BankdCard::where('UserId', $this->user->UserId)->where('Id', $this->data['bank_id'])->first();
+			$sys = DB::table('xyk_sys')->first();
+
+			if (!$sys) {
+				throw new Exception("商户未配置mac地址", 3003);
+			}
 
 			if (!$bank_card) {
 				throw new Exception("没有找到该卡", 8996);
@@ -379,9 +383,9 @@ class PayController extends BaseController
 				'money' => $this->data['money'],
 				'goods_name' => $this->data['goods_name'],
 				'goods_desc' => $this->data['goods_desc'],
-				'server_mac' => $this->data['server_mac'],
-				'server_ip'	 => $_SERVER['SERVER_ADDR'],
-				'callback_url' => $_SERVER['HTTP_HOST']. '/dopay', // backurl
+				'server_mac' => $sys->mac,
+				'server_ip'	 => $sys->ip,
+				'callback_url' => '', // backurl
 				'validateCode' => $this->data['validateCode'],
 			);
 
@@ -394,7 +398,7 @@ class PayController extends BaseController
 				'CreditId' => $bank_card->Id,
 				'UserId' => $params['user_id'],
 				'money' => $params['money'],
-				'Type' => 1, //  支付
+				'Type' => 1, //  充值
 				'bank_number' => $bank_card->CreditNumber,
 				'OrderNum' => $pay->getOrderId(),
 				'feeType' => '', // 绑卡支付没有手续费
@@ -406,7 +410,14 @@ class PayController extends BaseController
 
 			if ($result['action'] != 1) { throw new Exception($result['msg'], $result['code']);}
 			
-			Bill::billUpdate($bill_id, 'DOING'); //  账单修改为处理中
+			if ($result['result']['rt9_orderStatus'] == 'DOING' || $result['result']['rt9_orderStatus'] == 'INIT') {
+				Bill::billUpdate($bill_id, 'DOING'); //  账单修改为处理中
+			} else {
+				Bill::billUpdate($bill_id, 'SUCCESS'); // 成功 
+				// 添加余额
+				User::where('Id', $bill->UserId)->increment('Account', (float)$result['result']['rt8_orderAmount']);
+			}
+
 			
 			// 成功数据测试
 			// $result = '{"rt10_bindId":"48cfb204ba8b4a3f870ea4c567399272","sign":"e50f22d892b279a4cd1e9137cc08def0","rt1_bizType":"QuickPayBindPay","rt9_orderStatus":"SUCCESS","rt6_serialNumber":"QUICKPAY1712041013326IF6","rt14_userId":"82","rt2_retCode":"0000","rt12_onlineCardType":"CREDIT","rt11_bankId":"CMBCHINA","rt13_cardAfterFour":"6880","rt5_orderId":"20171204101332499782","rt4_customerNumber":"C1800001108","rt8_orderAmount":"1.00","rt3_retMsg":"成功","rt7_completeDate":"2017-12-04 10:13:36"}';

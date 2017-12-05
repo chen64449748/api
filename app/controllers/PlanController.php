@@ -17,7 +17,7 @@ class PlanController extends BaseController
 
 		$pay_time = $s_time + $pay_time_tmp;
 
-		if ((int)date('H', $pay_time) >= 7) {
+		if ((int)date('H', $pay_time) >= 7 && (int)date('H', $pay_time) <= 22) {
 			$arr[] = $pay_time;
 			if (count($arr) == $times * 100) {
 				return $arr;
@@ -35,24 +35,47 @@ class PlanController extends BaseController
 		try {
 
 			DB::beginTransaction();
-			// $bank_card = BankdCard::where('UserId', $this->user->UserId)->where('Id', $this->data['bank_id'])->first();
-
-			// if (!$bank_card) {
-			// 	throw new Exception("没有找到该卡", 8996);
-			// }
 
 			// 测试数据
 			$bank_card = new stdClass();
 			$bank_card->Id = 1;
 
 			$user = new stdClass();
-			$user->UserId = 1;
+			$user->UserId = 82;
 			$this->user = $user;
-
 			$this->data['cash_deposit'] = 2500;
 			$this->data['ratio'] = 50;
-			$plan_start_date = '2017-11-28 00:00:00';
-			$plan_end_date = '2017-11-29 23:59:59';
+			$this->data['bank_id'] = 1;
+
+			$pay_bank_id = 0;
+			isset($this->data['pay_bank_id']) && $pay_bank_id = $this->data['pay_bank_id'];
+			
+
+			$bank_card = BankdCard::where('UserId', $this->user->UserId)->where('Id', $this->data['bank_id'])->first();
+
+			if (!$bank_card) {
+				throw new Exception("没有找到交易卡", 8996);
+			}
+
+			if ($pay_bank_id) {
+				// 如果有传 保证金卡
+				$pay_bank_card = BankdCard::where('UserId', $this->user->UserId)->where('Id', $this->data['pay_bank_id'])->first();
+
+				if (!$bank_card) {
+					throw new Exception("没有找到交易卡", 8996);
+				}
+			}
+			
+
+			// 获取手续费
+			$fee = DB::table('xyk_fee')->first();
+
+			if (!$fee) {
+				throw new Exception("等待商家设置手续费", 3001);
+			}
+			
+			$plan_start_date = $bank_card->AccountDate;
+			$plan_end_date = $bank_card->RepaymentDate;
 
 			if ( (int)date('H', strtotime($plan_start_date)) < 8) {
 				$plan_s_time = strtotime(date('Y-m-d 09:00:00', strtotime($plan_start_date)));
@@ -68,6 +91,10 @@ class PlanController extends BaseController
 			$plan_time = ceil(100 / $this->data['ratio']) + 1;
 			// 套现分两次
 			$tao_time = 2;
+
+			if ($fee->PlanFee * $plan_time > $this->data['cash_deposit']) {
+				throw new Exception("保证金不能低于手续费", 3002);
+			}
 
 			// 时间间隔
 			$plan_jiange_time = ceil(($plan_e_time - $plan_s_time) / $plan_time);
@@ -86,7 +113,10 @@ class PlanController extends BaseController
 				'UserId' => $this->user->UserId,
 				'BankId' => $bank_card->Id,
 				'created_at' => date('Y-m-d H:i:s'),
-				'TotalMoney' => $total_money,
+				'TotalMoney' => $total_money, // 不含手续费 还款总额
+				'CashDeposit' => $header_money, // 保证金
+				'fee' => $fee->PlanFee * $plan_time,
+				'PayBankId' => $pay_bank_id,
 			));
 
 			// 获取时间计时用
@@ -175,10 +205,9 @@ class PlanController extends BaseController
 			}
 
 			$this->getHuanpaytime($plan_id, $tao_time, $pay_t_arr, $plan_e_time);
-
-			Plan::where('Id', $plan_id)->update(array('status'=> 1));
 		
 			DB::commit();
+			return json_encode(array('code'=> '200', 'msg'=> '计划添加成功!'));
 		} catch (Exception $e) {
 			DB::rollback();
 		}

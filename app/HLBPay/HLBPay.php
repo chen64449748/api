@@ -112,6 +112,15 @@ class HLBPay
 			return array('action'=> 0, 'code'=> '8000', 'msg'=> '返回数据签名失败，请注意您所在的网络环境是否安全', 'result'=> array());
 		}
 
+		// 待查询状态
+		if ($this->type == 'pay') {
+
+			if ($this->result['rt9_orderStatus'] == 'DOING' || $this->result['rt9_orderStatus'] == 'INIT') {
+				return array('action'=> 1, 'code'=> '0000', 'msg'=> '待查询', 'result'=> $this->result);
+			}
+
+		}
+
 		if ($this->result['rt2_retCode'] == '0000') {
 
 			return array('action'=> 1, 'code'=> '0000', 'msg'=> '成功', 'result'=> $this->result);

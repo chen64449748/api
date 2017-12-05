@@ -27,17 +27,17 @@ class BaseController extends Controller {
 
 		
 		// try {
-			$data = Input::get('data');
-			$this->data = Input::get();
-			$token = $this->data['token'];
-        	$this->user = User::where('token', $token)->first();
-        	if ($this->user) {
-        		$this->IdCard = UserContact::where("UserId", $this->user->UserId)
-        			->where("CertType", 1)
-        			->where("Isvalid", 1)
-        			->where("IsActivated", 1)
-        			->first();
-        	}
+			// $data = Input::get('data');
+			// $this->data = Input::get();
+			// $token = $this->data['token'];
+   //      	$this->user = User::where('token', $token)->first();
+   //      	if ($this->user) {
+   //      		$this->IdCard = UserContact::where("UserId", $this->user->UserId)
+   //      			->where("CertType", 1)
+   //      			->where("Isvalid", 1)
+   //      			->where("IsActivated", 1)
+   //      			->first();
+   //      	}
 
 		// 	if (!$data) {
 		// 		throw new Exception("data参数必传", 9999);
