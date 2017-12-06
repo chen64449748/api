@@ -38,41 +38,129 @@ class PlanPay extends Command {
 	public function fire()
 	{
 		$now_date = date('Y-m-d H:i:s');
-		Plan::where('status', 0)->where('StartDate', '<=', $now_date)->where('EndDate', '>=', $now_date)->chunk(200, function($plans) 
-		{
 
-			if (!$plans->count()) {
-				$this->info('data empty');
-				exit();
-			}
+		$page = 1;
+		$pay = new Pay('HLBPay');
+		$pay->pay();
 
-			foreach ($plans as $plan) {
-				// 保证金卡
-				// 取余额
-				try {
-					DB::beginTransaction();
-					$user = User::where('Id', $plan->UserId)->get();
-					
-					// 余额不足
-					if ($user->Account < $plan->CashDeposit) {
-						Plan::where('Id', $plan->Id)->update(array('status'=> 5, 'res'=> '用户余额不足，不够扣除保证金，计划执行失败'));
-						DB::commit();
-						continue;
-					}
+		$sys = DB::table('xyk_sys')->first();
 
-					//扣除余额 ， 修改计划准备中
-					User::where('Id', $plan->UserId)->decrement('Account', (float)$plan->CashDeposit);
-					Plan::where('Id', $plan->Id)->update(array('status'=> 1));
-
-					DB::commit();
-				} catch (Exception $e) {
-					DB::rollback();
-					Plan::where('Id', $plan->Id)->update(array('status'=> 5, 'res'=> $e->getMessage()));
+		if (!$sys) {
+			$this->info('no mac ip');
+			exit();
+		}
+		while (true) {
+			try {
+				$limit = ($page - 1) * 100;
+				$take = 100;
+				$plans = Plan::where('status', 0)->where('StartDate', '<=', $now_date)->where('EndDate', '>=', $now_date)->skip($limit)->take(100)->get(); 
+				$page++;
+				if (!$plans->count()) {
+					$this->info('data empty');
+					exit();
 				}
 
-			}
+				foreach ($plans as $plan) {
+					// 保证金卡
+					if ($plan->PayBankId) {
+						try {
+							DB::beginTransaction();
+							$bank_card = BankdCard::where('Id', $plan->PayBankId)->first();
+							if (!$bank_card) {
+								throw new Exception("没有找到支付卡");
+							}
+							
+							$pay_params = array(
+								'hlb_bindId' => $bank_card->CreditId,
+								'user_id' => $plan->UserId,
+								'money' => $plan->CashDeposit,
+								'goods_name' => '保证金',
+								'goods_desc' => '保证金',
+								'server_mac' => $sys->mac,
+								'server_ip'  => $sys->ip,
+								'callback_url' => '',
+							);
+							$pay->setParams($pay_params);
+							// 生成账单 默认失败
+					    	$bill_id = Bill::createBill(array(
+								'CreditId' => $bank_card->Id,
+								'UserId' => $pay_params['user_id'],
+								'money' => $pay_params['money'],
+								'Type' => 5, // 保证金收取
+								'bank_number' => $bank_card->CreditNumber,
+								'OrderNum' => $pay->getOrderId(),
+								'feeType' => '',
+								'TableId' => $plan->Id,
+							));
 
-		});
+					    	// $pay->sendRequest();
+					    	// $result = $pay->getResult();
+
+					    	// 测试
+					    	$result = array(
+					    		'result' => array(
+					    			'rt9_orderStatus' => 'DOING',
+ 					    		),
+					    	);
+					    	if (empty($result['result'])) {
+					    		continue;
+					    	}
+
+					    	if ($result['result']['rt9_orderStatus'] == 'SUCCESS') {
+					    		// 保证金收取完成 准备开始
+					    		Plan::where('Id', $plan->Id)->update(array('status'=> 1));
+					    		Bill::billUpdate($bill_id, 'SUCCESS');
+					    	} elseif ($result['result']['rt9_orderStatus'] == 'DOING' || $result['result']['rt9_orderStatus'] == 'INIT') {
+					    		// 保证金收取中
+					    		Bill::billUpdate($bill_id, 'DOING');
+					    		Plan::where('Id', $plan->Id)->update(array('status'=> 4));	
+					    	} else {
+					    		$this->info('pay fail planid:'. $plan->Id);
+					    	}
+
+					    	DB::commit();
+						} catch (Exception $e) {
+							DB::rollback();
+							$this->info('pay fail planid:'. $plan->Id. 'Exception:'. $e->getMessage());
+							Plan::where('Id', $plan->Id)->update(array('status'=> 5, 'res'=> $e->getMessage()));
+						}
+						
+
+					} else {
+						// 取余额
+						try {
+							DB::beginTransaction();
+							$user = User::where('Id', $plan->UserId)->get();
+							
+							// 余额不足
+							if ($user->Account < $plan->CashDeposit) {
+								Plan::where('Id', $plan->Id)->update(array('status'=> 5, 'res'=> '用户余额不足，不够扣除保证金，计划执行失败'));
+								DB::commit();
+								continue;
+							}
+
+							//扣除余额 ， 修改计划准备中
+							User::where('Id', $plan->UserId)->decrement('Account', (float)$plan->CashDeposit);
+							Plan::where('Id', $plan->Id)->update(array('status'=> 1));
+
+							DB::commit();
+						} catch (Exception $e) {
+							DB::rollback();
+							Plan::where('Id', $plan->Id)->update(array('status'=> 5, 'res'=> $e->getMessage()));
+						}	
+					}
+
+					
+
+				}
+
+			} catch (Exception $e) {
+				
+			}
+		}
+		
+		
+
 	}
 
 	/**

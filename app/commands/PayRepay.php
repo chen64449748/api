@@ -101,27 +101,28 @@ class PayRepay extends Command {
 				    	// 修改计划为带查询
 				    	PlanDetail::where('Id', $value->Id)->update(array(
 				    		'OrderNum' => $pay->getOrderId(),
-				    		'status' => 2,
+				    		'status' => 3,
 				    	));
 
-				    	$pay->sendRequest();
+				    	// $pay->sendRequest();
 
-				    	$result = $pay->getResult();
+				    	// $result = $pay->getResult();
 
 				    	// 测试
-				    	// $result = array(
-				    	// 	'action' => 1,
-				    	// );
+				    	$result = array(
+				    		'action' => 1,
+				    	);
 
 						if ($result['action'] != 1) { throw new Exception($result['msg'], $result['code']);}
 
 						// 还款成功	
 						Bill::billUpdate($bill_id, 'SUCCESS');
 						PlanDetail::where('Id', $value->Id)->update(array('status'=> 1));
-						$this->info('planID:'. $plan->Id.', batch：'.$value->Batch.'还款成功');
+						$this->info('planID:'. $plan->Id.', batch：'.$value->Batch.', hk success');
 						$continue_batch = 0; # 用来做判断 批次号跟跳过批次号相同的 不处理
 	    			} catch (Exception $e) {
-	    				$this->info('planID:'. $plan->Id.', batch：'.$value->Batch.'hk faile，'.$e->getMessage());
+	    				PlanDetail::where('Id', $value->Id)->update(array('status'=> 0));
+	    				$this->info('planID:'. $plan->Id.', batch：'.$value->Batch.', hk faile，'.$e->getMessage());
 	    				$continue_batch = $value->Batch;
 	    			}
 	    		} else if ($value->Type == 2) {
@@ -130,7 +131,7 @@ class PayRepay extends Command {
 		    		}
 	    			// 消费 如果还款为成功 一直跳过
 	    			if ($continue_batch == $value->Batch) {
-	    				$this->info('planID:'. $plan->Id.', batch：'.$value->Batch.'hkfail continue');
+	    				$this->info('planID:'. $plan->Id.', batch：'.$value->Batch.', hkfail continue');
 	    				continue;
 	    			}
 	    			try {
@@ -165,35 +166,36 @@ class PayRepay extends Command {
 							'TableId' => $plan->Id,
 						));
 
-				    	// 修改计划为带查询
+				    	// 修改计划
 				    	PlanDetail::where('Id', $value->Id)->update(array(
 				    		'OrderNum' => $pay->getOrderId(),
-				    		'status' => 2,
+				    		'status' => 3, // 执行中
 				    	));
 
-				    	$pay->sendRequest();
-						$result = $pay->getResult();
-				    	// $result = array(
-				    	// 	'action' => 1,
-				    	// 	'result' => array(
-				    	// 		'rt9_orderStatus' => 'SUCCESS',
-				    	// 	),
-				    	// );
+				  //   	$pay->sendRequest();
+						// $result = $pay->getResult();
+				    	$result = array(
+				    		'action' => 1,
+				    		'result' => array(
+				    			'rt9_orderStatus' => 'SUCCESS',
+				    		),
+				    	);
 						if ($result['action'] != 1) { throw new Exception($result['msg'], $result['code']);}
 
 						if ($result['result']['rt9_orderStatus'] == 'DOING' || $result['result']['rt9_orderStatus'] == 'INIT') {
 							Bill::billUpdate($bill_id, 'DOING'); //  账单修改为处理中
 							// 计划修改为处理中
 							PlanDetail::where('Id', $value->Id)->update(array('status'=> 2));
-							$this->info('planID:'. $plan->Id.', batch：'.$value->Batch.'hkpay doing');
+							$this->info('planID:'. $plan->Id.', batch：'.$value->Batch.', hkpay doing');
 						} else {
 							Bill::billUpdate($bill_id, 'SUCCESS'); // 成功 
 							PlanDetail::where('Id', $value->Id)->update(array('status'=> 1));
-							$this->info('planID:'. $plan->Id.', batch：'.$value->Batch.'hkpay success');
+							$this->info('planID:'. $plan->Id.', batch：'.$value->Batch.', hkpay success');
 						}
 
 	    			} catch (Exception $e) {
-	    				$this->info('planID:'. $plan->Id.', batch :'.$value->Batch.'hkpay fail,'.$e->getMessage());
+	    				PlanDetail::where('Id', $value->Id)->update(array('status'=> 0));
+	    				$this->info('planID:'. $plan->Id.', batch :'.$value->Batch.', hkpay fail,'.$e->getMessage());
 	    			}
 	    		}
 

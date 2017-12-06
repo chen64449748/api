@@ -34,6 +34,7 @@ class Bill extends Eloquent
 			'Type' => $data['Type'],
 			'created_at' => date('Y-m-d H:i:s'),
 			'feeType' => $data['feeType'],
+			'TableId' => $data['TableId'],
 		));
 
 		BillDetail::insert(array(

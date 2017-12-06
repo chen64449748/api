@@ -92,7 +92,7 @@ class HLBPay
 		}
 
 		$pageContents = HttpClient::quickPost($this->send_url, $this->send_data);
-		echo $pageContents;exit;
+		// echo $pageContents;exit;
 		$this->response = $pageContents;
 		$result = json_decode($pageContents, 1);
 		$this->result = $result;
@@ -245,7 +245,6 @@ class HLBPay
 
 	function md5_sign()
 	{
-
 		$tmp_sign_data = $this->send_data;
 
 		if ($this->type == 'settle') {
@@ -515,7 +514,7 @@ class HLBPay
 			'P14_period'			=> '1',
 			'P15_periodUnit'		=> 'Hour',
 			'P16_serverCallbackUrl' => $params['callback_url'],
-			'P17_validateCode'		=> $params['validateCode'],
+			// 'P17_validateCode'		=> $params['validateCode'],
 			'P18_isIntegral'		=> 'TRUE',
 			'P19_integralType'		=> 'DISCOUNTS',
 			'P20_aptitudeCode'		=> '',
@@ -558,7 +557,6 @@ class HLBPay
 			'P2_orderId'			=> $params['out_order_id'],
 			'P3_customerNumber'		=> $this->customer_number,
 		);
-		$this->md5_sign();
 	}
 
 	function rtQuickPayQuery($params)
@@ -566,6 +564,7 @@ class HLBPay
 		$rt_sign_arr = array(
 			'rt1_bizType'           => $params['rt1_bizType'],
 			'rt2_retCode'			=> $params['rt2_retCode'],
+			'rt3_retMsg'			=> $params['rt3_retMsg'],
 			'rt4_customerNumber'	=> $params['rt4_customerNumber'],
 			'rt5_orderId'			=> $params['rt5_orderId'],
 			'rt6_orderAmount'		=> $params['rt6_orderAmount'],

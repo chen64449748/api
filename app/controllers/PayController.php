@@ -27,10 +27,6 @@ class PayController extends BaseController
 				throw new Exception("银行卡号必填", '8020');
 			}
 
-			if (!$this->user) {
-
-			}
-
 			$params = array(
 				'user_id' => $this->user->UserId,
 				'bank_number'=> $this->data['bank_number'],
@@ -647,4 +643,19 @@ class PayController extends BaseController
 		}
 
 	}
+
+	function getQuery()
+	{
+		$params = array(
+			'out_order_id' => '123',
+		);
+
+		$pay = new Pay('HLBPay');
+		$pay->payQuery();
+		$pay->setParams($params);
+		$pay->sendRequest();
+		$result = $pay->getResult();
+		print_r($result);
+	}
+
 }
