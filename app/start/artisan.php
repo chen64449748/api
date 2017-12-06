@@ -12,3 +12,5 @@
 */
 Artisan::add(new PayRepay);
 Artisan::add(new PlanPay);
+Artisan::add(new DoingQuery);
+Artisan::add(new PlanSettle);

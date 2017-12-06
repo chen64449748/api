@@ -10,7 +10,7 @@ Target Server Type    : MYSQL
 Target Server Version : 50714
 File Encoding         : 65001
 
-Date: 2017-12-06 21:02:17
+Date: 2017-12-06 21:17:50
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -31,10 +31,6 @@ CREATE TABLE `xyk_adminlog` (
   `Ext3` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`LogId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='后台用户日志表';
-
--- ----------------------------
--- Records of xyk_adminlog
--- ----------------------------
 
 -- ----------------------------
 -- Table structure for xyk_adminuser
@@ -62,10 +58,6 @@ CREATE TABLE `xyk_adminuser` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='后台用户表';
 
 -- ----------------------------
--- Records of xyk_adminuser
--- ----------------------------
-
--- ----------------------------
 -- Table structure for xyk_apiresponselog
 -- ----------------------------
 DROP TABLE IF EXISTS `xyk_apiresponselog`;
@@ -79,10 +71,6 @@ CREATE TABLE `xyk_apiresponselog` (
   `AddTime` datetime NOT NULL COMMENT '添加时间',
   PRIMARY KEY (`Id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='接口响应日志';
-
--- ----------------------------
--- Records of xyk_apiresponselog
--- ----------------------------
 
 -- ----------------------------
 -- Table structure for xyk_area
@@ -103,10 +91,6 @@ CREATE TABLE `xyk_area` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='地区表';
 
 -- ----------------------------
--- Records of xyk_area
--- ----------------------------
-
--- ----------------------------
 -- Table structure for xyk_bankcard
 -- ----------------------------
 DROP TABLE IF EXISTS `xyk_bankcard`;
@@ -118,10 +102,6 @@ CREATE TABLE `xyk_bankcard` (
   `AddTime` int(50) DEFAULT '0',
   PRIMARY KEY (`Id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COMMENT='银行卡列表';
-
--- ----------------------------
--- Records of xyk_bankcard
--- ----------------------------
 
 -- ----------------------------
 -- Table structure for xyk_billdetails
@@ -142,10 +122,6 @@ CREATE TABLE `xyk_billdetails` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COMMENT='账单详情表';
 
 -- ----------------------------
--- Records of xyk_billdetails
--- ----------------------------
-
--- ----------------------------
 -- Table structure for xyk_billlistlog
 -- ----------------------------
 DROP TABLE IF EXISTS `xyk_billlistlog`;
@@ -160,10 +136,6 @@ CREATE TABLE `xyk_billlistlog` (
   `Amount` decimal(10,2) unsigned DEFAULT NULL COMMENT '账单金额',
   PRIMARY KEY (`Id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COMMENT='账单列表';
-
--- ----------------------------
--- Records of xyk_billlistlog
--- ----------------------------
 
 -- ----------------------------
 -- Table structure for xyk_category
@@ -192,10 +164,6 @@ CREATE TABLE `xyk_category` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='票分类表';
 
 -- ----------------------------
--- Records of xyk_category
--- ----------------------------
-
--- ----------------------------
 -- Table structure for xyk_centerlog
 -- ----------------------------
 DROP TABLE IF EXISTS `xyk_centerlog`;
@@ -209,10 +177,6 @@ CREATE TABLE `xyk_centerlog` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='分发日志';
 
 -- ----------------------------
--- Records of xyk_centerlog
--- ----------------------------
-
--- ----------------------------
 -- Table structure for xyk_creditcard
 -- ----------------------------
 DROP TABLE IF EXISTS `xyk_creditcard`;
@@ -224,10 +188,6 @@ CREATE TABLE `xyk_creditcard` (
   `AddTime` int(50) DEFAULT '0',
   PRIMARY KEY (`Id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COMMENT='信用卡列表列表';
-
--- ----------------------------
--- Records of xyk_creditcard
--- ----------------------------
 
 -- ----------------------------
 -- Table structure for xyk_dic
@@ -246,10 +206,6 @@ CREATE TABLE `xyk_dic` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='字典表';
 
 -- ----------------------------
--- Records of xyk_dic
--- ----------------------------
-
--- ----------------------------
 -- Table structure for xyk_dictype
 -- ----------------------------
 DROP TABLE IF EXISTS `xyk_dictype`;
@@ -262,10 +218,6 @@ CREATE TABLE `xyk_dictype` (
   `CreateTime` datetime NOT NULL COMMENT '创建时间',
   PRIMARY KEY (`DicTypeId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='字典分类表';
-
--- ----------------------------
--- Records of xyk_dictype
--- ----------------------------
 
 -- ----------------------------
 -- Table structure for xyk_jyexception
@@ -282,10 +234,6 @@ CREATE TABLE `xyk_jyexception` (
   PRIMARY KEY (`Id`),
   KEY `I_EXCEPTION_TYPE` (`ExceptionType`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='异常表';
-
--- ----------------------------
--- Records of xyk_jyexception
--- ----------------------------
 
 -- ----------------------------
 -- Table structure for xyk_labelcontent
@@ -306,10 +254,6 @@ CREATE TABLE `xyk_labelcontent` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='商户自定义标签的用户内容表';
 
 -- ----------------------------
--- Records of xyk_labelcontent
--- ----------------------------
-
--- ----------------------------
 -- Table structure for xyk_labeloption
 -- ----------------------------
 DROP TABLE IF EXISTS `xyk_labeloption`;
@@ -326,10 +270,6 @@ CREATE TABLE `xyk_labeloption` (
   KEY `INDEX_LCMERCHANTID` (`MerchantId`),
   KEY `INDEX_LABELID` (`LabelId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='商户自定义标签选项表';
-
--- ----------------------------
--- Records of xyk_labeloption
--- ----------------------------
 
 -- ----------------------------
 -- Table structure for xyk_menu
@@ -350,10 +290,6 @@ CREATE TABLE `xyk_menu` (
   PRIMARY KEY (`MenuId`),
   UNIQUE KEY `RootId` (`RootId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='后台菜单表';
-
--- ----------------------------
--- Records of xyk_menu
--- ----------------------------
 
 -- ----------------------------
 -- Table structure for xyk_merchant
@@ -382,10 +318,6 @@ CREATE TABLE `xyk_merchant` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='商户表';
 
 -- ----------------------------
--- Records of xyk_merchant
--- ----------------------------
-
--- ----------------------------
 -- Table structure for xyk_merchantaccount
 -- ----------------------------
 DROP TABLE IF EXISTS `xyk_merchantaccount`;
@@ -403,10 +335,6 @@ CREATE TABLE `xyk_merchantaccount` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='商户账户表';
 
 -- ----------------------------
--- Records of xyk_merchantaccount
--- ----------------------------
-
--- ----------------------------
 -- Table structure for xyk_merchantaccountlog
 -- ----------------------------
 DROP TABLE IF EXISTS `xyk_merchantaccountlog`;
@@ -421,10 +349,6 @@ CREATE TABLE `xyk_merchantaccountlog` (
   `Ext2` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`Id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='商户账户日志表';
-
--- ----------------------------
--- Records of xyk_merchantaccountlog
--- ----------------------------
 
 -- ----------------------------
 -- Table structure for xyk_merchantad
@@ -447,10 +371,6 @@ CREATE TABLE `xyk_merchantad` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='商户广告/轮播图表';
 
 -- ----------------------------
--- Records of xyk_merchantad
--- ----------------------------
-
--- ----------------------------
 -- Table structure for xyk_merchantlabel
 -- ----------------------------
 DROP TABLE IF EXISTS `xyk_merchantlabel`;
@@ -468,10 +388,6 @@ CREATE TABLE `xyk_merchantlabel` (
   PRIMARY KEY (`Id`),
   KEY `INDEX_MERCHANTID` (`MerchantId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='商户自定义标签表';
-
--- ----------------------------
--- Records of xyk_merchantlabel
--- ----------------------------
 
 -- ----------------------------
 -- Table structure for xyk_merchantusers
@@ -496,10 +412,6 @@ CREATE TABLE `xyk_merchantusers` (
   PRIMARY KEY (`Id`),
   UNIQUE KEY `UK_VENUEUSERS_USERNAME` (`Username`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='商户用户表';
-
--- ----------------------------
--- Records of xyk_merchantusers
--- ----------------------------
 
 -- ----------------------------
 -- Table structure for xyk_news
@@ -533,10 +445,6 @@ CREATE TABLE `xyk_news` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='资讯表';
 
 -- ----------------------------
--- Records of xyk_news
--- ----------------------------
-
--- ----------------------------
 -- Table structure for xyk_newseffect
 -- ----------------------------
 DROP TABLE IF EXISTS `xyk_newseffect`;
@@ -556,10 +464,6 @@ CREATE TABLE `xyk_newseffect` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户对资讯的影响表';
 
 -- ----------------------------
--- Records of xyk_newseffect
--- ----------------------------
-
--- ----------------------------
 -- Table structure for xyk_newsstatistics
 -- ----------------------------
 DROP TABLE IF EXISTS `xyk_newsstatistics`;
@@ -576,10 +480,6 @@ CREATE TABLE `xyk_newsstatistics` (
   `Ext3` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`NewsId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='资讯统计表（阅读次数、被赞次数、被踩次数等）';
-
--- ----------------------------
--- Records of xyk_newsstatistics
--- ----------------------------
 
 -- ----------------------------
 -- Table structure for xyk_order
@@ -613,10 +513,6 @@ CREATE TABLE `xyk_order` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='票订单表';
 
 -- ----------------------------
--- Records of xyk_order
--- ----------------------------
-
--- ----------------------------
 -- Table structure for xyk_persent
 -- ----------------------------
 DROP TABLE IF EXISTS `xyk_persent`;
@@ -624,10 +520,6 @@ CREATE TABLE `xyk_persent` (
   `persent1` float(11,2) NOT NULL,
   `persent2` float(11,2) NOT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
-
--- ----------------------------
--- Records of xyk_persent
--- ----------------------------
 
 -- ----------------------------
 -- Table structure for xyk_plan
@@ -645,11 +537,6 @@ CREATE TABLE `xyk_plan` (
   `TotalMoney` decimal(10,2) DEFAULT NULL COMMENT '还款总金额',
   PRIMARY KEY (`Id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=12 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-
--- ----------------------------
--- Records of xyk_plan
--- ----------------------------
-INSERT INTO `xyk_plan` VALUES ('1', '2017-11-28 10:00:00', '2017-11-29 10:00:00', '1', '2017-11-29 14:34:28', '2017-11-29 14:34:28', '1', '1', '10000.00');
 
 -- ----------------------------
 -- Table structure for xyk_plan_detail
@@ -672,42 +559,19 @@ CREATE TABLE `xyk_plan_detail` (
 ) ENGINE=MyISAM AUTO_INCREMENT=166 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- ----------------------------
--- Records of xyk_plan_detail
--- ----------------------------
-INSERT INTO `xyk_plan_detail` VALUES ('151', '1', '2017-11-29 14:34:28', null, '2382.00', '1', null, '0', null, '1', null, '201711291434283433820');
-INSERT INTO `xyk_plan_detail` VALUES ('155', '1', '2017-11-29 14:34:28', null, '974.00', '2', null, '0', null, '1', null, '201711291434287114821');
-INSERT INTO `xyk_plan_detail` VALUES ('156', '1', '2017-11-29 14:34:28', null, '1435.00', '2', null, '0', null, '1', null, '201711291434287114821');
-INSERT INTO `xyk_plan_detail` VALUES ('157', '1', '2017-11-29 14:34:28', null, '2171.00', '1', null, '0', null, '1', null, '201711291434286073202');
-INSERT INTO `xyk_plan_detail` VALUES ('158', '1', '2017-11-29 14:34:28', null, '1011.00', '2', null, '0', null, '1', null, '201711291434286073202');
-INSERT INTO `xyk_plan_detail` VALUES ('159', '1', '2017-11-29 14:34:28', null, '1160.00', '2', null, '0', null, '1', null, '201711291434286073202');
-INSERT INTO `xyk_plan_detail` VALUES ('160', '1', '2017-11-29 14:34:28', null, '2152.00', '1', null, '0', null, '1', null, '201711291434282064293');
-INSERT INTO `xyk_plan_detail` VALUES ('161', '1', '2017-11-29 14:34:28', null, '1072.00', '2', null, '0', null, '1', null, '201711291434282064293');
-INSERT INTO `xyk_plan_detail` VALUES ('162', '1', '2017-11-29 14:34:28', null, '1080.00', '2', null, '0', null, '1', null, '201711291434282064293');
-INSERT INTO `xyk_plan_detail` VALUES ('163', '1', '2017-11-29 14:34:28', null, '886.00', '1', null, '0', null, '1', null, '201711291434283769184');
-INSERT INTO `xyk_plan_detail` VALUES ('164', '1', '2017-11-29 14:34:28', null, '435.00', '2', null, '0', null, '1', null, '201711291434283769184');
-INSERT INTO `xyk_plan_detail` VALUES ('165', '1', '2017-11-29 14:34:28', null, '451.00', '2', null, '0', null, '1', null, '201711291434283769184');
-INSERT INTO `xyk_plan_detail` VALUES ('152', '1', '2017-11-29 14:34:28', null, '821.00', '2', null, '0', null, '1', null, '201711291434283433820');
-INSERT INTO `xyk_plan_detail` VALUES ('153', '1', '2017-11-29 14:34:28', null, '1561.00', '2', null, '0', null, '1', null, '201711291434283433820');
-INSERT INTO `xyk_plan_detail` VALUES ('154', '1', '2017-11-29 14:34:28', null, '2409.00', '1', null, '0', null, '1', null, '201711291434287114821');
-
--- ----------------------------
 -- Table structure for xyk_profit
 -- ----------------------------
 DROP TABLE IF EXISTS `xyk_profit`;
 CREATE TABLE `xyk_profit` (
-  `id` int(11) NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` int(11) DEFAULT NULL COMMENT '获取收益用户',
   `first_user_id` int(11) DEFAULT NULL COMMENT '一级邀请人',
   `second_user_id` int(11) DEFAULT NULL COMMENT '二级邀请人',
   `money` float(11,2) DEFAULT NULL COMMENT '收益金额',
-  `time` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
-  `content` text COMMENT '收益说明',
+  `time` int(11) DEFAULT NULL,
+  `content` varchar(255) DEFAULT NULL COMMENT '收益说明',
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
-
--- ----------------------------
--- Records of xyk_profit
--- ----------------------------
+) ENGINE=MyISAM AUTO_INCREMENT=16 DEFAULT CHARSET=latin1;
 
 -- ----------------------------
 -- Table structure for xyk_refund
@@ -729,10 +593,6 @@ CREATE TABLE `xyk_refund` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='退款表';
 
 -- ----------------------------
--- Records of xyk_refund
--- ----------------------------
-
--- ----------------------------
 -- Table structure for xyk_repay
 -- ----------------------------
 DROP TABLE IF EXISTS `xyk_repay`;
@@ -751,10 +611,6 @@ CREATE TABLE `xyk_repay` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- ----------------------------
--- Records of xyk_repay
--- ----------------------------
-
--- ----------------------------
 -- Table structure for xyk_rights
 -- ----------------------------
 DROP TABLE IF EXISTS `xyk_rights`;
@@ -770,10 +626,6 @@ CREATE TABLE `xyk_rights` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='后台权限表';
 
 -- ----------------------------
--- Records of xyk_rights
--- ----------------------------
-
--- ----------------------------
 -- Table structure for xyk_role
 -- ----------------------------
 DROP TABLE IF EXISTS `xyk_role`;
@@ -785,10 +637,6 @@ CREATE TABLE `xyk_role` (
   `Addtime` datetime NOT NULL,
   PRIMARY KEY (`RoleId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='后台角色表';
-
--- ----------------------------
--- Records of xyk_role
--- ----------------------------
 
 -- ----------------------------
 -- Table structure for xyk_rolerightsrelation
@@ -805,10 +653,6 @@ CREATE TABLE `xyk_rolerightsrelation` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='后台 权限-角色 关联表';
 
 -- ----------------------------
--- Records of xyk_rolerightsrelation
--- ----------------------------
-
--- ----------------------------
 -- Table structure for xyk_sessions
 -- ----------------------------
 DROP TABLE IF EXISTS `xyk_sessions`;
@@ -821,10 +665,6 @@ CREATE TABLE `xyk_sessions` (
   `SessionData` varchar(500) NOT NULL,
   PRIMARY KEY (`SessionId`)
 ) ENGINE=MEMORY DEFAULT CHARSET=utf8 COMMENT='session表';
-
--- ----------------------------
--- Records of xyk_sessions
--- ----------------------------
 
 -- ----------------------------
 -- Table structure for xyk_sms
@@ -848,10 +688,6 @@ CREATE TABLE `xyk_sms` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='短信发送记录';
 
 -- ----------------------------
--- Records of xyk_sms
--- ----------------------------
-
--- ----------------------------
 -- Table structure for xyk_smsbasictemplates
 -- ----------------------------
 DROP TABLE IF EXISTS `xyk_smsbasictemplates`;
@@ -869,10 +705,6 @@ CREATE TABLE `xyk_smsbasictemplates` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
--- Records of xyk_smsbasictemplates
--- ----------------------------
-
--- ----------------------------
 -- Table structure for xyk_smsparam
 -- ----------------------------
 DROP TABLE IF EXISTS `xyk_smsparam`;
@@ -888,10 +720,6 @@ CREATE TABLE `xyk_smsparam` (
   PRIMARY KEY (`Id`),
   KEY `KEY_SMSTYPE` (`SmsType`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- ----------------------------
--- Records of xyk_smsparam
--- ----------------------------
 
 -- ----------------------------
 -- Table structure for xyk_smstemplates
@@ -915,10 +743,6 @@ CREATE TABLE `xyk_smstemplates` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='短信模板';
 
 -- ----------------------------
--- Records of xyk_smstemplates
--- ----------------------------
-
--- ----------------------------
 -- Table structure for xyk_userbindccard
 -- ----------------------------
 DROP TABLE IF EXISTS `xyk_userbindccard`;
@@ -934,10 +758,6 @@ CREATE TABLE `xyk_userbindccard` (
   `AddTime` int(50) DEFAULT '0',
   PRIMARY KEY (`Id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COMMENT='用户绑定的银行卡';
-
--- ----------------------------
--- Records of xyk_userbindccard
--- ----------------------------
 
 -- ----------------------------
 -- Table structure for xyk_userbinddcard
@@ -960,10 +780,6 @@ CREATE TABLE `xyk_userbinddcard` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COMMENT='用户绑定的信用卡';
 
 -- ----------------------------
--- Records of xyk_userbinddcard
--- ----------------------------
-
--- ----------------------------
 -- Table structure for xyk_userblacklist
 -- ----------------------------
 DROP TABLE IF EXISTS `xyk_userblacklist`;
@@ -977,10 +793,6 @@ CREATE TABLE `xyk_userblacklist` (
   `UpdateTime` int(10) unsigned DEFAULT NULL COMMENT '数据更新时间',
   PRIMARY KEY (`Id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- ----------------------------
--- Records of xyk_userblacklist
--- ----------------------------
 
 -- ----------------------------
 -- Table structure for xyk_usercontact
@@ -1005,10 +817,6 @@ CREATE TABLE `xyk_usercontact` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='购票实名认证常用联系人表';
 
 -- ----------------------------
--- Records of xyk_usercontact
--- ----------------------------
-
--- ----------------------------
 -- Table structure for xyk_userrolerelation
 -- ----------------------------
 DROP TABLE IF EXISTS `xyk_userrolerelation`;
@@ -1019,10 +827,6 @@ CREATE TABLE `xyk_userrolerelation` (
   `Addtime` datetime NOT NULL,
   PRIMARY KEY (`UserrelationId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='后台 用户-角色 关联表';
-
--- ----------------------------
--- Records of xyk_userrolerelation
--- ----------------------------
 
 -- ----------------------------
 -- Table structure for xyk_users
@@ -1059,13 +863,6 @@ CREATE TABLE `xyk_users` (
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8 COMMENT='普通用户表';
 
 -- ----------------------------
--- Records of xyk_users
--- ----------------------------
-INSERT INTO `xyk_users` VALUES ('1', '0', '18329042981', 'e10adc3949ba59abbe56e057f20f883e', 'e10adc3949ba59abbe56e057f20f883e', '', '测试', '1', '0.00', '0', '', '1', '10001', '0', '0', '0', '0', null, null, null, '1512051267', null, null, null, '1512056152CJKH44BA');
-INSERT INTO `xyk_users` VALUES ('2', '0', '18329042982', 'e10adc3949ba59abbe56e057f20f883e', '', '', '用户_LGAT2BF6', null, '0.00', '0', '', '1', '10001', '1', null, '0', '1', null, null, null, '1512051445', null, null, null, null);
-INSERT INTO `xyk_users` VALUES ('5', '0', '18329042983', 'e10adc3949ba59abbe56e057f20f883e', '', '', '用户_5MJBTV85', null, '0.00', '0', '', '1', '10001', '2', '1', '0', '2', null, null, null, '1512051850', null, null, null, null);
-
--- ----------------------------
 -- Table structure for xyk_verify
 -- ----------------------------
 DROP TABLE IF EXISTS `xyk_verify`;
@@ -1074,10 +871,3 @@ CREATE TABLE `xyk_verify` (
   `code` varchar(6) DEFAULT NULL COMMENT '验证码',
   `time` int(11) DEFAULT NULL COMMENT '过期时间'
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
-
--- ----------------------------
--- Records of xyk_verify
--- ----------------------------
-INSERT INTO `xyk_verify` VALUES ('18329042981', '123456', '1999999999');
-INSERT INTO `xyk_verify` VALUES ('18329042981', '611853', '1512051630');
-INSERT INTO `xyk_verify` VALUES ('18329042984', '123456', '1999999999');

@@ -53,6 +53,10 @@ class Pay
 		$this->pay_obj->setType('pay');
 	}
 
+	function payQuery()
+	{
+		$this->pay_obj->setType('payQuery');
+	}
 	// 支付短信
 	function payCode()
 	{

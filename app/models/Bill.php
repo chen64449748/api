@@ -27,13 +27,14 @@ class Bill extends Eloquent
 		$bill_id = Bill::insertGetId(array(
 			'CreditId' => $data['CreditId'],
 			'BankId' => $data['BankId'],
-			'status' => 0,
+			'status' => 2, // 待查询
 			'UserId' => $data['UserId'],
 			'Amount' => $data['money'],
 			'AddTime' => $time,
 			'Type' => $data['Type'],
 			'created_at' => date('Y-m-d H:i:s'),
 			'feeType' => $data['feeType'],
+			'TableId' => $data['TableId'],
 		));
 
 		BillDetail::insert(array(

@@ -36,15 +36,21 @@ class BillController extends BaseController
 	    
  	    if(!$billList->isEmpty()){
 	        foreach ($billList as $key => &$val){
-	            $val->CreditNumber = '';
-	            $val->BankNumber = '';
 	            //获取信用卡号
+	            $val->CreditName = '';
+	            $val->CreditNumber = '';
+	            $val->BankName = '';
+	            $val->BankNumber = '';
 	            if($val->CreditId != ''){
-	                $val->CreditNumber = BankdCard::where('Id',$val['CreditId'])->where('Type',2)->pluck('CreditNumber');
+	                $creaditInfo = BankdCard::where('Id',$val['CreditId'])->first();
+	                $val->CreditName = $creaditInfo['CreditName'];
+	                $val->CreditNumber = $creaditInfo['CreditNumber'];
 	            }
 	            //获取银行卡号
 	            if($val->BankId != ''){
-	                $val->BankNumber = BankdCard::where('Id',$val['BankId'])->where('Type',1)->pluck('CreditNumber');
+	                $bankInfo = BankcCard::where('Id',$val['BankId'])->first();
+	                $val->BankName = $bankInfo['BankName'];
+	                $val->BankNumber = $bankInfo['BankNumber'];
 	            }
 	        }
  	    }
@@ -57,11 +63,18 @@ class BillController extends BaseController
 	 */
 	public function getBilldetail()
 	{
-	    $billDetail = BillDetail::select('xyk_billdetails.*','CreditNmuber')
-	                               ->leftJoin('xyk_userbinddcard','xyk_billdetails.CreditId','=','xyk_userbinddcard.CreditId')
-	                               ->where('BillId',$this->data['billId'])
-	                               ->get();
-	     
+	    $billDetail = BillDetail::where('BillId',$this->data['billId'])->first();
+	    if(!empty($billDetail)){
+	        $billDetail['CreditInfo'] = array();
+	        $billDetail['BankInfo'] = array();
+	        if($billDetail->CreditId != ''){
+	            $billDetail['CreditInfo'] = BankdCard::where('Id',$billDetail->CreditId)->first();
+	        }
+	        //获取银行卡号
+	        if($billDetail->BankId != ''){
+	            $billDetail['BankInfo'] = BankcCard::where('Id',$billDetail->BankId)->first();
+	        }
+	    }
 	    return $billDetail;
 	}
 
