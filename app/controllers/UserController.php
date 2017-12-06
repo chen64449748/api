@@ -117,7 +117,7 @@ class UserController extends BaseController
     		return $this->cbc_encode(json_encode(array('code'=> 1005, 'msg'=> '密码格式错误')));
     	}
 
-    	if(!preg_match("/^1(3|4|5|7|8)\d{9}$/", $mobile)){
+    	if(!preg_match("/^1(3|4|5|7|8)\d{9}$/", $mobile)) {
     		return $this->cbc_encode(json_encode(array('code'=> 1002, 'msg'=> '手机号格式错误')));
     	}
 
@@ -137,8 +137,7 @@ class UserController extends BaseController
     	try {
     		$username = $mobile;
             /* 邀请人开始 */
-            $inviter_id = isset($this->data['inviter_id']) ? $this->data['inviter_id'] : 0;
-            $inviter_user = User::where("UserId", $inviter_id)->first();
+            $inviter_user = User::where("UserId", $invite)->first();
             $first = $second = 0;
 
             if ($inviter_user) {
@@ -233,7 +232,7 @@ class UserController extends BaseController
         $mobile = $this->user->Mobile;
         $password = $this->user->Password;
         $pay_password = $this->user->PayPassword;
-        $avator = $this->user->UserAvatar;
+        $avatar = $this->user->UserAvatar;
 
         switch ($type) {
             case 'name':
@@ -282,8 +281,8 @@ class UserController extends BaseController
                 }
                 $pay_password = md5($pay_password);
                 break;
-            case 'avator':
-                $avator = $this->data['avator'];
+            case 'avatar':
+                $avator = $this->data['avatar'];
                 break;
             default:
                 return $this->cbc_encode(json_encode(array('code'=> 200, 'msg'=> '信息修改成功')));
@@ -295,7 +294,7 @@ class UserController extends BaseController
             'Mobile'        => $mobile,
             'Password'      => $password,
             'PayPassword'   => $pay_password,
-            'UserAvatar'    => $avator
+            'UserAvatar'    => $avatar
         ));
         return $this->cbc_encode(json_encode(array('code'=> 200, 'msg'=> '信息修改成功')));
     }
@@ -325,7 +324,7 @@ class UserController extends BaseController
             'CertType'      => 1,
             'CertNo'        => $no,
             'Isvalid'       => 1,
-            'IsActivated'   => 1,
+            'IsActiv ted'   => 1,
             'AddTime'       => time(),
             'UpdateTime'    => time()
         ));
@@ -394,12 +393,13 @@ class UserController extends BaseController
 
     public function getProfits()
     {
-        $profits = Profit::where("user_id", $this->user->UserId)
-            ->get();
-        foreach ($profits as $k => $v) {
-            $profits[$k]['first'] = Users::whereIn("id", $v['first_user_id'])->get();
-            $profits[$k]['second'] = Users::whereIn("id", $v['second_user_id'])->get();
-        }
-        return $this->cbc_encode(json_encode(array('code'=> 200, 'msg'=> '请求成功', 'data'=> $profits)));
+        // return Profit::doProfit(5, 100);
+        // $profits = Profit::where("user_id", $this->user->UserId)
+        //     ->get();
+        // foreach ($profits as $k => $v) {
+        //     $profits[$k]['first'] = Users::whereIn("id", $v['first_user_id'])->get();
+        //     $profits[$k]['second'] = Users::whereIn("id", $v['second_user_id'])->get();
+        // }
+        // return $this->cbc_encode(json_encode(array('code'=> 200, 'msg'=> '请求成功', 'data'=> $profits)));
     }
 }
