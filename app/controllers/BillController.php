@@ -41,6 +41,7 @@ class BillController extends BaseController
 	            $val->CreditNumber = '';
 	            $val->BankName = '';
 	            $val->BankNumber = '';
+	            $val->PayBankInfo = array();
 	            if($val->CreditId != ''){
 	                $creaditInfo = BankdCard::where('Id',$val['CreditId'])->first();
 	                $val->CreditName = $creaditInfo['CreditName'];
@@ -51,6 +52,11 @@ class BillController extends BaseController
 	                $bankInfo = BankcCard::where('Id',$val['BankId'])->first();
 	                $val->BankName = $bankInfo['BankName'];
 	                $val->BankNumber = $bankInfo['BankNumber'];
+	            }
+	            
+	            //paybank
+	            if($val->PayBankId != ''){
+	                $val->PayBankInfo = BankdCard::where('Id',$val['PayBankId'])->first();
 	            }
 	        }
  	    }
