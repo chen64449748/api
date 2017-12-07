@@ -399,30 +399,50 @@ class PlanController extends BaseController
 	}
 
 	/**
+	 * 还款列表
+	 */
+	public function getBankplanlist(){
+	    $offset = $this->data['offset'] ? $this->data['offset'] : '0';
+	    $limit = $this->data['limit'] ? $this->data['limit'] : '20';
+	    $bankplanList = BankdCard::select('xyk_userbinddcard.*','xyk_users.Username')
+	                ->leftJoin('xyk_users','xyk_users.UserId','=','xyk_userbinddcard.UserId')
+	                ->where('xyk_userbinddcard.UserId',$this->user['UserId'])
+	                ->where('Type','2')
+            	    ->skip($offset)
+            	    ->take($limit)
+            	    ->get();
+	    
+	    if(!$bankplanList->isEmpty()){
+	        foreach ($bankplanList as $key => &$val){
+	            $planInfo = array();
+	            $val->havePlan = '0';
+	            $planInfo = Plan::where('BankId',$val->Id)->where('status','1')->get();
+	            if(!$planInfo->isEmpty()){
+	                $val->havePlan = '1';
+	            }
+	        }
+	    }
+	    
+	    return array('bankplanList'=>$bankplanList);
+	}
+	
+	/**
 	 * 还款计划列表
 	 */
 	public function getPlanlist(){
 	    $offset = $this->data['offset'] ? $this->data['offset'] : '0';
 	    $limit = $this->data['limit'] ? $this->data['limit'] : '20';
-	    $planList = Plan::where('UserId',$this->user['UserId'])
-            	    ->orderBy('created_at','desc')
-            	    ->skip($offset)
-            	    ->take($limit)
-            	    ->get();
+	    $bankId = $this->data['bankId'];
 	    
+	    $planList = Plan::where('BankId',$bankId)->skip($offset)->take($limit)->get();
 	    if(!$planList->isEmpty()){
 	        foreach ($planList as $key => &$val){
-	            $val->BankNumber = '';
-	            $val->UserName = '';
-	            //获取银行卡卡号
-	            if($val->BankId != ''){
-	                $val->BankNumber = BankcCard::where('Id',$val['BankId'])->pluck('BankNumber');
+	            //获取信用卡号
+	            $val->PayBankInfo = array();
+	            //paybank
+	            if($val->PayBankId != ''){
+	                $val->PayBankInfo = BankdCard::where('Id',$val['PayBankId'])->first();
 	            }
-	            //获取用户名
-	            if($val->UserId != ''){
-	                $val->UserName = User::where('UserId',$val['UserId'])->pluck('Username');
-	            }
-	            
 	        }
 	    }
 	    
