@@ -40,6 +40,12 @@ class DoingQuery extends Command {
 		$page = 1;
 		$pay = new Pay('HLBPay');
 		$pay->payQuery();
+
+		$fee = DB::table('xyk_fee')->first();
+		if (!$fee) {
+			$this->info('no fee');
+			exit();
+		}
 		while (true) {
 			$limit = ($page - 1) * 100;
 			$take = 100;
@@ -85,7 +91,7 @@ class DoingQuery extends Command {
 					} else if ($result['result']['rt9_orderStatus'] == 'SUCCESS') {
 						// 成功
 						$this->info("billid: $bill->Id , SUCCESS");
-						$this->orderSuccess($bill, $bill_detail);
+						$this->orderSuccess($bill, $bill_detail, $fee);
 					} else if ($result['result']['rt9_orderStatus'] == 'FAILED') {
 						$this->info("billid: $bill->Id , FAILED");
 						$this->noOrder($bill, $bill_detail);
@@ -138,7 +144,7 @@ class DoingQuery extends Command {
 		}
 	}
 
-	private function orderSuccess($bill, $bill_detail)
+	private function orderSuccess($bill, $bill_detail, $fee)
 	{
 		// 订单成功
 		try {
@@ -149,8 +155,13 @@ class DoingQuery extends Command {
 			switch ($bill->Type) {
 				case '1':
 					// 充值 
-					// 余额增加
-					User::where('Id', $bill->UserId)->increment('Account', (float)$bill->Amount);
+					// 余额增加 要扣除手续废
+					$money = $bill->Amount;
+
+					$pay_fee = $money * $fee->PayFee / 100;
+					$pay_fee = round($pay_fee, 2);
+					$money = $money - $pay_fee;
+					User::where('Id', $bill->UserId)->increment('Account', (float)$money);
 					break;
 				case '4':
 					// 还款消费
@@ -170,10 +181,8 @@ class DoingQuery extends Command {
 				case '5':
 					// 保证金收取
 					// 修改计划为 1 保证金收取完成 计划准备
-					// 将保证金添加到余额
-
+					// 将保证金不添加到余额
 					Plan::where('Id', $bill->TableId)->update(array('status'=> 1));
-					User::where('Id', $bill->UserId)->increment('Account', (float)$bill->Amount);
 					break;
 				default:
 					# code...

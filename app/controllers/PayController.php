@@ -268,25 +268,38 @@ class PayController extends BaseController
 		}
 	}
 
-	// 结算卡提现
+	// 结算卡提现 账单不含手续
 	function getSettle()
 	{
 		try {
 
 			$bank_card = BankcCard::where('UserId', $this->user->UserId)->where('Id', $this->data['bank_id'])->first();
 
+			$fee = DB::table('xyk_fee')->first();
+			if (!$fee) {
+				throw new Exception("商家未设置费率", 3001);
+			}
 			if (!$bank_card) {
 				throw new Exception("没有找到该卡", 8996);
 			}
 
 			$money = (float)$this->data['money'];
-
+			$y_money = (float)$this->data['money'];
 			$user = User::where('Id', $this->user->UserId)->first();
 
 			if ($user->Account > $money) {
 				throw new Exception("最多可提现".$user->Account, 1003);
 			}
 
+			if ($money < 1) {
+				throw new Exception("提现金额不能小于1", 1004);
+			}
+
+			// 费率扣除
+			$settle_fee = $money * $fee->SettleFee / 100;
+			$settle_fee = round($settle_fee, 2);
+
+			$money = $money - $settle_fee;
 			$params = array(
 				'user_id' => $this->user->UserId,
 				'money' => $money,
@@ -308,15 +321,18 @@ class PayController extends BaseController
 			$pay->settle();
 			$pay->setParams($params);
 
-			// 生成账单
+			// 生成账单 余额 到 结算卡
 			$bill_id = Bill::createBill(array(
 				'BankId' => $bank_card->Id,
 				'UserId' => $params['user_id'],
-				'money' => $params['money'],
+				'money' => $y_money, // 不含手续废
 				'Type' => 2, // 提现
 				'bank_number' => $bank_card->BankNumber,
 				'OrderNum' => $pay->getOrderId(),
 				'feeType' => $params['feeType'],
+				'SysFee' => $settle_fee,
+				'From' => '余额',
+				'To' => '结算卡',
 			));
 
 			$pay->sendRequest();
@@ -329,7 +345,7 @@ class PayController extends BaseController
 
 			Bill::billUpdate($bill_id, 'SUCCESS');
 
-			User::where('Id', $this->user->UserId)->decrement('Account', (float)$money);
+			User::where('Id', $this->user->UserId)->decrement('Account', (float)$y_money);
 
 			return json_encode(array('code'=> '200', 'msg'=> '提现成功!'));
 		} catch (Exception $e) {
@@ -337,7 +353,7 @@ class PayController extends BaseController
 		}
 	}
 
-	// 支付  通过银行卡还款  通过
+	// 支付  通过银行卡还款 账单不含手续
 	function getPay()
 	{
 		try {
@@ -356,7 +372,10 @@ class PayController extends BaseController
 
 			$bank_card = BankdCard::where('UserId', $this->user->UserId)->where('Id', $this->data['bank_id'])->first();
 			$sys = DB::table('xyk_sys')->first();
-
+			$fee = DB::table('xyk_fee')->first();
+			if (!$fee) {
+				throw new Exception("商家未设置费率", 3001);
+			}
 			if (!$sys) {
 				throw new Exception("商户未配置mac地址", 3003);
 			}
@@ -369,14 +388,17 @@ class PayController extends BaseController
 				throw new Exception("金额必须为数字", 8995);
 			}
 
+			$pay_fee = $money * $fee->PayFee / 100;
+			$pay_fee = round($pay_fee, 2);
+
 			if ($money < 1) {
 				throw new Exception("金额过低，最小金额1", 8995);
 			}
-
+			
 			$params = array(
 				'hlb_bindId' => $bank_card->CreditId,
 				'user_id' => $this->user->UserId,
-				'money' => $this->data['money'],
+				'money' => $money,
 				'goods_name' => $this->data['goods_name'],
 				'goods_desc' => $this->data['goods_desc'],
 				'server_mac' => $sys->mac,
@@ -389,7 +411,7 @@ class PayController extends BaseController
 			$pay->pay(); // 支付
 			$pay->setParams($params);
 
-			// 生成账单
+			// 生成账单 交易卡 到 余额
 			$bill_id = Bill::createBill(array(
 				'CreditId' => $bank_card->Id,
 				'UserId' => $params['user_id'],
@@ -398,6 +420,9 @@ class PayController extends BaseController
 				'bank_number' => $bank_card->CreditNumber,
 				'OrderNum' => $pay->getOrderId(),
 				'feeType' => '', // 绑卡支付没有手续费
+				'SysFee' => $pay_fee,
+				'From' => '交易卡',
+				'To' => '余额',
 			));
 
 			$pay->sendRequest();
@@ -416,8 +441,9 @@ class PayController extends BaseController
 				Bill::billUpdate($bill_id, 'DOING'); //  账单修改为处理中
 			} else {
 				Bill::billUpdate($bill_id, 'SUCCESS'); // 成功 
-				// 添加余额
-				User::where('Id', $bill->UserId)->increment('Account', (float)$result['result']['rt8_orderAmount']);
+				// 添加余额 扣除手续废
+				$d_money = $money - $pay_fee;
+				User::where('Id', $bill->UserId)->increment('Account', (float)$d_money);
 			}
 
 			
@@ -434,6 +460,7 @@ class PayController extends BaseController
 		
 	}
 
+	// 废弃
 	// 验证支付成功 普通处理方式
 	function getDopay()
 	{
@@ -518,24 +545,32 @@ class PayController extends BaseController
 		
 	}
 
-	// 信用卡还款
+	// 信用卡还款 账单不含手续
 	function getRepay()
 	{
 		try {
 
 			$bank_card = BankdCard::where('UserId', $this->user->UserId)->where('CreditId', $this->data['bindId'])->first();
-
+			$fee = DB::table('xyk_fee')->first();
+			if (!$fee) {
+				throw new Exception("商家未设置费率", 3001);
+			}
 			if (!$bank_card) {
 				throw new Exception("没有找到该卡", 8996);
 			}
 
 			$money = (float)$this->data['money'];
+			$y_money = (float)$this->data['money'];
 
+			$repay_fee = $money * $fee->RepayFee / 100;
+			$repay_fee = round($repay_fee, 2);
+
+			$money = $money - $repay_fee;
 			$params = array(
 				'user_id' => $this->user->UserId,
 				'hlb_bindId' => $this->data['bindId'],
 				'money' => $money,
-				'feeType' => 'RECEIVER', // RECEIVER 收款方 自己      PAYER 付款方  用户
+				'feeType' => 'PAYER', // RECEIVER 收款方 自己      PAYER 付款方  用户
 				'remark' => '',
 			);
 
@@ -543,15 +578,18 @@ class PayController extends BaseController
 			$pay->repay();
 			$pay->setParams($params);
 
-			// 生成账单
+			// 生成账单 余额 到 交易卡
 			$bill_id = Bill::createBill(array(
 				'CreditId' => $bank_card->Id,
 				'UserId' => $params['user_id'],
-				'money' => $params['money'],
+				'money' => $y_money, // 不含手续废
 				'Type' => 3, // 还款
 				'bank_number' => $bank_card->CreditNumber,
 				'OrderNum' => $pay->getOrderId(),
 				'feeType' => $params['feeType'],
+				'SysFee' => $repay_fee,
+				'From' => '余额',
+				'To' => '交易卡',
 			));
 
 
@@ -563,6 +601,9 @@ class PayController extends BaseController
 
 			// 还款成功	
 			Bill::billUpdate($bill_id, 'SUCCESS');
+
+			// 扣除余额
+			User::where('Id', $this->user->UserId)->decrement('Account', $y_money);
 
 			// $repay_id = Repay::insertGetId(array(
 			// 	'OrderNum' => $result['result']['rt6_orderId'],

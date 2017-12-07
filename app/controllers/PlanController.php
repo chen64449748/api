@@ -97,9 +97,22 @@ class PlanController extends BaseController
 			$user = new stdClass();
 			$user->UserId = 82;
 			$this->user = $user;
+			$this->data['total_money'] = 10000;
 			$this->data['cash_deposit'] = 2500;
 			$this->data['ratio'] = 50;
 			$this->data['bank_id'] = 1;
+
+			if (!isset($this->data['total_money'])) {
+				throw new Exception("还款总额必填", 0);
+			}
+
+			if (!isset($this->data['cash_deposit'])) {
+				throw new Exception("保证金必填", 0);
+			}
+
+			if (!isset($this->data['ratio'])) {
+				throw new Exception("保证金比例必填", 0);
+			}
 
 			$pay_bank_id = 0;
 			isset($this->data['pay_bank_id']) && $pay_bank_id = $this->data['pay_bank_id'];
@@ -111,12 +124,20 @@ class PlanController extends BaseController
 				throw new Exception("没有找到交易卡", 8996);
 			}
 
+			if ($bank_card->Type != 2) {
+				throw new Exception("做计划的卡必须是信用卡", 8891);
+			}
+
 			if ($pay_bank_id) {
 				// 如果有传 保证金卡
 				$pay_bank_card = BankdCard::where('UserId', $this->user->UserId)->where('Id', $this->data['pay_bank_id'])->first();
 
-				if (!$bank_card) {
+				if (!$pay_bank_card) {
 					throw new Exception("没有找到交易卡", 8996);
+				}
+
+				if ($pay_bank_card->Type != 1) {
+					throw new Exception("用来收取保证金的卡必须是 借记卡（银行卡 非信用卡）", 8890);	
 				}
 			}
 			
@@ -137,7 +158,7 @@ class PlanController extends BaseController
 			$d_time = $plan_sys->PlanDayTimes; // 后台获取
 
 			if (date('H') >= 15) {
-				// throw new Exception("请在15点以前生成计划", 3003);				
+				throw new Exception("请在15点以前生成计划", 3003);
 			}
 
 			$plan_s_time = strtotime($plan_start_date);
@@ -147,10 +168,7 @@ class PlanController extends BaseController
 				$plan_s_time = time();
 			}
 
-			// $plan_s_time = strtotime($plan_start_date);	# 测试		
-			
-
-			$this->user->UserId = 1;
+			// $plan_s_time = strtotime($plan_start_date);	# 测
 			// 生成还款计划 次数
 			$plan_time = floor(100 / $this->data['ratio']) + 1;
 			// 套现分两次 数据库获取
@@ -168,10 +186,18 @@ class PlanController extends BaseController
 			// 金额 头尾
 			$header_money = round($this->data['cash_deposit'], 2);
 			$o_time = $plan_time - 1;
-			$foot_money = round(($this->data['cash_deposit'] * $o_time) / $plan_time);
-			$total_money = round($this->data['cash_deposit'] * $o_time, 2);
+			$foot_money = round(($this->data['cash_deposit'] * $o_time) / $plan_time, 2);
+			$total_money = round($this->data['total_money'], 2);
 			// 生成计划
 
+			// 保证金费率
+			$cash_deposit_fee = 0;
+			// 如果有打开计划 系统支付费用
+			if ($plan_sys->OpenPlanFeePay) {
+				$cash_deposit_fee = $header_money * $fee->PayFee / 100;
+				$cash_deposit_fee = round($cash_deposit_fee, 2);
+			}
+			
 			$plan_id = Plan::insertGetId(array(
 				'StartDate' => $plan_start_date,
 				'EndDate'   => $plan_end_date,
@@ -183,6 +209,8 @@ class PlanController extends BaseController
 				'CashDeposit' => $header_money, // 保证金
 				'fee' => $plan_fee_one * $plan_time,
 				'PayBankId' => $pay_bank_id,
+				'SysFee' => $cash_deposit_fee, // 先设置 计划保证金支付费率
+				'times' => $plan_time, // 还款次数
 			));
 
 			// 获取时间计时用
@@ -193,7 +221,9 @@ class PlanController extends BaseController
 			$this->getRandTime($plan_time, $plan_s_time, $plan_e_time, $arr);
 			$pay_t_arr = $this->getRandTimeDay($arr, $d_time, $plan_time);
 			sort($pay_t_arr);
-		
+			
+
+			$plan_pay_fee_total = 0; # 接口调用费率
 			$t_sort = 0;
 			// 生成还款计划
 			for ($i = 0; $i < $plan_time; $i++) { 
@@ -208,6 +238,15 @@ class PlanController extends BaseController
 					$huan_money = $this->getRandMoney($foot_money, $header_money);
 				}
 				$t_sort++;
+
+				$plan_repay_fee = 0;
+				// 如果还款费率打开
+				if ($plan_sys->OpenPlanFeeRepay) {
+					$plan_repay_fee = $huan_money * $fee->RepayFee / 100;
+					$plan_repay_fee = round($plan_repay_fee, 2);
+					$plan_pay_fee_total += $plan_repay_fee;
+				}
+
 				// 还款计划
 				$huan_item = array(
 					'PlanId' => $plan_id,
@@ -219,6 +258,7 @@ class PlanController extends BaseController
 					'Batch' => $batch,
 					'PayTime' => date('Y-m-d H:i:s', $pay_t_arr[$i]),
 					'sort' => $t_sort,
+					'SysFee' => $plan_repay_fee,
 				);
 				
 				// 减去 计划还的金额
@@ -248,6 +288,14 @@ class PlanController extends BaseController
 					}
 					$tao_item_total_money = $tao_item_total_money - $tao_money;
 
+					$plan_pay_fee = 0;
+					// 如果还款消费费率打开
+					if ($plan_sys->OpenPlanFeeRepay) {
+						$plan_pay_fee = $tao_money * $fee->PayFee / 100;
+						$plan_pay_fee = round($plan_pay_fee, 2);
+						$plan_pay_fee_total += $plan_pay_fee;
+					}
+
 					$tao_item = array(
 						'PlanId' => $plan_id,
 						'created_at' => date('Y-m-d H:i:s'),
@@ -257,16 +305,19 @@ class PlanController extends BaseController
 						'BankId' => $bank_card->Id,
 						'Batch' => $batch,
 						'sort' => $t_sort,
+						'SysFee'=> $plan_pay_fee,
 					);
 
 					PlanDetail::insert($tao_item);
 				}
 			}
-
+			// 费率添加
+			Plan::where('Id', $plan_id)->increment('SysFee', $plan_pay_fee_total);
 			$this->getHuanpaytime($plan_id, $tao_time, $pay_t_arr, $plan_e_time, $d_time);
 			$re_data = PlanDetail::where('PlanId', $plan_id)->get();
+			$re_plan = Plan::where('Id', $plan_id)->first();
 			DB::commit();
-			return json_encode(array('code'=> '200', 'msg'=> '计划添加成功!', 'data'=> $re_data, 'plan_id'=> $plan_id));
+			return json_encode(array('code'=> '200', 'msg'=> '计划添加成功!', 'data'=> $re_data, 'plan'=> $re_plan, 'plan_id'=> $plan_id));
 		} catch (Exception $e) {
 			DB::rollback();
 			return json_encode(array('code'=> $e->getCode(), 'msg'=> $e->getMessage()));
@@ -325,6 +376,47 @@ class PlanController extends BaseController
 		}
 	}
 
+
+	// 终止计划
+	public function getStop()
+	{
+		$this->data['plan_id'] = 392;
+		$plan_id = $this->data['plan_id'];
+		try {
+			$plan_sys = DB::table('xyk_plan_sys')->first();
+			if (!$plan_sys) {
+				throw new Exception("等待商家设置计划配置", 3005);
+			}
+			// 找到 一批结束的
+			$plan_details_count = PlanDetail::where('PlanId', $plan_id)->where('status', 1)->groupBy('Batch')->select(DB::raw('count(Id) as count, Batch'))->get();
+	
+			// $plan_details = PlanDetail::where('PlanId', $plan_id)->where('status', 0)->get();
+			$t_count = $plan_sys->TaoTimes + 1;
+			$flag = true;
+
+			// foreach ($plan_details as $tk => $tval) {
+			// 	# 如果时间接近待支付20分钟 不可取消
+			// }
+
+			foreach ($plan_details_count as $key => $value) {
+				if ($value->count != $t_count) {
+					$flag = false;
+				}
+			}
+
+			if ($flag) {
+				// 计划终止
+				Plan::where('Id', $plan_id)->update(array('status'=> 6));
+			} else {
+				// 计划正在执行中
+				throw new Exception("计划正在执行中", 0);
+			}
+			return json_encode(array('code'=> '200', 'msg'=> '计划终止成功'));
+		} catch (Exception $e) {
+			return json_encode(array('code'=> '0', 'msg' => $e->getMessage()));
+		}
+		
+	}
 	// 获取可选百分比
 	public function getRatio()
 	{
@@ -352,7 +444,7 @@ class PlanController extends BaseController
 			$d_time = $plan_sys->PlanDayTimes; // 后台获取
 
 			if (date('H') >= 15) {
-				// throw new Exception("请在15点以前生成计划", 3003);	
+				throw new Exception("请在15点以前生成计划", 3003);
 			}
 
 			$plan_s_time = strtotime($plan_start_date);

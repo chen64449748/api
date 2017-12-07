@@ -17,3 +17,4 @@ Route::controller('bindcard','BindCardController');
 Route::controller('banner','BannerController');
 Route::controller('bill','BillController');
 Route::controller('user','UserController');
+Route::controller('fee', 'FeeController');

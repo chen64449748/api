@@ -24,6 +24,18 @@ class Bill extends Eloquent
 			$data['TableId'] = '';
 		}
 
+		if (!isset($data['SysFee'])) {
+			$data['SysFee'] = 0;
+		}
+
+		if (!isset($data['From'])) {
+			$data['From'] = '';
+		}
+
+		if (!isset($data['To'])) {
+			$data['To'] = '';
+		}
+
 		$bill_id = Bill::insertGetId(array(
 			'CreditId' => $data['CreditId'],
 			'BankId' => $data['BankId'],
@@ -35,6 +47,9 @@ class Bill extends Eloquent
 			'created_at' => date('Y-m-d H:i:s'),
 			'feeType' => $data['feeType'],
 			'TableId' => $data['TableId'],
+			'SysFee' => $data['SysFee'],
+			'From' => $data['From'],
+			'To' => $data['To'],
 		));
 
 		BillDetail::insert(array(

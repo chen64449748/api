@@ -44,6 +44,11 @@ class PlanPay extends Command {
 		$pay->pay();
 
 		$sys = DB::table('xyk_sys')->first();
+		$fee = DB::table('xyk_fee')->first();
+		if (!$fee) {
+			$this->info('no fee');
+			exit();
+		}
 
 		if (!$sys) {
 			$this->info('no mac ip');
@@ -61,7 +66,7 @@ class PlanPay extends Command {
 				}
 
 				foreach ($plans as $plan) {
-					// 保证金卡
+					// 保证金卡收取 收取公式 保证金 加 计划手续费 加 系统手续费
 					if ($plan->PayBankId) {
 						try {
 							DB::beginTransaction();
@@ -70,10 +75,13 @@ class PlanPay extends Command {
 								throw new Exception("没有找到支付卡");
 							}
 							
+							// 保证金 加 计划手续费 加 系统手续费
+							$money = $plan->CashDeposit + $plan->SysFee + $plan->fee;
+
 							$pay_params = array(
 								'hlb_bindId' => $bank_card->CreditId,
 								'user_id' => $plan->UserId,
-								'money' => $plan->CashDeposit,
+								'money' => $money,
 								'goods_name' => '保证金',
 								'goods_desc' => '保证金',
 								'server_mac' => $sys->mac,
@@ -81,16 +89,19 @@ class PlanPay extends Command {
 								'callback_url' => '',
 							);
 							$pay->setParams($pay_params);
-							// 生成账单 默认失败
+							// 生成账单 默认失败 交易卡带商户
 					    	$bill_id = Bill::createBill(array(
 								'CreditId' => $bank_card->Id,
 								'UserId' => $pay_params['user_id'],
-								'money' => $pay_params['money'],
+								'money' => $plan->CashDeposit, // 不含手续
 								'Type' => 5, // 保证金收取
 								'bank_number' => $bank_card->CreditNumber,
 								'OrderNum' => $pay->getOrderId(),
 								'feeType' => '',
 								'TableId' => $plan->Id,
+								'SysFee' => $plan->fee + $plan->SysFee,
+								'From' => '交易卡',
+								'To' => '商户',
 							));
 
 					    	// $pay->sendRequest();
@@ -132,15 +143,32 @@ class PlanPay extends Command {
 							DB::beginTransaction();
 							$user = User::where('Id', $plan->UserId)->get();
 							
+							// 收取费用 保证金 加 计划手续费 加 系统手续费
+							$money = $plan->CashDeposit + $plan->fee + $plan->SysFee;
 							// 余额不足
-							if ($user->Account < $plan->CashDeposit) {
+							if ($user->Account < $money) {
 								Plan::where('Id', $plan->Id)->update(array('status'=> 5, 'res'=> '用户余额不足，不够扣除保证金，计划执行失败'));
 								DB::commit();
 								continue;
 							}
 
+							// 生成账单 默认失败  余额到商户
+					    	$bill_id = Bill::createBill(array(
+								'UserId' => $plan->UserId,
+								'money' => $plan->CashDeposit, // 不含手续
+								'Type' => 5, // 保证金收取
+								'bank_number' => $bank_card->CreditNumber,
+								'OrderNum' => '',
+								'feeType' => '',
+								'TableId' => $plan->Id,
+								'SysFee' => $plan->fee + $plan->SysFee,
+								'From' => '余额',
+								'To' => '商户',
+							));
+							// 用余额 直接成功
+					    	Bill::billUpdate($bill_id, 'SUCCESS');
 							//扣除余额 ， 修改计划准备中
-							User::where('Id', $plan->UserId)->decrement('Account', (float)$plan->CashDeposit);
+							User::where('Id', $plan->UserId)->decrement('Account', (float)$money);
 							Plan::where('Id', $plan->Id)->update(array('status'=> 1));
 
 							DB::commit();
