@@ -92,7 +92,7 @@ class HLBPay
 		}
 
 		$pageContents = HttpClient::quickPost($this->send_url, $this->send_data);
-		// echo $pageContents;exit;
+		echo $pageContents;
 		$this->response = $pageContents;
 		$result = json_decode($pageContents, 1);
 		$this->result = $result;
@@ -526,6 +526,7 @@ class HLBPay
 		$rt_sign_arr = array(
 			'rt1_bizType'           => $params['rt1_bizType'],
 			'rt2_retCode'			=> $params['rt2_retCode'],
+			'rt3_retMsg'			=> $params['rt3_retMsg'],
 			'rt4_customerNumber'	=> $params['rt4_customerNumber'],
 			'rt5_orderId'			=> $params['rt5_orderId'],
 			'rt6_serialNumber'		=> $params['rt6_serialNumber'],

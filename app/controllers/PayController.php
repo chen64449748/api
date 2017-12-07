@@ -20,7 +20,7 @@ class PayController extends BaseController
 			}
 
 			if (!$this->IdCard) {
-				throw new Exception("请先实名认证", '1001');
+				throw new Exception("请先实名认证", '1010');
 			}
 
 			if (!isset($this->data['bank_number'])) {
@@ -84,7 +84,7 @@ class PayController extends BaseController
 			}
 
 			if (!$this->IdCard) {
-				throw new Exception("请先实名认证", '1001');
+				throw new Exception("请先实名认证", '1010');
 			}
 
 			if (!isset($this->data['bank_number'])) {
@@ -201,7 +201,7 @@ class PayController extends BaseController
 			}
 
 			if (!$this->IdCard) {
-				throw new Exception("请先实名认证", '1001');
+				throw new Exception("请先实名认证", '1010');
 			}
 
 			$params = array(
@@ -343,14 +343,14 @@ class PayController extends BaseController
 		try {
 
 			// 测试数据
-			// $this->data['bank_id'] = 1;
-			// $this->data['money'] = '1.00';
-			// $this->data['goods_name'] = '特产';
-			// $this->data['goods_desc'] = '特色产品';
-			// $this->data['validateCode'] = '184216';
-			// $user = new stdClass();
-			// $user->UserId = 82;
-			// $this->user = $user;
+			$this->data['bank_id'] = 1;
+			$this->data['money'] = '1.00';
+			$this->data['goods_name'] = '特产';
+			$this->data['goods_desc'] = '特色产品';
+			$this->data['validateCode'] = '184216';
+			$user = new stdClass();
+			$user->UserId = 82;
+			$this->user = $user;
 			
 			$money = (float)$this->data['money'];
 
@@ -382,7 +382,7 @@ class PayController extends BaseController
 				'server_mac' => $sys->mac,
 				'server_ip'	 => $sys->ip,
 				'callback_url' => '', // backurl
-				'validateCode' => $this->data['validateCode'],
+				// 'validateCode' => $this->data['validateCode'],
 			);
 
 			$pay = new Pay('HLBPay');
@@ -403,6 +403,12 @@ class PayController extends BaseController
 			$pay->sendRequest();
 			
 			$result = $pay->getResult();
+
+			// 测试
+			// $result_str = '{"rt10_bindId":"48cfb204ba8b4a3f870ea4c567399272","sign":"7cb7efb4a36ffb9468da7699b56c299f","rt1_bizType":"QuickPayBindPay","rt9_orderStatus":"SUCCESS","rt6_serialNumber":"QUICKPAY171207123745PPFQ","rt14_userId":"82","rt2_retCode":"0000","rt12_onlineCardType":"CREDIT","rt11_bankId":"CMBCHINA","rt13_cardAfterFour":"6880","rt5_orderId":"20171207123745976700","rt4_customerNumber":"C1800001108","rt8_orderAmount":"1.00","rt3_retMsg":"成功","rt7_completeDate":"2017-12-07 12:37:49"}';
+			// $result = json_decode($result_str, 1);
+			// $res = $pay->getResult($result);
+			// print_r($res);exit;
 
 			if ($result['action'] != 1) { throw new Exception($result['msg'], $result['code']);}
 			
