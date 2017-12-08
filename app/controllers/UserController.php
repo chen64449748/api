@@ -393,13 +393,12 @@ class UserController extends BaseController
 
     public function getProfits()
     {
-        // return Profit::doProfit(5, 100);
-        // $profits = Profit::where("user_id", $this->user->UserId)
-        //     ->get();
-        // foreach ($profits as $k => $v) {
-        //     $profits[$k]['first'] = Users::whereIn("id", $v['first_user_id'])->get();
-        //     $profits[$k]['second'] = Users::whereIn("id", $v['second_user_id'])->get();
-        // }
-        // return $this->cbc_encode(json_encode(array('code'=> 200, 'msg'=> '请求成功', 'data'=> $profits)));
+        $profits = Profit::where("user_id", $this->user->UserId)
+            ->get();
+        foreach ($profits as $k => $v) {
+            $profits[$k]['first'] = User::where("UserId", $v['first_user_id'])->get();
+            $profits[$k]['second'] = User::where("UserId", $v['second_user_id'])->get();
+        }
+        return $this->cbc_encode(json_encode(array('code'=> 200, 'msg'=> '请求成功', 'data'=> $profits)));
     }
 }
