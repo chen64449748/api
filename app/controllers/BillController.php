@@ -6,7 +6,7 @@ class BillController extends BaseController
      * 账单列表
      * @return multitype:unknown
      */
-	public function getBilllist()
+	public function postBilllist()
 	{
 	    $offset = $this->data['offset'] ? $this->data['offset'] : '0';
 	    $limit = $this->data['limit'] ? $this->data['limit'] : '20';
@@ -60,14 +60,15 @@ class BillController extends BaseController
 	            }
 	        }
  	    }
-        return array('billList'=>$billList);
+ 	    
+ 	    return json_encode(array('code'=> '200', 'billList'=> $billList));
 	}
 	
 	/**
 	 * 账单详情页
 	 * @return multitype:unknown
 	 */
-	public function getBilldetail()
+	public function postBilldetail()
 	{
 	    $billDetail = BillDetail::where('BillId',$this->data['billId'])->first();
 	    if(!empty($billDetail)){
@@ -81,7 +82,8 @@ class BillController extends BaseController
 	            $billDetail['BankInfo'] = BankcCard::where('Id',$billDetail->BankId)->first();
 	        }
 	    }
-	    return $billDetail;
+
+	    return json_encode(array('code'=> '200', 'billDetail'=> $billDetail));
 	}
 
 

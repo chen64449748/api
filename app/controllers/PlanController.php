@@ -507,7 +507,7 @@ class PlanController extends BaseController
 	/**
 	 * 还款列表
 	 */
-	public function getBankplanlist(){
+    public function postBankplanlist(){
 	    $offset = $this->data['offset'] ? $this->data['offset'] : '0';
 	    $limit = $this->data['limit'] ? $this->data['limit'] : '20';
 	    $bankplanList = BankdCard::select('xyk_userbinddcard.*','xyk_users.Username')
@@ -529,43 +529,34 @@ class PlanController extends BaseController
 	        }
 	    }
 	    
-	    return array('bankplanList'=>$bankplanList);
+	    return json_encode(array('code'=> '200', 'bankplanList'=> $bankplanList));
+	    
 	}
 	
 	/**
 	 * 还款计划列表
 	 */
-	public function getPlanlist(){
+	public function postPlanlist(){
 	    $offset = $this->data['offset'] ? $this->data['offset'] : '0';
 	    $limit = $this->data['limit'] ? $this->data['limit'] : '20';
 	    $bankId = $this->data['bankId'];
 	    
 	    $planList = Plan::where('BankId',$bankId)->skip($offset)->take($limit)->get();
-	    if(!$planList->isEmpty()){
-	        foreach ($planList as $key => &$val){
-	            //获取信用卡号
-	            $val->PayBankInfo = array();
-	            //paybank
-	            if($val->PayBankId != ''){
-	                $val->PayBankInfo = BankdCard::where('Id',$val['PayBankId'])->first();
-	            }
-	        }
-	    }
 	    
-	    return array('planList'=>$planList);
+	    return json_encode(array('code'=> '200', 'planList'=> $planList));
 	}
 	
 	/**
 	 * 计划详情
 	 */
-	public function getPlandetail(){
+	public function postPlandetail(){
 	    $planId = $this->data['planId'] ? $this->data['planId'] : '1';
 	    $planDetail = PlanDetail::where('PlanId',$planId)->orderBy('created_at','desc')->get();
 	    
 	    if(!$planDetail->isEmpty()){
 	        foreach ($planDetail as $key => &$val){
 	            $val->BankNumber = '';
-	            //获取银行卡卡号
+	            //获取信用卡号
 	            if($val->BankId != ''){
 	                $val->BankNumber = BankcCard::where('Id',$val['BankId'])->pluck('BankNumber');
 	            }
@@ -573,7 +564,7 @@ class PlanController extends BaseController
 	        }
 	    }
 	    
-	    return array('planDetail'=>$planDetail);
+	    return json_encode(array('code'=> '200', 'planDetail'=> $planDetail));
 	}
 
 }
