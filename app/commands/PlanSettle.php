@@ -54,6 +54,22 @@ class PlanSettle extends Command {
 				
 				try {
 					DB::beginTransaction();
+
+					// 生成账单 默认失败 商户带余额
+			    	$bill_id = Bill::createBill(array(
+						'UserId' => $plan->UserId,
+						'money' => $plan->CashDeposit, // 不含手续
+						'Type' => 6, // 保证金返回
+						'bank_number' => '',
+						'OrderNum' => '',
+						'feeType' => '',
+						'TableId' => $plan->Id,
+						'SysFee' => 0,
+						'From' => '商户',
+						'To' => '余额',
+					));
+			    	// 直接成功
+					Bill::billUpdate($bill_id, 'SUCCESS');
 					// 结算到余额
 					Plan::where('Id', $plan->Id)->update(array('status'=> 3));
 					User::where('Id', $plan->UserId)->increment('Account', (float)$plan->CashDeposit);

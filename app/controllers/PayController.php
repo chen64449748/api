@@ -20,7 +20,7 @@ class PayController extends BaseController
 			}
 
 			if (!$this->IdCard) {
-				throw new Exception("请先实名认证", '1001');
+				throw new Exception("请先实名认证", '1010');
 			}
 
 			if (!isset($this->data['bank_number'])) {
@@ -84,7 +84,7 @@ class PayController extends BaseController
 			}
 
 			if (!$this->IdCard) {
-				throw new Exception("请先实名认证", '1001');
+				throw new Exception("请先实名认证", '1010');
 			}
 
 			if (!isset($this->data['bank_number'])) {
@@ -201,7 +201,7 @@ class PayController extends BaseController
 			}
 
 			if (!$this->IdCard) {
-				throw new Exception("请先实名认证", '1001');
+				throw new Exception("请先实名认证", '1010');
 			}
 
 			$params = array(
@@ -268,25 +268,38 @@ class PayController extends BaseController
 		}
 	}
 
-	// 结算卡提现
+	// 结算卡提现 账单不含手续
 	function getSettle()
 	{
 		try {
 
 			$bank_card = BankcCard::where('UserId', $this->user->UserId)->where('Id', $this->data['bank_id'])->first();
 
+			$fee = DB::table('xyk_fee')->first();
+			if (!$fee) {
+				throw new Exception("商家未设置费率", 3001);
+			}
 			if (!$bank_card) {
 				throw new Exception("没有找到该卡", 8996);
 			}
 
 			$money = (float)$this->data['money'];
-
+			$y_money = (float)$this->data['money'];
 			$user = User::where('Id', $this->user->UserId)->first();
 
 			if ($user->Account > $money) {
 				throw new Exception("最多可提现".$user->Account, 1003);
 			}
 
+			if ($money < 1) {
+				throw new Exception("提现金额不能小于1", 1004);
+			}
+
+			// 费率扣除
+			$settle_fee = $money * $fee->SettleFee / 100;
+			$settle_fee = round($settle_fee, 2);
+
+			$money = $money - $settle_fee;
 			$params = array(
 				'user_id' => $this->user->UserId,
 				'money' => $money,
@@ -308,15 +321,18 @@ class PayController extends BaseController
 			$pay->settle();
 			$pay->setParams($params);
 
-			// 生成账单
+			// 生成账单 余额 到 结算卡
 			$bill_id = Bill::createBill(array(
 				'BankId' => $bank_card->Id,
 				'UserId' => $params['user_id'],
-				'money' => $params['money'],
+				'money' => $y_money, // 不含手续废
 				'Type' => 2, // 提现
 				'bank_number' => $bank_card->BankNumber,
 				'OrderNum' => $pay->getOrderId(),
 				'feeType' => $params['feeType'],
+				'SysFee' => $settle_fee,
+				'From' => '余额',
+				'To' => '结算卡',
 			));
 
 			$pay->sendRequest();
@@ -329,34 +345,37 @@ class PayController extends BaseController
 
 			Bill::billUpdate($bill_id, 'SUCCESS');
 
-			User::where('Id', $this->user->UserId)->decrement('Account', (float)$money);
+			User::where('Id', $this->user->UserId)->decrement('Account', (float)$y_money);
 
-			return json_encode(array('code'=> '200', 'msg'=> '提现成功!'));
+			return $this->cbc_encode(json_encode(array('code'=> '200', 'msg'=> '提现成功!')));
 		} catch (Exception $e) {
-			return json_encode(array('code'=> (string)$e->getCode(), 'msg'=> $e->getMessage()));
+			return $this->cbc_encode(json_encode(array('code'=> (string)$e->getCode(), 'msg'=> $e->getMessage())));
 		}
 	}
 
-	// 支付  通过银行卡还款  通过
+	// 支付  通过银行卡还款 账单不含手续
 	function getPay()
 	{
 		try {
 
 			// 测试数据
-			// $this->data['bank_id'] = 1;
-			// $this->data['money'] = '1.00';
-			// $this->data['goods_name'] = '特产';
-			// $this->data['goods_desc'] = '特色产品';
-			// $this->data['validateCode'] = '184216';
-			// $user = new stdClass();
-			// $user->UserId = 82;
-			// $this->user = $user;
+			$this->data['bank_id'] = 1;
+			$this->data['money'] = '1.00';
+			$this->data['goods_name'] = '特产';
+			$this->data['goods_desc'] = '特色产品';
+			$this->data['validateCode'] = '184216';
+			$user = new stdClass();
+			$user->UserId = 82;
+			$this->user = $user;
 			
 			$money = (float)$this->data['money'];
 
 			$bank_card = BankdCard::where('UserId', $this->user->UserId)->where('Id', $this->data['bank_id'])->first();
 			$sys = DB::table('xyk_sys')->first();
-
+			$fee = DB::table('xyk_fee')->first();
+			if (!$fee) {
+				throw new Exception("商家未设置费率", 3001);
+			}
 			if (!$sys) {
 				throw new Exception("商户未配置mac地址", 3003);
 			}
@@ -369,27 +388,30 @@ class PayController extends BaseController
 				throw new Exception("金额必须为数字", 8995);
 			}
 
+			$pay_fee = $money * $fee->PayFee / 100;
+			$pay_fee = round($pay_fee, 2);
+
 			if ($money < 1) {
 				throw new Exception("金额过低，最小金额1", 8995);
 			}
-
+			
 			$params = array(
 				'hlb_bindId' => $bank_card->CreditId,
 				'user_id' => $this->user->UserId,
-				'money' => $this->data['money'],
+				'money' => $money,
 				'goods_name' => $this->data['goods_name'],
 				'goods_desc' => $this->data['goods_desc'],
 				'server_mac' => $sys->mac,
 				'server_ip'	 => $sys->ip,
 				'callback_url' => '', // backurl
-				'validateCode' => $this->data['validateCode'],
+				// 'validateCode' => $this->data['validateCode'],
 			);
 
 			$pay = new Pay('HLBPay');
 			$pay->pay(); // 支付
 			$pay->setParams($params);
 
-			// 生成账单
+			// 生成账单 交易卡 到 余额
 			$bill_id = Bill::createBill(array(
 				'CreditId' => $bank_card->Id,
 				'UserId' => $params['user_id'],
@@ -398,11 +420,20 @@ class PayController extends BaseController
 				'bank_number' => $bank_card->CreditNumber,
 				'OrderNum' => $pay->getOrderId(),
 				'feeType' => '', // 绑卡支付没有手续费
+				'SysFee' => $pay_fee,
+				'From' => '交易卡',
+				'To' => '余额',
 			));
 
 			$pay->sendRequest();
 			
 			$result = $pay->getResult();
+
+			// 测试
+			// $result_str = '{"rt10_bindId":"48cfb204ba8b4a3f870ea4c567399272","sign":"7cb7efb4a36ffb9468da7699b56c299f","rt1_bizType":"QuickPayBindPay","rt9_orderStatus":"SUCCESS","rt6_serialNumber":"QUICKPAY171207123745PPFQ","rt14_userId":"82","rt2_retCode":"0000","rt12_onlineCardType":"CREDIT","rt11_bankId":"CMBCHINA","rt13_cardAfterFour":"6880","rt5_orderId":"20171207123745976700","rt4_customerNumber":"C1800001108","rt8_orderAmount":"1.00","rt3_retMsg":"成功","rt7_completeDate":"2017-12-07 12:37:49"}';
+			// $result = json_decode($result_str, 1);
+			// $res = $pay->getResult($result);
+			// print_r($res);exit;
 
 			if ($result['action'] != 1) { throw new Exception($result['msg'], $result['code']);}
 			
@@ -410,8 +441,9 @@ class PayController extends BaseController
 				Bill::billUpdate($bill_id, 'DOING'); //  账单修改为处理中
 			} else {
 				Bill::billUpdate($bill_id, 'SUCCESS'); // 成功 
-				// 添加余额
-				User::where('Id', $bill->UserId)->increment('Account', (float)$result['result']['rt8_orderAmount']);
+				// 添加余额 扣除手续废
+				$d_money = $money - $pay_fee;
+				User::where('Id', $bill->UserId)->increment('Account', (float)$d_money);
 			}
 
 			
@@ -420,7 +452,7 @@ class PayController extends BaseController
 			// $result = json_decode($result, 1);
 			
 
-			return json_encode(array('code'=> '200', 'msg'=> '支付请求已发送'));
+			return $this->cbc_encode(json_encode(array('code'=> '200', 'msg'=> '支付请求已发送')));
 
 		} catch (Exception $e) {
 			return $this->cbc_encode(json_encode(array('code'=> 0, 'msg'=> '错误代码：'.$e->getCode().','.$e->getMessage())));
@@ -428,6 +460,7 @@ class PayController extends BaseController
 		
 	}
 
+	// 废弃
 	// 验证支付成功 普通处理方式
 	function getDopay()
 	{
@@ -512,24 +545,32 @@ class PayController extends BaseController
 		
 	}
 
-	// 信用卡还款
+	// 信用卡还款 账单不含手续
 	function getRepay()
 	{
 		try {
 
 			$bank_card = BankdCard::where('UserId', $this->user->UserId)->where('CreditId', $this->data['bindId'])->first();
-
+			$fee = DB::table('xyk_fee')->first();
+			if (!$fee) {
+				throw new Exception("商家未设置费率", 3001);
+			}
 			if (!$bank_card) {
 				throw new Exception("没有找到该卡", 8996);
 			}
 
 			$money = (float)$this->data['money'];
+			$y_money = (float)$this->data['money'];
 
+			$repay_fee = $money * $fee->RepayFee / 100;
+			$repay_fee = round($repay_fee, 2);
+
+			$money = $money - $repay_fee;
 			$params = array(
 				'user_id' => $this->user->UserId,
 				'hlb_bindId' => $this->data['bindId'],
 				'money' => $money,
-				'feeType' => 'RECEIVER', // RECEIVER 收款方 自己      PAYER 付款方  用户
+				'feeType' => 'PAYER', // RECEIVER 收款方 自己      PAYER 付款方  用户
 				'remark' => '',
 			);
 
@@ -537,15 +578,18 @@ class PayController extends BaseController
 			$pay->repay();
 			$pay->setParams($params);
 
-			// 生成账单
+			// 生成账单 余额 到 交易卡
 			$bill_id = Bill::createBill(array(
 				'CreditId' => $bank_card->Id,
 				'UserId' => $params['user_id'],
-				'money' => $params['money'],
+				'money' => $y_money, // 不含手续废
 				'Type' => 3, // 还款
 				'bank_number' => $bank_card->CreditNumber,
 				'OrderNum' => $pay->getOrderId(),
 				'feeType' => $params['feeType'],
+				'SysFee' => $repay_fee,
+				'From' => '余额',
+				'To' => '交易卡',
 			));
 
 
@@ -557,6 +601,9 @@ class PayController extends BaseController
 
 			// 还款成功	
 			Bill::billUpdate($bill_id, 'SUCCESS');
+
+			// 扣除余额
+			User::where('Id', $this->user->UserId)->decrement('Account', $y_money);
 
 			// $repay_id = Repay::insertGetId(array(
 			// 	'OrderNum' => $result['result']['rt6_orderId'],
@@ -572,10 +619,10 @@ class PayController extends BaseController
 
 			// 还款成功 
 
-			return json_encode(array('code'=> '200', 'msg'=> '还款成功!'));
+			return $this->cbc_encode(json_encode(array('code'=> '200', 'msg'=> '还款成功!')));
 
 		} catch (Exception $e) {
-			return json_encode(array('code'=> $e->getCode(), 'msg'=> '错误代码：'.$e->getCode().','.$e->getMessage()));		
+			return $this->cbc_encode(json_encode(array('code'=> $e->getCode(), 'msg'=> '错误代码：'.$e->getCode().','.$e->getMessage())));		
 		}
 		
 
@@ -636,10 +683,10 @@ class PayController extends BaseController
 				'status' => 2,
 			));
 
-			return Response::json(array('code'=> '200', 'msg'=> '解绑成功'));
+			return $this->cbc_encode(json_encode(array('code'=> '200', 'msg'=> '解绑成功')));
 
 		} catch (Exception $e) {
-			return Response::json(array('code'=> $e->getCode(), 'msg'=> '错误代码：'.$e->getCode().','.$e->getMessage()));
+			return $this->cbc_encode(json_encode(array('code'=> $e->getCode(), 'msg'=> '错误代码：'.$e->getCode().','.$e->getMessage())));
 		}
 
 	}

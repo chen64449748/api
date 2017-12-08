@@ -7,7 +7,7 @@ class PlanController extends BaseController
 {
 	protected $user;
 	// d_time 同一天存在次数
-	private function getRandTime($times, $s_time, $e_time, &$arr = array())
+	private function getRandTime($times, $s_time, $e_time, &$arr = array(), $end_h = 21)
 	{
 		$use_time = $e_time - $s_time;
 
@@ -17,7 +17,7 @@ class PlanController extends BaseController
 
 		$pay_time = $s_time + $pay_time_tmp;
 
-		if ((int)date('H', $pay_time) >= 7 && (int)date('H', $pay_time) <= 22) {
+		if ((int)date('H', $pay_time) >= 7 && (int)date('H', $pay_time) <= $end_h) {
 			
 			$arr[] = $pay_time;
 			if (count($arr) == $times * 100) {
@@ -31,9 +31,10 @@ class PlanController extends BaseController
 		}
 	} 
 
-	private function getRandTimeDay($arr, $d_time = 2, $times)
+	private function getRandTimeDay($arr, $d_time = 2, $times, $t_time = 1200)
 	{
 		$tmp_arr = array();
+		sort($arr);
 		foreach ($arr as $key => $value) {
 			$tmp_arr[date('d', $value)][] = $value;
 		}
@@ -50,12 +51,36 @@ class PlanController extends BaseController
 				}
 
 				$dk = mt_rand(0, $tmp_count);
-				$r_arr[] = $tv[$dk];
-				$tmp_time++;	
+				$flag_t = true;
+				// 判断间隔时间是否小于半小时
+				// foreach ($r_arr as $rval) {
+				// 	$tmp_t_time = $tv[$dk] - $rval;
+				// 	if ($tmp_t_time < $t_time) {
+				// 		$flag_t = false;
+				// 		break;
+				// 	}
+				// }
+
+				if ($flag_t) {
+					$r_arr[] = $tv[$dk];
+					$tmp_time++;
+				}
+					
 			}
 		}
 
 		return $r_arr;
+	}
+
+	function getRandMoney($foot_money, $header_money)
+	{
+		$money = mt_rand($foot_money, $header_money);
+
+		if ($money < 1) {
+			return $this->getRandMoney($foot_money, $header_money);
+		} else {
+			return $money;
+		}
 	}
 
 	function getAdd()
@@ -72,9 +97,22 @@ class PlanController extends BaseController
 			$user = new stdClass();
 			$user->UserId = 82;
 			$this->user = $user;
+			$this->data['total_money'] = 10000;
 			$this->data['cash_deposit'] = 2500;
 			$this->data['ratio'] = 50;
 			$this->data['bank_id'] = 1;
+
+			if (!isset($this->data['total_money'])) {
+				throw new Exception("还款总额必填", 0);
+			}
+
+			if (!isset($this->data['cash_deposit'])) {
+				throw new Exception("保证金必填", 0);
+			}
+
+			if (!isset($this->data['ratio'])) {
+				throw new Exception("保证金比例必填", 0);
+			}
 
 			$pay_bank_id = 0;
 			isset($this->data['pay_bank_id']) && $pay_bank_id = $this->data['pay_bank_id'];
@@ -86,47 +124,73 @@ class PlanController extends BaseController
 				throw new Exception("没有找到交易卡", 8996);
 			}
 
+			if ($bank_card->Type != 2) {
+				throw new Exception("做计划的卡必须是信用卡", 8891);
+			}
+
 			if ($pay_bank_id) {
 				// 如果有传 保证金卡
 				$pay_bank_card = BankdCard::where('UserId', $this->user->UserId)->where('Id', $this->data['pay_bank_id'])->first();
 
-				if (!$bank_card) {
+				if (!$pay_bank_card) {
 					throw new Exception("没有找到交易卡", 8996);
+				}
+
+				if ($pay_bank_card->Type != 1) {
+					throw new Exception("用来收取保证金的卡必须是 借记卡（银行卡 非信用卡）", 8890);	
 				}
 			}
 			
 
 			// 获取手续费
 			$fee = DB::table('xyk_fee')->first();
-
+			$plan_sys = DB::table('xyk_plan_sys')->first();
 			if (!$fee) {
 				throw new Exception("等待商家设置手续费", 3001);
 			}
 			
+			if (!$plan_sys) {
+				throw new Exception("等待商家设置计划配置", 3005);
+			}
+
+			if (!$bank_card->AccountDate) {
+				throw new Exception("该卡未设置账单日", 8980);
+			}
+
+			if (!$bank_card->RepaymentDate) {
+				throw new Exception("该卡未设置还款日", 8980);
+			}
+
 			$plan_start_date = $bank_card->AccountDate;
 			$plan_end_date = $bank_card->RepaymentDate;
-			$d_time = 2; // 后台获取
+			$d_time = $plan_sys->PlanDayTimes; // 后台获取
 
-			if (date('H') >= 21) {
-				throw new Exception("请在21点以前生成计划", 3003);				
+
+			if (date('H') >= 15) {
+				throw new Exception("请在15点以前生成计划", 3003);
 			}
 
-			if ( (int)date('d', strtotime($plan_start_date)) <= (int)date('d')) {
-				$plan_s_time = time();
-			} else {
-				$plan_s_time = strtotime($plan_start_date);
-			}
-
-			// $plan_s_time = strtotime($plan_start_date);	# 测试		
+			$plan_s_time = strtotime($plan_start_date);
 			$plan_e_time = strtotime($plan_end_date);
 
-			$this->user->UserId = 1;
-			// 生成还款计划 次数
-			$plan_time = ceil(100 / $this->data['ratio']) + 1;
-			// 套现分两次
-			$tao_time = 2;
+			if (time() >= $plan_e_time) {
+				throw new Exception("请重新设置账单日 还款日", 3005);
+			}
 
-			if ($fee->PlanFee * $plan_time > $this->data['cash_deposit']) {
+			if ($plan_s_time < time() && $plan_s_time > time()) {
+				// 如果再还款中间
+				$plan_s_time = time();
+			}
+
+			// $plan_s_time = strtotime($plan_start_date);	# 测
+			// 生成还款计划 次数
+			$plan_time = floor(100 / $this->data['ratio']) + 1;
+			// 套现分两次 数据库获取
+			$tao_time = $plan_sys->TaoTimes;
+
+			$plan_fee_one = $fee->PlanFee / 100 * $this->data['cash_deposit'];
+
+			if ($plan_fee_one * $plan_time > $this->data['cash_deposit']) {
 				throw new Exception("保证金不能低于手续费", 3002);
 			}
 
@@ -136,21 +200,31 @@ class PlanController extends BaseController
 			// 金额 头尾
 			$header_money = round($this->data['cash_deposit'], 2);
 			$o_time = $plan_time - 1;
-			$foot_money = round(($this->data['cash_deposit'] * $o_time) / $plan_time);
-			$total_money = round($this->data['cash_deposit'] * $o_time, 2);
+			$foot_money = round(($this->data['cash_deposit'] * $o_time) / $plan_time, 2);
+			$total_money = round($this->data['total_money'], 2);
 			// 生成计划
 
+			// 保证金费率
+			$cash_deposit_fee = 0;
+			// 如果有打开计划 系统支付费用
+			if ($plan_sys->OpenPlanFeePay) {
+				$cash_deposit_fee = $header_money * $fee->PayFee / 100;
+				$cash_deposit_fee = round($cash_deposit_fee, 2);
+			}
+			
 			$plan_id = Plan::insertGetId(array(
 				'StartDate' => $plan_start_date,
 				'EndDate'   => $plan_end_date,
-				'status' => 0,
+				'status' => 6,
 				'UserId' => $this->user->UserId,
 				'BankId' => $bank_card->Id,
 				'created_at' => date('Y-m-d H:i:s'),
 				'TotalMoney' => $total_money, // 不含手续费 还款总额
 				'CashDeposit' => $header_money, // 保证金
-				'fee' => $fee->PlanFee * $plan_time,
+				'fee' => $plan_fee_one * $plan_time,
 				'PayBankId' => $pay_bank_id,
+				'SysFee' => $cash_deposit_fee, // 先设置 计划保证金支付费率
+				'times' => $plan_time, // 还款次数
 			));
 
 			// 获取时间计时用
@@ -161,7 +235,9 @@ class PlanController extends BaseController
 			$this->getRandTime($plan_time, $plan_s_time, $plan_e_time, $arr);
 			$pay_t_arr = $this->getRandTimeDay($arr, $d_time, $plan_time);
 			sort($pay_t_arr);
-		
+			
+
+			$plan_pay_fee_total = 0; # 接口调用费率
 			$t_sort = 0;
 			// 生成还款计划
 			for ($i = 0; $i < $plan_time; $i++) { 
@@ -173,9 +249,18 @@ class PlanController extends BaseController
 					} else if ($i == $plan_time - 1) {
 					$huan_money = $total_money;
 				} else {
-					$huan_money = mt_rand($foot_money, $header_money);
+					$huan_money = $this->getRandMoney($foot_money, $header_money);
 				}
 				$t_sort++;
+
+				$plan_repay_fee = 0;
+				// 如果还款费率打开
+				if ($plan_sys->OpenPlanFeeRepay) {
+					$plan_repay_fee = $huan_money * $fee->RepayFee / 100;
+					$plan_repay_fee = round($plan_repay_fee, 2);
+					$plan_pay_fee_total += $plan_repay_fee;
+				}
+
 				// 还款计划
 				$huan_item = array(
 					'PlanId' => $plan_id,
@@ -187,6 +272,7 @@ class PlanController extends BaseController
 					'Batch' => $batch,
 					'PayTime' => date('Y-m-d H:i:s', $pay_t_arr[$i]),
 					'sort' => $t_sort,
+					'SysFee' => $plan_repay_fee,
 				);
 				
 				// 减去 计划还的金额
@@ -212,9 +298,17 @@ class PlanController extends BaseController
 					} else if ($j == $tao_time - 1) {
 						$tao_money = $tao_item_total_money;
 					} else {
-						$tao_money = mt_rand($tao_foot_money, $tao_header_money);
+						$tao_money = $this->getRandMoney($tao_foot_money, $tao_header_money);
 					}
 					$tao_item_total_money = $tao_item_total_money - $tao_money;
+
+					$plan_pay_fee = 0;
+					// 如果还款消费费率打开
+					if ($plan_sys->OpenPlanFeeRepay) {
+						$plan_pay_fee = $tao_money * $fee->PayFee / 100;
+						$plan_pay_fee = round($plan_pay_fee, 2);
+						$plan_pay_fee_total += $plan_pay_fee;
+					}
 
 					$tao_item = array(
 						'PlanId' => $plan_id,
@@ -225,19 +319,22 @@ class PlanController extends BaseController
 						'BankId' => $bank_card->Id,
 						'Batch' => $batch,
 						'sort' => $t_sort,
+						'SysFee'=> $plan_pay_fee,
 					);
 
 					PlanDetail::insert($tao_item);
 				}
 			}
-
+			// 费率添加
+			Plan::where('Id', $plan_id)->increment('SysFee', $plan_pay_fee_total);
 			$this->getHuanpaytime($plan_id, $tao_time, $pay_t_arr, $plan_e_time, $d_time);
-		
+			$re_data = PlanDetail::where('PlanId', $plan_id)->get();
+			$re_plan = Plan::where('Id', $plan_id)->first();
 			DB::commit();
-			return json_encode(array('code'=> '200', 'msg'=> '计划添加成功!'));
+			return $this->cbc_encode(json_encode(array('code'=> '200', 'msg'=> '计划添加成功!', 'data'=> $re_data, 'plan'=> $re_plan, 'plan_id'=> $plan_id)));
 		} catch (Exception $e) {
 			DB::rollback();
-			return json_encode(array('code'=> $e->getCode(), 'msg'=> $e->getMessage()));
+			return $this->cbc_encode(json_encode(array('code'=> $e->getCode(), 'msg'=> $e->getMessage())));
 		}
 			
 
@@ -254,22 +351,22 @@ class PlanController extends BaseController
 			$addkey = $key + 1;
 
 			if ($addkey == count($pay_t_arr)) {
-				$this->getRandTime($tao_time, $pay_t_arr[$key], $plan_e_time, $arr);
+				// 最后一笔还款 时间随意
+				$this->getRandTime($tao_time, $pay_t_arr[$key], $plan_e_time, $arr, 24, 600);
 				$huan_t_arr = $this->getRandTimeDay($arr, $d_time, $tao_time);
 			} else {
-				$this->getRandTime($tao_time, $pay_t_arr[$key], $pay_t_arr[$addkey], $arr);
+
+				if (date('d', $pay_t_arr[$key]) != date('d', $pay_t_arr[$addkey])) {
+					$tmp_e_time = strtotime(date('Y-m-d 23:59:59', $pay_t_arr[$key]));
+				} else {
+					$tmp_e_time = $pay_t_arr[$addkey];
+				}
+				$tmp_e_time = $pay_t_arr[$addkey];
+				$this->getRandTime($tao_time, $pay_t_arr[$key], $tmp_e_time, $arr, 24, 600);
 				$huan_t_arr = $this->getRandTimeDay($arr, $d_time, $tao_time);
 			}
 			
 			sort($huan_t_arr);
-			// $huan_t_arr = array();
-
-			// for ($i = 0; $i < $tao_time; $i++) {
-			// 	$pt_i = $i + 1; 
-			// 	$ptk = mt_rand(50 * $i, 50 * $pt_i - 1);
-
-			// 	$huan_t_arr[] = $arr[$ptk];
-			// }
 
 			for ($j=0; $j < $tao_time; $j++) { 
 				PlanDetail::where('PlanId', $value->PlanId)->where('Batch', $value->Batch)->take(1)->whereNull('PayTime')->update(array(
@@ -278,36 +375,180 @@ class PlanController extends BaseController
 			}
 			
 		}
-
-
 		
 	}
 
+	// 计划确认
+	public function getConfirm()
+	{
+		$plan_id = $this->data['plan_id'];
+		try {
+			Plan::where('Id', $plan_id)->update(array('status'=> 0));
+			return $this->cbc_encode(json_encode(array('code'=> '200', 'msg'=> '确认成功')));
+		} catch (Exception $e) {
+			return $this->cbc_encode(json_encode(array('code'=> '0', 'msg'=> '确认失败')));
+		}
+	}
+
+
+	// 终止计划
+	public function getStop()
+	{
+		// $this->data['plan_id'] = 392;
+		$plan_id = $this->data['plan_id'];
+		try {
+			$plan_sys = DB::table('xyk_plan_sys')->first();
+			if (!$plan_sys) {
+				throw new Exception("等待商家设置计划配置", 3005);
+			}
+			// 找到 一批结束的
+			$plan_details_count = PlanDetail::where('PlanId', $plan_id)->where('status', 1)->groupBy('Batch')->select(DB::raw('count(Id) as count, Batch'))->get();
+	
+			// $plan_details = PlanDetail::where('PlanId', $plan_id)->where('status', 0)->get();
+			$t_count = $plan_sys->TaoTimes + 1;
+			$flag = true;
+
+			// foreach ($plan_details as $tk => $tval) {
+			// 	# 如果时间接近待支付20分钟 不可取消
+			// }
+
+			foreach ($plan_details_count as $key => $value) {
+				if ($value->count != $t_count) {
+					$flag = false;
+				}
+			}
+
+			if ($flag) {
+				// 计划终止
+				Plan::where('Id', $plan_id)->update(array('status'=> 6));
+			} else {
+				// 计划正在执行中
+				throw new Exception("计划正在执行中", 0);
+			}
+			return $this->cbc_encode(json_encode(array('code'=> '200', 'msg'=> '计划终止成功')));
+		} catch (Exception $e) {
+			return $this->cbc_encode(json_encode(array('code'=> '0', 'msg' => $e->getMessage())));
+		}
+		
+	}
+	// 获取可选百分比
+	public function getRatio()
+	{
+		try {
+			$this->data['bank_id'] = 1;
+			$this->user = new stdClass();
+			$this->user->UserId = 82;
+			$plan_sys = DB::table('xyk_plan_sys')->first();
+			if (!$plan_sys) {
+				throw new Exception("等待商家设置计划配置", 3005);
+			}
+
+			$fee = DB::table('xyk_fee')->first();
+			if (!$fee) {
+				throw new Exception("等待商家设置手续费", 3001);
+			}
+			$bank_card = BankdCard::where('UserId', $this->user->UserId)->where('Id', $this->data['bank_id'])->where('Type', 2)->first();
+
+			if (!$bank_card) {
+				throw new Exception("没有找到交易卡", 8996);
+			}
+
+			$plan_start_date = $bank_card->AccountDate;
+			$plan_end_date = $bank_card->RepaymentDate;
+			$d_time = $plan_sys->PlanDayTimes; // 后台获取
+
+			if (date('H') >= 15) {
+				throw new Exception("请在15点以前生成计划", 3003);
+			}
+
+			$plan_s_time = strtotime($plan_start_date);
+			$plan_e_time = strtotime($plan_end_date);
+
+			if ($plan_s_time < time() && $plan_s_time > time()) {
+				// 如果再还款中间
+				$plan_s_time = time();
+			}
+
+			$day_diff = (int)date('d', $plan_e_time) - (int)date('d', $plan_s_time);
+
+			// 计算次数 如一天两次 计算结果 加1 因为同一天 差距diff为0
+			$times = ($day_diff + 1) * $d_time;
+			
+			if ($times <= 2) {
+				$di_rate = 100;
+			} else {
+				$di_rate = intval(100 / ($times - 1));
+				if ($di_rate % 5) {
+					$di_rate = ($di_rate % 5) * 10;
+				} 	
+			}
+			$top = 50;
+			$now = $di_rate;
+			$ratio_arr = array();
+			if ($di_rate <= 50) {
+
+				while ($now <= $top) {
+					$ratio_arr[] = $now;
+					$now = $now + 10;
+				}
+
+			} else {
+				$ratio_arr[] = $di_rate;
+			}
+			
+			return $this->cbc_encode(json_encode(array('code'=> '200', 'fee'=> $fee, 'ratio'=> $ratio_arr)));
+
+		} catch (Exception $e) {
+			return $this->cbc_encode(json_encode(array('code'=> '0', 'msg'=> $e->getMessage(), 'fee'=> '', 'ratio'=> '')));
+		}
+		
+	}
+
+	/**
+	 * 还款列表
+	 */
+	public function getBankplanlist(){
+	    $offset = $this->data['offset'] ? $this->data['offset'] : '0';
+	    $limit = $this->data['limit'] ? $this->data['limit'] : '20';
+	    $bankplanList = BankdCard::select('xyk_userbinddcard.*','xyk_users.Username')
+	                ->leftJoin('xyk_users','xyk_users.UserId','=','xyk_userbinddcard.UserId')
+	                ->where('xyk_userbinddcard.UserId',$this->user['UserId'])
+	                ->where('Type','2')
+            	    ->skip($offset)
+            	    ->take($limit)
+            	    ->get();
+	    
+	    if(!$bankplanList->isEmpty()){
+	        foreach ($bankplanList as $key => &$val){
+	            $planInfo = array();
+	            $val->havePlan = '0';
+	            $planInfo = Plan::where('BankId',$val->Id)->where('status','1')->get();
+	            if(!$planInfo->isEmpty()){
+	                $val->havePlan = '1';
+	            }
+	        }
+	    }
+	    
+	    return array('bankplanList'=>$bankplanList);
+	}
+	
 	/**
 	 * 还款计划列表
 	 */
 	public function getPlanlist(){
 	    $offset = $this->data['offset'] ? $this->data['offset'] : '0';
 	    $limit = $this->data['limit'] ? $this->data['limit'] : '20';
-	    $planList = Plan::where('UserId',$this->user['UserId'])
-            	    ->orderBy('created_at','desc')
-            	    ->skip($offset)
-            	    ->take($limit)
-            	    ->get();
+	    $bankId = $this->data['bankId'];
 	    
+	    $planList = Plan::where('BankId',$bankId)->skip($offset)->take($limit)->get();
 	    if(!$planList->isEmpty()){
 	        foreach ($planList as $key => &$val){
-	            $val->BankNumber = '';
-	            $val->UserName = '';
-	            //获取银行卡卡号
-	            if($val->BankId != ''){
-	                $val->BankNumber = BankcCard::where('Id',$val['BankId'])->pluck('BankNumber');
+	            //获取信用卡号
+	            $val->PayBankInfo = array();
+	            //paybank
+	            if($val->PayBankId != ''){
+	                $val->PayBankInfo = BankdCard::where('Id',$val['PayBankId'])->first();
 	            }
-	            //获取用户名
-	            if($val->UserId != ''){
-	                $val->UserName = User::where('UserId',$val['UserId'])->pluck('Username');
-	            }
-	            
 	        }
 	    }
 	    

@@ -80,22 +80,25 @@ class PayRepay extends Command {
 				    		'user_id' => $plan->UserId,
 							'hlb_bindId' => $bank_card->CreditId,
 							'money' => (float)$value->Money,
-							'feeType' => 'RECEIVER', // RECEIVER 收款方 自己      PAYER 付款方  用户
+							'feeType' => 'PAYER', // RECEIVER 收款方 自己      PAYER 付款方  用户
 							'remark' => '',
 				    	);
 
 				    	$pay->repay();
 				    	$pay->setParams($repay_params);
-				    	// 生成账单 默认失败
+				    	// 生成账单 默认失败 商户到交易卡
 				    	$bill_id = Bill::createBill(array(
 							'CreditId' => $bank_card->Id,
 							'UserId' => $repay_params['user_id'],
-							'money' => $repay_params['money'],
+							'money' => $repay_params['money'], // 不含手续
 							'Type' => 3, // 还款
 							'bank_number' => $bank_card->CreditNumber,
 							'OrderNum' => $pay->getOrderId(),
 							'feeType' => $repay_params['feeType'],
 							'TableId' => $plan->Id,
+							'SysFee' => $value->SysFee,
+							'From' => '商户',
+							'To' => '交易卡',
 						));
 
 				    	// 修改计划为带查询
@@ -154,16 +157,19 @@ class PayRepay extends Command {
 		    			);
 		    			$pay->pay();
 						$pay->setParams($pay_params);
-						// 生成账单 默认失败
+						// 生成账单 默认失败  交易卡 到 商户
 				    	$bill_id = Bill::createBill(array(
 							'CreditId' => $bank_card->Id,
 							'UserId' => $pay_params['user_id'],
-							'money' => $pay_params['money'],
+							'money' => $pay_params['money'], // 不含手续废
 							'Type' => 4, // 还款消费
 							'bank_number' => $bank_card->CreditNumber,
 							'OrderNum' => $pay->getOrderId(),
 							'feeType' => '',
 							'TableId' => $plan->Id,
+							'SysFee' => $value->SysFee,
+							'From' => '交易卡',
+							'To' => '商户',
 						));
 
 				    	// 修改计划
@@ -174,6 +180,7 @@ class PayRepay extends Command {
 
 				  //   	$pay->sendRequest();
 						// $result = $pay->getResult();
+						// 测试
 				    	$result = array(
 				    		'action' => 1,
 				    		'result' => array(
