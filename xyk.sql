@@ -1,16 +1,16 @@
 /*
 Navicat MySQL Data Transfer
 
-Source Server         : local
-Source Server Version : 50540
+Source Server         : lzh
+Source Server Version : 50553
 Source Host           : localhost:3306
 Source Database       : xyk
 
 Target Server Type    : MYSQL
-Target Server Version : 50540
+Target Server Version : 50553
 File Encoding         : 65001
 
-Date: 2017-12-08 00:18:34
+Date: 2017-12-08 16:17:18
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -718,12 +718,13 @@ CREATE TABLE `xyk_plan` (
   `SysFee` decimal(10,2) DEFAULT '0.00' COMMENT '系统统计 调用接口使用费率 总合',
   `times` int(11) DEFAULT '0' COMMENT '笔数',
   PRIMARY KEY (`Id`)
-) ENGINE=InnoDB AUTO_INCREMENT=403 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=404 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- ----------------------------
 -- Records of xyk_plan
 -- ----------------------------
 INSERT INTO `xyk_plan` VALUES ('402', '2017-12-05 00:00:00', '2017-12-06 23:59:59', '6', '2017-12-08 00:16:18', '2017-12-08 00:16:18', '82', '1', '10000.00', '75', '2500.00', null, '0', '225.00', '3');
+INSERT INTO `xyk_plan` VALUES ('403', '2017-12-05 00:00:00', '2017-12-06 23:59:59', '6', '2017-12-08 10:37:50', '2017-12-08 10:37:50', '82', '1', '10000.00', '75', '2500.00', null, '0', '225.00', '3');
 
 -- ----------------------------
 -- Table structure for xyk_plan_detail
@@ -745,7 +746,7 @@ CREATE TABLE `xyk_plan_detail` (
   `sort` int(11) DEFAULT NULL,
   `SysFee` decimal(10,2) DEFAULT '0.00' COMMENT '每次接口收取费用 总合添加到 plan表',
   PRIMARY KEY (`Id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3718 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3727 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- ----------------------------
 -- Records of xyk_plan_detail
@@ -759,6 +760,15 @@ INSERT INTO `xyk_plan_detail` VALUES ('3714', '402', '2017-12-08 00:16:18', '201
 INSERT INTO `xyk_plan_detail` VALUES ('3715', '402', '2017-12-08 00:16:18', null, '5627.00', '1', '2017-12-06 15:11:16', '0', null, '1', null, '201712080016182702262', '7', '56.27');
 INSERT INTO `xyk_plan_detail` VALUES ('3716', '402', '2017-12-08 00:16:18', '2017-12-08 00:16:18', '2748.00', '2', '2017-12-06 16:37:59', '0', null, '1', null, '201712080016182702262', '8', '27.48');
 INSERT INTO `xyk_plan_detail` VALUES ('3717', '402', '2017-12-08 00:16:18', '2017-12-08 00:16:18', '2879.00', '2', '2017-12-06 16:40:20', '0', null, '1', null, '201712080016182702262', '9', '28.79');
+INSERT INTO `xyk_plan_detail` VALUES ('3718', '403', '2017-12-08 10:37:50', null, '2374.00', '1', '2017-12-05 07:48:01', '0', null, '1', null, '201712081037508178850', '1', '23.74');
+INSERT INTO `xyk_plan_detail` VALUES ('3719', '403', '2017-12-08 10:37:50', '2017-12-08 10:37:50', '910.00', '2', '2017-12-05 08:00:24', '0', null, '1', null, '201712081037508178850', '2', '9.10');
+INSERT INTO `xyk_plan_detail` VALUES ('3720', '403', '2017-12-08 10:37:50', '2017-12-08 10:37:50', '1464.00', '2', '2017-12-05 08:31:18', '0', null, '1', null, '201712081037508178850', '3', '14.64');
+INSERT INTO `xyk_plan_detail` VALUES ('3721', '403', '2017-12-08 10:37:50', null, '1726.00', '1', '2017-12-05 09:57:40', '0', null, '1', null, '201712081037506552141', '4', '17.26');
+INSERT INTO `xyk_plan_detail` VALUES ('3722', '403', '2017-12-08 10:37:50', '2017-12-08 10:37:50', '742.00', '2', '2017-12-05 18:48:54', '0', null, '1', null, '201712081037506552141', '5', '7.42');
+INSERT INTO `xyk_plan_detail` VALUES ('3723', '403', '2017-12-08 10:37:50', '2017-12-08 10:37:50', '984.00', '2', '2017-12-05 19:47:15', '0', null, '1', null, '201712081037506552141', '6', '9.84');
+INSERT INTO `xyk_plan_detail` VALUES ('3724', '403', '2017-12-08 10:37:50', null, '5900.00', '1', '2017-12-06 17:09:02', '0', null, '1', null, '201712081037502418792', '7', '59.00');
+INSERT INTO `xyk_plan_detail` VALUES ('3725', '403', '2017-12-08 10:37:50', '2017-12-08 10:37:50', '2827.00', '2', '2017-12-06 19:53:31', '0', null, '1', null, '201712081037502418792', '8', '28.27');
+INSERT INTO `xyk_plan_detail` VALUES ('3726', '403', '2017-12-08 10:37:50', '2017-12-08 10:37:50', '3073.00', '2', '2017-12-06 20:38:48', '0', null, '1', null, '201712081037502418792', '9', '30.73');
 
 -- ----------------------------
 -- Table structure for xyk_plan_sys
@@ -799,28 +809,6 @@ CREATE TABLE `xyk_refund` (
 
 -- ----------------------------
 -- Records of xyk_refund
--- ----------------------------
-
--- ----------------------------
--- Table structure for xyk_repay
--- ----------------------------
-DROP TABLE IF EXISTS `xyk_repay`;
-CREATE TABLE `xyk_repay` (
-  `Id` int(11) NOT NULL AUTO_INCREMENT,
-  `OrderNum` varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `Money` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `UserId` int(11) DEFAULT NULL,
-  `SerialNum` varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `BankId` int(11) DEFAULT NULL COMMENT '连接 bankdcard表的 id ',
-  `created_at` datetime DEFAULT NULL,
-  `updated_at` datetime DEFAULT NULL,
-  `status` int(11) DEFAULT NULL COMMENT '0 等待执行 1  成功  2 失败',
-  `FeeType` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '手续费付款  PAYER 付款方指用户  RECEIVER 指自己 商户',
-  PRIMARY KEY (`Id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-
--- ----------------------------
--- Records of xyk_repay
 -- ----------------------------
 
 -- ----------------------------
@@ -1031,7 +1019,7 @@ INSERT INTO `xyk_userbindccard` VALUES ('6', '8a6019b556ad4cf7a79a61d388989a68',
 DROP TABLE IF EXISTS `xyk_userbinddcard`;
 CREATE TABLE `xyk_userbinddcard` (
   `Id` int(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '银行卡ID',
-  `CreditId` varchar(60) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT '0' COMMENT '信用卡id',
+  `CreditId` varchar(60) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT '0' COMMENT '交易卡id',
   `UserId` int(11) unsigned DEFAULT NULL COMMENT '用户id',
   `CreditName` varchar(100) DEFAULT NULL COMMENT '信用卡名称',
   `CreditNumber` varchar(100) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT '0' COMMENT '信用卡号',
@@ -1041,7 +1029,7 @@ CREATE TABLE `xyk_userbinddcard` (
   `CVN` int(10) unsigned DEFAULT NULL COMMENT 'SVN2码',
   `Quota` decimal(10,2) unsigned DEFAULT NULL COMMENT '信用卡额度',
   `AccountDate` datetime DEFAULT NULL COMMENT '账号日',
-  `RepaymentDate` datetime DEFAULT '0000-00-00 00:00:00' COMMENT '还款日',
+  `RepaymentDate` datetime DEFAULT NULL COMMENT '还款日',
   `Type` int(11) DEFAULT NULL COMMENT '1 借记卡 2 贷记卡',
   PRIMARY KEY (`Id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COMMENT='用户绑定的信用卡';
@@ -1049,7 +1037,7 @@ CREATE TABLE `xyk_userbinddcard` (
 -- ----------------------------
 -- Records of xyk_userbinddcard
 -- ----------------------------
-INSERT INTO `xyk_userbinddcard` VALUES ('1', '48cfb204ba8b4a3f870ea4c567399272', '82', '招商银行', '6225768758046880', '0', '1', '1512114970', '449', '15000.00', '2017-12-05 00:00:00', '2017-12-06 23:59:59', '2');
+INSERT INTO `xyk_userbinddcard` VALUES ('1', '48cfb204ba8b4a3f870ea4c567399272', '82', '招商银行', '6225768758046880', '0', '1', '1512114970', '449', '15000.00', '0000-00-00 00:00:00', '0000-00-00 00:00:00', '2');
 
 -- ----------------------------
 -- Table structure for xyk_userblacklist
