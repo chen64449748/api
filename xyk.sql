@@ -1,16 +1,16 @@
 /*
 Navicat MySQL Data Transfer
 
-Source Server         : lzh
-Source Server Version : 50553
+Source Server         : local
+Source Server Version : 50540
 Source Host           : localhost:3306
 Source Database       : xyk
 
 Target Server Type    : MYSQL
-Target Server Version : 50553
+Target Server Version : 50540
 File Encoding         : 65001
 
-Date: 2017-12-08 16:17:18
+Date: 2017-12-08 23:09:00
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -789,6 +789,25 @@ CREATE TABLE `xyk_plan_sys` (
 INSERT INTO `xyk_plan_sys` VALUES ('1', '2', '2', '1', '1');
 
 -- ----------------------------
+-- Table structure for xyk_profit
+-- ----------------------------
+DROP TABLE IF EXISTS `xyk_profit`;
+CREATE TABLE `xyk_profit` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) DEFAULT NULL COMMENT '获取收益用户',
+  `first_user_id` int(11) DEFAULT NULL COMMENT '一级邀请人',
+  `second_user_id` int(11) DEFAULT NULL COMMENT '二级邀请人',
+  `money` float(11,2) DEFAULT NULL COMMENT '收益金额',
+  `time` int(11) DEFAULT NULL,
+  `content` varchar(255) DEFAULT NULL COMMENT '收益说明',
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM AUTO_INCREMENT=16 DEFAULT CHARSET=utf8;
+
+-- ----------------------------
+-- Records of xyk_profit
+-- ----------------------------
+
+-- ----------------------------
 -- Table structure for xyk_refund
 -- ----------------------------
 DROP TABLE IF EXISTS `xyk_refund`;
@@ -809,6 +828,28 @@ CREATE TABLE `xyk_refund` (
 
 -- ----------------------------
 -- Records of xyk_refund
+-- ----------------------------
+
+-- ----------------------------
+-- Table structure for xyk_repay
+-- ----------------------------
+DROP TABLE IF EXISTS `xyk_repay`;
+CREATE TABLE `xyk_repay` (
+  `Id` int(11) NOT NULL AUTO_INCREMENT,
+  `OrderNum` varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `Money` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `UserId` int(11) DEFAULT NULL,
+  `SerialNum` varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `BankId` int(11) DEFAULT NULL COMMENT '连接 bankdcard表的 id ',
+  `created_at` datetime DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL,
+  `status` int(11) DEFAULT NULL COMMENT '0 等待执行 1  成功  2 失败',
+  `FeeType` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '手续费付款  PAYER 付款方指用户  RECEIVER 指自己 商户',
+  PRIMARY KEY (`Id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+-- ----------------------------
+-- Records of xyk_repay
 -- ----------------------------
 
 -- ----------------------------
@@ -1130,10 +1171,25 @@ CREATE TABLE `xyk_users` (
   `Ext1` varchar(50) DEFAULT NULL,
   `Ext2` varchar(50) DEFAULT NULL,
   `Ext3` varchar(50) DEFAULT NULL,
+  `token` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`UserId`),
   UNIQUE KEY `UK_USERS_MOBILE` (`Mobile`)
 ) ENGINE=InnoDB AUTO_INCREMENT=82 DEFAULT CHARSET=utf8 COMMENT='普通用户表';
 
 -- ----------------------------
 -- Records of xyk_users
+-- ----------------------------
+
+-- ----------------------------
+-- Table structure for xyk_verify
+-- ----------------------------
+DROP TABLE IF EXISTS `xyk_verify`;
+CREATE TABLE `xyk_verify` (
+  `mobile` varchar(11) DEFAULT NULL COMMENT '手机号',
+  `code` varchar(6) DEFAULT NULL COMMENT '验证码',
+  `time` int(11) DEFAULT NULL COMMENT '过期时间'
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+-- ----------------------------
+-- Records of xyk_verify
 -- ----------------------------
