@@ -12,9 +12,9 @@ class FeeController extends BaseController
 			if (!$fee) {
 				throw new Exception("商家未设置费率", 0);
 			}
-			return json_encode(array('code'=> '200', 'msg'=> '成功', 'fee'=> $fee));
+			return $this->cbc_encode(json_encode(array('code'=> '200', 'msg'=> '成功', 'fee'=> $fee)));
 		} catch (Exception $e) {
-			return json_encode(array('code'=> '0', 'msg'=> $e->getMessage()));
+			return $this->cbc_encode(json_encode(array('code'=> '0', 'msg'=> $e->getMessage())));
 		}
 		
 	}

@@ -347,9 +347,9 @@ class PayController extends BaseController
 
 			User::where('Id', $this->user->UserId)->decrement('Account', (float)$y_money);
 
-			return json_encode(array('code'=> '200', 'msg'=> '提现成功!'));
+			return $this->cbc_encode(json_encode(array('code'=> '200', 'msg'=> '提现成功!')));
 		} catch (Exception $e) {
-			return json_encode(array('code'=> (string)$e->getCode(), 'msg'=> $e->getMessage()));
+			return $this->cbc_encode(json_encode(array('code'=> (string)$e->getCode(), 'msg'=> $e->getMessage())));
 		}
 	}
 
@@ -452,7 +452,7 @@ class PayController extends BaseController
 			// $result = json_decode($result, 1);
 			
 
-			return json_encode(array('code'=> '200', 'msg'=> '支付请求已发送'));
+			return $this->cbc_encode(json_encode(array('code'=> '200', 'msg'=> '支付请求已发送')));
 
 		} catch (Exception $e) {
 			return $this->cbc_encode(json_encode(array('code'=> 0, 'msg'=> '错误代码：'.$e->getCode().','.$e->getMessage())));
@@ -619,10 +619,10 @@ class PayController extends BaseController
 
 			// 还款成功 
 
-			return json_encode(array('code'=> '200', 'msg'=> '还款成功!'));
+			return $this->cbc_encode(json_encode(array('code'=> '200', 'msg'=> '还款成功!')));
 
 		} catch (Exception $e) {
-			return json_encode(array('code'=> $e->getCode(), 'msg'=> '错误代码：'.$e->getCode().','.$e->getMessage()));		
+			return $this->cbc_encode(json_encode(array('code'=> $e->getCode(), 'msg'=> '错误代码：'.$e->getCode().','.$e->getMessage())));		
 		}
 		
 
@@ -683,10 +683,10 @@ class PayController extends BaseController
 				'status' => 2,
 			));
 
-			return Response::json(array('code'=> '200', 'msg'=> '解绑成功'));
+			return $this->cbc_encode(json_encode(array('code'=> '200', 'msg'=> '解绑成功')));
 
 		} catch (Exception $e) {
-			return Response::json(array('code'=> $e->getCode(), 'msg'=> '错误代码：'.$e->getCode().','.$e->getMessage()));
+			return $this->cbc_encode(json_encode(array('code'=> $e->getCode(), 'msg'=> '错误代码：'.$e->getCode().','.$e->getMessage())));
 		}
 
 	}

@@ -153,9 +153,18 @@ class PlanController extends BaseController
 				throw new Exception("等待商家设置计划配置", 3005);
 			}
 
+			if (!$bank_card->AccountDate) {
+				throw new Exception("该卡未设置账单日", 8980);
+			}
+
+			if (!$bank_card->RepaymentDate) {
+				throw new Exception("该卡未设置还款日", 8980);
+			}
+
 			$plan_start_date = $bank_card->AccountDate;
 			$plan_end_date = $bank_card->RepaymentDate;
 			$d_time = $plan_sys->PlanDayTimes; // 后台获取
+
 
 			if (date('H') >= 15) {
 				throw new Exception("请在15点以前生成计划", 3003);
@@ -163,6 +172,11 @@ class PlanController extends BaseController
 
 			$plan_s_time = strtotime($plan_start_date);
 			$plan_e_time = strtotime($plan_end_date);
+
+			if (time() >= $plan_e_time) {
+				throw new Exception("请重新设置账单日 还款日", 3005);
+			}
+
 			if ($plan_s_time < time() && $plan_s_time > time()) {
 				// 如果再还款中间
 				$plan_s_time = time();
@@ -317,10 +331,10 @@ class PlanController extends BaseController
 			$re_data = PlanDetail::where('PlanId', $plan_id)->get();
 			$re_plan = Plan::where('Id', $plan_id)->first();
 			DB::commit();
-			return json_encode(array('code'=> '200', 'msg'=> '计划添加成功!', 'data'=> $re_data, 'plan'=> $re_plan, 'plan_id'=> $plan_id));
+			return $this->cbc_encode(json_encode(array('code'=> '200', 'msg'=> '计划添加成功!', 'data'=> $re_data, 'plan'=> $re_plan, 'plan_id'=> $plan_id)));
 		} catch (Exception $e) {
 			DB::rollback();
-			return json_encode(array('code'=> $e->getCode(), 'msg'=> $e->getMessage()));
+			return $this->cbc_encode(json_encode(array('code'=> $e->getCode(), 'msg'=> $e->getMessage())));
 		}
 			
 
@@ -370,9 +384,9 @@ class PlanController extends BaseController
 		$plan_id = $this->data['plan_id'];
 		try {
 			Plan::where('Id', $plan_id)->update(array('status'=> 0));
-			return json_encode(array('code'=> '200', 'msg'=> '确认成功'));
+			return $this->cbc_encode(json_encode(array('code'=> '200', 'msg'=> '确认成功')));
 		} catch (Exception $e) {
-			return json_encode(array('code'=> '0', 'msg'=> '确认失败'));
+			return $this->cbc_encode(json_encode(array('code'=> '0', 'msg'=> '确认失败')));
 		}
 	}
 
@@ -380,7 +394,7 @@ class PlanController extends BaseController
 	// 终止计划
 	public function getStop()
 	{
-		$this->data['plan_id'] = 392;
+		// $this->data['plan_id'] = 392;
 		$plan_id = $this->data['plan_id'];
 		try {
 			$plan_sys = DB::table('xyk_plan_sys')->first();
@@ -411,9 +425,9 @@ class PlanController extends BaseController
 				// 计划正在执行中
 				throw new Exception("计划正在执行中", 0);
 			}
-			return json_encode(array('code'=> '200', 'msg'=> '计划终止成功'));
+			return $this->cbc_encode(json_encode(array('code'=> '200', 'msg'=> '计划终止成功')));
 		} catch (Exception $e) {
-			return json_encode(array('code'=> '0', 'msg' => $e->getMessage()));
+			return $this->cbc_encode(json_encode(array('code'=> '0', 'msg' => $e->getMessage())));
 		}
 		
 	}
@@ -482,10 +496,10 @@ class PlanController extends BaseController
 				$ratio_arr[] = $di_rate;
 			}
 			
-			return json_encode(array('code'=> '200', 'fee'=> $fee, 'ratio'=> $ratio_arr));
+			return $this->cbc_encode(json_encode(array('code'=> '200', 'fee'=> $fee, 'ratio'=> $ratio_arr)));
 
 		} catch (Exception $e) {
-			return json_encode(array('code'=> '0', 'msg'=> $e->getMessage(), 'fee'=> '', 'ratio'=> ''));
+			return $this->cbc_encode(json_encode(array('code'=> '0', 'msg'=> $e->getMessage(), 'fee'=> '', 'ratio'=> '')));
 		}
 		
 	}
