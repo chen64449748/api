@@ -18,26 +18,22 @@ class BaseController extends Controller {
 
 	function __construct()
 	{
-		// header('Content-type:text/html;charset=utf-8');
-		// jm4in9on4p4lfpn4rshj9r28v1
-		// echo Session::getId(); 
-		// Session::put('user', 12);
+		$url_ary = array("/user/login", "/user/checkin", "/user/verify");
 
-		// echo Session::get('user');exit;
-
-		
 		// try {
-			// $data = Input::get('data');
-			// $this->data = Input::all();
-			// $token = $this->data['token'];
-   //      	$this->user = User::where('token', $token)->first();
-   //      	if ($this->user) {
-   //      		$this->IdCard = UserContact::where("UserId", $this->user->UserId)
-   //      			->where("CertType", 1)
-   //      			->where("Isvalid", 1)
-   //      			->where("IsActivated", 1)
-   //      			->first();
-   //      	}
+			$this->data = Input::all();
+			$token = $this->data['token'];
+			if (!in_array($_SERVER['REDIRECT_URL'], $url_ary)) {
+				exit();
+			}
+        	$this->user = User::where('token', $token)->first();
+        	if ($this->user) {
+        		$this->IdCard = UserContact::where("UserId", $this->user->UserId)
+        			->where("CertType", 1)
+        			->where("Isvalid", 1)
+        			->where("IsActivated", 1)
+        			->first();
+        	}
 
 		// 	if (!$data) {
 		// 		throw new Exception("data参数必传", 9999);
