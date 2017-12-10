@@ -359,14 +359,14 @@ class PayController extends BaseController
 		try {
 
 			// 测试数据
-			$this->data['bank_id'] = 1;
-			$this->data['money'] = '1.00';
-			$this->data['goods_name'] = '特产';
-			$this->data['goods_desc'] = '特色产品';
-			$this->data['validateCode'] = '184216';
-			$user = new stdClass();
-			$user->UserId = 82;
-			$this->user = $user;
+			// $this->data['bank_id'] = 1;
+			// $this->data['money'] = '1.00';
+			// $this->data['goods_name'] = '特产';
+			// $this->data['goods_desc'] = '特色产品';
+			// $this->data['validateCode'] = '184216';
+			// $user = new stdClass();
+			// $user->UserId = 82;
+			// $this->user = $user;
 			
 			$money = (float)$this->data['money'];
 
