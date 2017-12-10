@@ -18,18 +18,22 @@ class BaseController extends Controller {
 
 	function __construct()
 	{
+		// $data = array('token'=> '2sdw2123ddqw', 'params1'=> 'add');
+
+		// echo $this->cbc_encode(json_encode($data));exit;
+
 		$url_ary = array("/user/login", "/user/checkin", "/user/verify");
 
 		// try {
 			$mcrypt_str = Input::get('data');
 
 			$data_json = $this->cbc_decode($mcrypt_str);
-
-			if (!$data_json) {
+			
+			if ($data_json == '') {
 				echo json_encode(array('code'=> '500', 'msg'=> '解密出错'));
 				exit();
 			}
-
+			$data_json = trim($data_json);
 			$data = json_decode($data_json, 1);
 
 			if (!$data) {
@@ -81,7 +85,6 @@ class BaseController extends Controller {
 
 	protected function cbc_encode($data)
 	{
-		return $data;
 		//加密  
 		$encrypted = mcrypt_encrypt(MCRYPT_RIJNDAEL_128, $this->privateKey, $data, MCRYPT_MODE_CBC, $this->iv);  
 		return base64_encode($encrypted);  
@@ -94,5 +97,7 @@ class BaseController extends Controller {
 		$decrypted = mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $this->privateKey, $encryptedData, MCRYPT_MODE_CBC, $this->iv);  
 		return $decrypted; 
 	}
+
+
 
 }
