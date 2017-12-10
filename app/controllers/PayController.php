@@ -10,7 +10,7 @@ class PayController extends BaseController
 		header('Content-type:text/html;charset=utf-8');
 	}
 
-	function getBankcode()
+	function postBankcode()
 	{	
 	
 		try {
@@ -60,7 +60,7 @@ class PayController extends BaseController
 
 	}
 	// 绑卡
-	function getBankbind()
+	function postBankbind()
 	{
 		/*
 		需要参数
@@ -192,7 +192,7 @@ class PayController extends BaseController
 		
 	}
 	// 结算卡绑定
-	function getSettlebind()
+	function postSettlebind()
 	{
 		try {
 			
@@ -269,7 +269,7 @@ class PayController extends BaseController
 	}
 
 	// 结算卡提现 账单不含手续
-	function getSettle()
+	function postSettle()
 	{
 		try {
 
@@ -354,7 +354,7 @@ class PayController extends BaseController
 	}
 
 	// 支付  通过银行卡还款 账单不含手续
-	function getPay()
+	function postPay()
 	{
 		try {
 
@@ -546,7 +546,7 @@ class PayController extends BaseController
 	}
 
 	// 信用卡还款 账单不含手续
-	function getRepay()
+	function postRepay()
 	{
 		try {
 
@@ -655,7 +655,7 @@ class PayController extends BaseController
 
 	}
 
-	function getDeletebank()
+	function postDeletebank()
 	{
 
 		try {

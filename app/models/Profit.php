@@ -19,7 +19,7 @@ class Profit extends Eloquent
 	 * @param     int                   $user_id 	充值用户
 	 * @param     float                 $money   	充值金额
 	 */
-	public static function doProfit($user_id, $money)
+	public static function doProfit($user_id, $money, $content)
 	{
 		if (!$user_id || !$money) {
 			return false;
