@@ -21,7 +21,13 @@ class BaseController extends Controller {
 		$url_ary = array("/user/login", "/user/checkin", "/user/verify");
 
 		// try {
-			$this->data = Input::all();
+			$this->data = Input::get('data');
+
+			if (!$this->data) {
+				echo json_decode(array('code'=> '500', 'msg'=> 'data必传'));
+				exit();
+			}
+
 			$token = $this->data['token'];
 			if (!in_array($_SERVER['REDIRECT_URL'], $url_ary) && !$token) {
 				exit();
