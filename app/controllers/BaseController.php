@@ -30,21 +30,21 @@ class BaseController extends Controller {
 			$data_json = $this->cbc_decode($mcrypt_str);
 			
 			if ($data_json == '') {
-				echo json_encode(array('code'=> '500', 'msg'=> '解密出错'));
+				echo $this->cbc_encode(json_encode(array('code'=> '500', 'msg'=> '解密出错')));
 				exit();
 			}
 			$data_json = trim($data_json);
 			$data = json_decode($data_json, 1);
 
 			if (!$data) {
-				echo json_encode(array('code'=> '500', 'msg'=> 'data必传'));
+				echo $this->cbc_encode(json_encode(array('code'=> '500', 'msg'=> 'data必传')));
 				exit();
 			}
 			$this->data = $data;
 
 			
 			if (!in_array($_SERVER['REDIRECT_URL'], $url_ary) && !isset($this->data['token'])) {
-				echo json_encode(array('code'=> '500', 'msg'=> 'token必传'));
+				echo $this->cbc_encode(json_encode(array('code'=> '500', 'msg'=> 'token必传')));
 				exit();
 			}
 			$token = $this->data['token'];
@@ -56,7 +56,7 @@ class BaseController extends Controller {
         			->where("IsActivated", 1)
         			->first();
         	} else {
-        		echo json_encode(array('code'=> '1001', 'msg'=> '用户未登录'));
+        		echo $this->cbc_encode(json_encode(array('code'=> '1001', 'msg'=> '用户未登录')));
         		exit();
         	}
 
