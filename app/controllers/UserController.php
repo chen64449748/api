@@ -125,7 +125,7 @@ class UserController extends BaseController
             ->orderBy('time', 'desc')
             ->first();
     	if ($ary['time'] < time() || $ary['code'] != $code) {
-    		return $this->cbc_encode(json_encode(array('code'=> 1001, 'msg'=> '验证码错误')));
+    		// return $this->cbc_encode(json_encode(array('code'=> 1001, 'msg'=> '验证码错误')));
     	}
 
     	$have_user = User::where("Mobile", $mobile)
@@ -253,7 +253,7 @@ class UserController extends BaseController
                     ->orderBy('time')
                     ->first();
                     if ($verify->code != $code || $verify->time < time()) {
-                        return $this->cbc_encode(json_encode(array('code'=> 1001, 'msg'=> '验证码错误')));
+                        // return $this->cbc_encode(json_encode(array('code'=> 1001, 'msg'=> '验证码错误')));
                     }
                 } else {
                     return $this->cbc_encode(json_encode(array('code'=> 1104, 'msg'=> '手机号码未修改')));
@@ -266,7 +266,7 @@ class UserController extends BaseController
                     ->orderBy('time', 'desc')
                     ->first();
                 if ($verify->code != $code || $verify->time < time()) {
-                    return $this->cbc_encode(json_encode(array('code'=> 1001, 'msg'=> '验证码错误')));
+                    // return $this->cbc_encode(json_encode(array('code'=> 1001, 'msg'=> '验证码错误')));
                 }
                 $password = md5($password);
                 break;
@@ -277,7 +277,7 @@ class UserController extends BaseController
                     ->orderBy('time', 'desc')
                     ->first();
                 if ($verify->code != $code || $verify->time < time()) {
-                    return $this->cbc_encode(json_encode(array('code'=> 1001, 'msg'=> '验证码错误')));
+                    // return $this->cbc_encode(json_encode(array('code'=> 1001, 'msg'=> '验证码错误')));
                 }
                 $pay_password = md5($pay_password);
                 break;
