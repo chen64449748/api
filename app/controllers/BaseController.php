@@ -11,7 +11,7 @@ class BaseController extends Controller {
 	protected $data = '';
     protected $key = 'xinyongka';
     protected $user;
-    protected $id_card;
+    protected $IdCard;
 
     protected $privateKey = "1234567812345678";  
 	protected $iv = "1234567812345678"; 
