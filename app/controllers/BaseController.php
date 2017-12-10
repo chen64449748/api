@@ -11,7 +11,7 @@ class BaseController extends Controller {
 	protected $data = '';
     protected $key = 'xinyongka';
     protected $user;
-    protected $id_card;
+    protected $idCard;
 
     protected $privateKey = "1234567812345678";  
 	protected $iv = "1234567812345678"; 
@@ -23,7 +23,7 @@ class BaseController extends Controller {
 		// try {
 			$this->data = Input::all();
 			$token = $this->data['token'];
-			if (!in_array($_SERVER['REDIRECT_URL'], $url_ary)) {
+			if (!in_array($_SERVER['REDIRECT_URL'], $url_ary) && !$token) {
 				exit();
 			}
         	$this->user = User::where('token', $token)->first();
@@ -33,6 +33,8 @@ class BaseController extends Controller {
         			->where("Isvalid", 1)
         			->where("IsActivated", 1)
         			->first();
+        	} else {
+        		exit();
         	}
 
 		// 	if (!$data) {
