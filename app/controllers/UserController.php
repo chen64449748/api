@@ -111,7 +111,7 @@ class UserController extends BaseController
     	$mobile = $this->data['mobile'];
     	$code = $this->data['code'];
     	$password = $this->data['password'];
-        $invite = isset($this->data['invite']) ? $this->data['invite'] : '';
+        $invite = isset($this->data['invite']) ? $this->data['invite'] : 0;
 
     	if(!$password) {
     		return $this->cbc_encode(json_encode(array('code'=> 1005, 'msg'=> '密码格式错误')));
