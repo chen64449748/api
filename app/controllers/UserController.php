@@ -43,12 +43,11 @@ class UserController extends BaseController
     	$mobile = $this->data['mobile'];
     	$password = md5($this->data['password']);
 
-    	if(preg_match("/^13[0-9]{1}[0-9]{8}$|15[0189]{1}[0-9]{8}$|189[0-9]{8}$/", $mobile)){
+    	if(!preg_match("/^13[0-9]{1}[0-9]{8}$|15[0189]{1}[0-9]{8}$|18[0389][0-9]{8}$/", $mobile)){
     		return $this->cbc_encode(json_encode(array('code'=> 1101, 'msg'=> '手机号格式错误')));
     	}
 
-    	$user = User::where("Mobile", $mobile)
-    		->first();
+    	$user = User::where("Mobile", $mobile)->first();
 
     	if(!$user) {
     		return $this->cbc_encode(json_encode(array('code'=> 1102, 'msg'=> '手机号未注册')));
@@ -111,7 +110,7 @@ class UserController extends BaseController
     	$mobile = $this->data['mobile'];
     	$code = $this->data['code'];
     	$password = $this->data['password'];
-        $invite = isset($this->data['invite']) ? $this->data['invite'] : '';
+        $invite = isset($this->data['invite']) ? $this->data['invite'] : 0;
 
     	if(!$password) {
     		return $this->cbc_encode(json_encode(array('code'=> 1005, 'msg'=> '密码格式错误')));
@@ -152,7 +151,7 @@ class UserController extends BaseController
 	    		'Username'  => $username,
                 'Status'    => 1,
                 'AddTime'   => time(),
-                'InviterId' => $inviter_id,
+                'InviterId' => $invite,
                 'InviteOne'=> $first,
                 'InviteTwo'=> $second
 	    	));
