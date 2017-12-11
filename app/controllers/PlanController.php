@@ -435,9 +435,12 @@ class PlanController extends BaseController
 	public function postRatio()
 	{
 		try {
-			$this->data['bank_id'] = 1;
-			$this->user = new stdClass();
-			$this->user->UserId = 82;
+			// $this->data['bank_id'] = 1;
+			// $this->user = new stdClass();
+			// $this->user->UserId = 82;
+			if (!isset($this->data['bank_id'])) {
+				throw new Exception("bank_id必传", 0);
+			}
 			$plan_sys = DB::table('xyk_plan_sys')->first();
 			if (!$plan_sys) {
 				throw new Exception("等待商家设置计划配置", 3005);
@@ -555,10 +558,10 @@ class PlanController extends BaseController
 	    
 	    if(!$planDetail->isEmpty()){
 	        foreach ($planDetail as $key => &$val){
-	            $val->BankNumber = '';
+	            $val->CreditInfo = array();
 	            //获取信用卡号
 	            if($val->BankId != ''){
-	                $val->BankNumber = BankcCard::where('Id',$val['BankId'])->pluck('BankNumber');
+	                $val->CreditInfo = BankdCard::where('Id',$val['BankId'])->first();
 	            }
 	             
 	        }
