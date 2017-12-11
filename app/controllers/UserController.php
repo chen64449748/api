@@ -152,7 +152,7 @@ class UserController extends BaseController
 	    		'Username'  => $username,
                 'Status'    => 1,
                 'AddTime'   => time(),
-                'InviterId' => $inviter_id,
+                'InviterId' => $invite,
                 'InviteOne'=> $first,
                 'InviteTwo'=> $second
 	    	));
