@@ -23,7 +23,7 @@ class BaseController extends Controller {
 
 		// echo $this->cbc_encode(json_encode($data));exit;
 
-		$url_ary = array("/user/login", "/user/checkin", "/user/verify");
+		$url_ary = array("user/login", "user/checkin", "user/verify");
 
 		// try {
 			// $mcrypt_str = Input::get('data');
@@ -44,10 +44,13 @@ class BaseController extends Controller {
 			// 	echo $this->cbc_encode(json_encode(array('code'=> '500', 'msg'=> 'data必传')));
 			// 	exit();
 			// }
+
+
+			$path = Request::path();
 			$data = Input::all();
 			$this->data = $data;
 
-			if (!in_array($_SERVER['REDIRECT_URL'], $url_ary) && !isset($this->data['token'])) {
+			if (!in_array($path, $url_ary) && !isset($this->data['token'])) {
 				echo $this->cbc_encode(json_encode(array('code'=> '500', 'msg'=> 'token必传')));
 				exit();
 			}
