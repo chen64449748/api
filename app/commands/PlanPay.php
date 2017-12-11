@@ -45,6 +45,11 @@ class PlanPay extends Command {
 
 		$sys = DB::table('xyk_sys')->first();
 		$fee = DB::table('xyk_fee')->first();
+		$plan_sys = DB::table('xyk_plan_sys')->first();
+
+		if (!$plan_sys) {
+			$this->info("plan_sys no");exit();
+		}
 		if (!$fee) {
 			$this->info('no fee');
 			exit();
@@ -124,6 +129,10 @@ class PlanPay extends Command {
 					    	} elseif ($result['result']['rt9_orderStatus'] == 'DOING' || $result['result']['rt9_orderStatus'] == 'INIT') {
 					    		// 保证金收取中
 					    		Bill::billUpdate($bill_id, 'DOING');
+					    		// 判断 分销
+					    		if ($plan_sys->OpenPlanProfit) {
+									Profit::doProfit($plan->UserId, $plan->CashDeposit);
+								}
 					    		Plan::where('Id', $plan->Id)->update(array('status'=> 4));	
 					    	} else {
 					    		$this->info('pay fail planid:'. $plan->Id);
@@ -169,6 +178,11 @@ class PlanPay extends Command {
 					    	Bill::billUpdate($bill_id, 'SUCCESS');
 							//扣除余额 ， 修改计划准备中
 							User::where('Id', $plan->UserId)->decrement('Account', (float)$money);
+
+							// 判断 分销
+				    		if ($plan_sys->OpenPlanProfit) {
+								Profit::doProfit($plan->UserId, $money);
+							}
 							Plan::where('Id', $plan->Id)->update(array('status'=> 1));
 
 							DB::commit();

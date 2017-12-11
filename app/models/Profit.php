@@ -19,7 +19,7 @@ class Profit extends Eloquent
 	 * @param     int                   $user_id 	充值用户
 	 * @param     float                 $money   	充值金额
 	 */
-	public static function doProfit($user_id, $money, $content)
+	public static function doProfit($user_id, $money)
 	{
 		if (!$user_id || !$money) {
 			return false;
@@ -29,15 +29,15 @@ class Profit extends Eloquent
 		if (!$user) {
 			return ;
 		}
-		User::where("UserId", $user_id)->increment('Account', $money);
-		Profit::insert(array(
-			"user_id"=> $user->UserId,
-			"first_user_id"=> 0,
-			"second_user_id"=> 0,
-			"money"=> $money,
-			"time"=> time(),
-			"content"=> "余额充值"
-		));
+		// User::where("UserId", $user_id)->increment('Account', $money);
+		// Profit::insert(array(
+		// 	"user_id"=> $user->UserId,
+		// 	"first_user_id"=> 0,
+		// 	"second_user_id"=> 0,
+		// 	"money"=> $money,
+		// 	"time"=> time(),
+		// 	"content"=> $content
+		// ));
 
 		$persent = Persent::first();
 		if (!$persent) {
