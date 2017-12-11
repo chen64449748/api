@@ -22,8 +22,8 @@ class BaseController extends Controller {
 		// $data = array('token'=> '2sdw2123ddqw', 'params1'=> 'add');
 
 		// echo $this->cbc_encode(json_encode($data));exit;
-
-		$url_ary = array("user/login", "user/checkin", "user/verify");
+		
+    	$url_ary = array("user/login", "user/checkin", "user/verify");
 
 		// try {
 			// $mcrypt_str = Input::get('data');
