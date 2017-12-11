@@ -18,6 +18,7 @@ class BaseController extends Controller {
 
 	function __construct()
 	{
+
 		// $data = array('token'=> '2sdw2123ddqw', 'params1'=> 'add');
 
 		// echo $this->cbc_encode(json_encode($data));exit;
