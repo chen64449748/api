@@ -18,6 +18,7 @@ class BaseController extends Controller {
 
 	function __construct()
 	{
+		header('Content-type:text/html;charset=utf-8');
 		// $data = array('token'=> '2sdw2123ddqw', 'params1'=> 'add');
 
 		// echo $this->cbc_encode(json_encode($data));exit;
@@ -25,25 +26,25 @@ class BaseController extends Controller {
 		$url_ary = array("/user/login", "/user/checkin", "/user/verify");
 
 		// try {
-			$mcrypt_str = Input::get('data');
+			// $mcrypt_str = Input::get('data');
 
-			$data_json = $this->cbc_decode($mcrypt_str);
+			// $data_json = $this->cbc_decode($mcrypt_str);
 			
-			if ($data_json == '') {
-				echo $this->cbc_encode(json_encode(array('code'=> '500', 'msg'=> '解密出错')));
-				exit();
-			}
-			$data_json = trim($data_json);
-
+			// if ($data_json == '') {
+			// 	echo $this->cbc_encode(json_encode(array('code'=> '500', 'msg'=> '解密出错')));
+			// 	exit();
+			// }
+			// $data_json = trim($data_json);
+			
 			// urldecode
-			$data_json = urldecode($data_json);
+			// $data_json = urldecode($data_json);
+			// $data = json_decode($data_json, 1);
 
-			$data = json_decode($data_json, 1);
-
-			if (!$data) {
-				echo $this->cbc_encode(json_encode(array('code'=> '500', 'msg'=> 'data必传')));
-				exit();
-			}
+			// if (!$data) {
+			// 	echo $this->cbc_encode(json_encode(array('code'=> '500', 'msg'=> 'data必传')));
+			// 	exit();
+			// }
+			$data = Input::all();
 			$this->data = $data;
 
 			
@@ -89,6 +90,7 @@ class BaseController extends Controller {
 
 	protected function cbc_encode($data)
 	{
+		return $data;
 		//加密  
 		$encrypted = mcrypt_encrypt(MCRYPT_RIJNDAEL_128, $this->privateKey, $data, MCRYPT_MODE_CBC, $this->iv);  
 		return base64_encode($encrypted);  
@@ -96,6 +98,7 @@ class BaseController extends Controller {
 
 	protected function cbc_decode($str)
 	{
+		return $str;
 		//解密  
 		$encryptedData = base64_decode($str);  
 		$decrypted = mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $this->privateKey, $encryptedData, MCRYPT_MODE_CBC, $this->iv);  
