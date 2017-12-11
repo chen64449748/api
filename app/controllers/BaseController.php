@@ -47,7 +47,6 @@ class BaseController extends Controller {
 			$data = Input::all();
 			$this->data = $data;
 
-			
 			if (!in_array($_SERVER['REDIRECT_URL'], $url_ary) && !isset($this->data['token'])) {
 				echo $this->cbc_encode(json_encode(array('code'=> '500', 'msg'=> 'token必传')));
 				exit();
@@ -59,7 +58,7 @@ class BaseController extends Controller {
         			->where("CertType", 1)
         			->where("Isvalid", 1)
         			->where("IsActivated", 1)
-        			->first();
+        			->pluck('CertNo');
         	} else {
         		echo $this->cbc_encode(json_encode(array('code'=> '1001', 'msg'=> '用户未登录')));
         		exit();
