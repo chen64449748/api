@@ -72,7 +72,7 @@ class UserController extends BaseController
             $g = ord( $a[ $i ] );
             $d .= $s[ ( $g ^ ord( $a[ $i + 8 ] ) ) - $g & 0x1F ];
         }
-    	$token = time() . $d;
+    	$token = time() . $d . $user['UserId'];
     	User::where("UserId", $user['UserId'])
     		->update(compact("token"));
         $user['token'] = $token;

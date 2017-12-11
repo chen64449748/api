@@ -443,7 +443,8 @@ class PayController extends BaseController
 				Bill::billUpdate($bill_id, 'SUCCESS'); // 成功 
 				// 添加余额 扣除手续废
 				$d_money = $money - $pay_fee;
-				User::where('Id', $bill->UserId)->increment('Account', (float)$d_money);
+				Profit::doProfit($this->user->UserId, $money);
+				User::where('Id', $this->user->UserId)->increment('Account', (float)$d_money);
 			}
 
 			

@@ -40,7 +40,11 @@ class PayRepay extends Command {
 		$pay = new Pay('HLBPay');
 
 		$plans = Plan::where('status', 1)->take(200)->get();
-	
+		$plan_sys = DB::table('xyk_plan_sys')->first();
+
+		if (!$plan_sys) {
+			$this->info("plan_sys no");exit();
+		}
 		if (!$plans->count()) {
 			$this->info('data empty');
 			exit();
@@ -64,7 +68,7 @@ class PayRepay extends Command {
 
 	    		// 时间未到 不做处理
 	    		if (strtotime($value->PayTime) > time()) {
-	    			// continue;
+	    			continue;
 	    		}
 
 	    		if ($value->Type == 1) {
@@ -195,7 +199,12 @@ class PayRepay extends Command {
 							PlanDetail::where('Id', $value->Id)->update(array('status'=> 2));
 							$this->info('planID:'. $plan->Id.', batch：'.$value->Batch.', hkpay doing');
 						} else {
-							Bill::billUpdate($bill_id, 'SUCCESS'); // 成功 
+							Bill::billUpdate($bill_id, 'SUCCESS'); // 成功
+							// 分销 判断
+							if ($plan_sys->OpenPlanProfit) {
+								Profit::doProfit($plan->UserId, $value->Money);
+							}
+							
 							PlanDetail::where('Id', $value->Id)->update(array('status'=> 1));
 							$this->info('planID:'. $plan->Id.', batch：'.$value->Batch.', hkpay success');
 						}

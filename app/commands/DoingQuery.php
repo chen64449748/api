@@ -42,6 +42,12 @@ class DoingQuery extends Command {
 		$pay->payQuery();
 
 		$fee = DB::table('xyk_fee')->first();
+
+		$plan_sys = DB::table('xyk_plan_sys')->first();
+
+		if (!$plan_sys) {
+			$this->info("plan_sys no");exit();
+		}
 		if (!$fee) {
 			$this->info('no fee');
 			exit();
@@ -157,10 +163,13 @@ class DoingQuery extends Command {
 					// 充值 
 					// 余额增加 要扣除手续废
 					$money = $bill->Amount;
+					// fenxiao
+					Profit::doProfit($this->user->UserId, $money);
 
 					$pay_fee = $money * $fee->PayFee / 100;
 					$pay_fee = round($pay_fee, 2);
 					$money = $money - $pay_fee;
+
 					User::where('Id', $bill->UserId)->increment('Account', (float)$money);
 					break;
 				case '4':
@@ -170,6 +179,12 @@ class DoingQuery extends Command {
 
 					// 修改
 					PlanDetail::where('PlanId', $bill->TableId)->where('OrderNum', $bill_detail->OrderNum)->update(array('status'=> 1));
+
+					// 判断 分销
+		    		if ($plan_sys->OpenPlanProfit) {
+						Profit::doProfit($bill->UserId, $bill->Amount);
+					}
+
 					// 检查
 					$pld = PlanDetail::where('PlanId', $bill->TableId)->where('status', '<>', 1)->first();
 					if (!$pld) {
@@ -182,6 +197,10 @@ class DoingQuery extends Command {
 					// 保证金收取
 					// 修改计划为 1 保证金收取完成 计划准备
 					// 将保证金不添加到余额
+					// 判断 分销
+		    		if ($plan_sys->OpenPlanProfit) {
+						Profit::doProfit($bill->UserId, $bill->Amount);
+					}
 					Plan::where('Id', $bill->TableId)->update(array('status'=> 1));
 					break;
 				default:
