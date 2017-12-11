@@ -34,6 +34,10 @@ class BaseController extends Controller {
 				exit();
 			}
 			$data_json = trim($data_json);
+
+			// urldecode
+			$data_json = urldecode($data_json);
+
 			$data = json_decode($data_json, 1);
 
 			if (!$data) {
