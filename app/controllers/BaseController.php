@@ -24,7 +24,7 @@ class BaseController extends Controller {
 
 		// echo $this->cbc_encode(json_encode($data));exit;
 		
-    	$url_ary = array("user/login", "user/checkin", "user/verify", "user/img");
+    	$url_ary = array("user/login", "user/checkin", "user/verify", "user/img", "user/password");
 
 		// try {
 			// $mcrypt_str = Input::get('data');
@@ -55,7 +55,7 @@ class BaseController extends Controller {
 				echo $this->cbc_encode(json_encode(array('code'=> '500', 'msg'=> 'token必传')));
 				exit();
 			}
-			$token = $this->data['token'];
+			$token = isset($this->data['token']) ? $this->data['token'] : '';
         	$this->user = User::where('token', $token)->first();
 
         	if (!in_array($path, $url_ary)) {

@@ -19,12 +19,13 @@
 //      身份认证接口请求失败：1106
 //      身份认证不一致：1107
 //      身份证认证无结果：1108
+//      两次密码错误： 1109
 //----------------------------------
 
 class UserController extends BaseController
 {
     // 姓名，余额，头像
-	public function getIndex()
+	public function postIndex()
 	{
         return $this->cbc_encode(json_encode(array('code'=> 200, 'msg'=> '数据请求成功', 'data'=> $this->user)));
 	}
@@ -175,7 +176,7 @@ class UserController extends BaseController
      * @version   [version]
      * @return    [type]                   [description]
      */
-    public function getVerify()
+    public function postVerify()
     {
     	$mobile = $this->data['mobile'];
     	if(!preg_match("/^1(3|4|5|7|8)\d{9}$/", $mobile)){
@@ -368,7 +369,7 @@ class UserController extends BaseController
      * @version   [version]
      * @return    [type]                   [description]
      */
-    public function getMyshare()
+    public function postMyshare()
     {
         $money = Profit::where("user_id", $this->user->UserId)
             ->sum('money');
@@ -390,7 +391,7 @@ class UserController extends BaseController
         return $this->cbc_encode(json_encode(array('code'=> 200, 'msg'=> '请求成功', 'data'=> compact("firsts", "seconds", "money"))));
     }
 
-    public function getProfits()
+    public function postProfits()
     {
         $profits = Profit::where("user_id", $this->user->UserId)
             ->get();
@@ -401,9 +402,35 @@ class UserController extends BaseController
         return $this->cbc_encode(json_encode(array('code'=> 200, 'msg'=> '请求成功', 'data'=> $profits)));
     }
 
-    public function getTest()
+    public function postPassword()
     {
-        echo '<form action="/user/img" method="post" enctype="multipart/form-data"><input type="file" name="img" class="file" /><br /><input type="submit" name="submit" value="提交"/></form>';exit();
+        $data = isset($this->data) ? $this->data : array();
+        $mobile = isset($data['mobile']) ? $data['mobile'] : '';
+        $code = isset($data['code']) ? $data['code'] : '';
+        $password = isset($data['password']) ? md5($data['password']) : '';
+        $repassword = isset($data['repassword']) ? md5($data['repassword']) : '';
+
+        if(!preg_match("/^1(3|4|5|7|8)\d{9}$/", $mobile)){
+            return $this->cbc_encode(json_encode(array('code'=> 1002, 'msg'=> '手机号格式错误')));
+        }
+
+        if (!User::where("Mobile", $mobile)->count()) {
+            return $this->cbc_encode(json_encode(array('code'=> 1102, 'msg'=> '手机号已被注册')));
+        }
+
+        $verify = Verify::where("mobile", $mobile)
+            ->orderBy('time')
+            ->first();
+        if ($verify->code != $code || $verify->time < time()) {
+            // return $this->cbc_encode(json_encode(array('code'=> 1001, 'msg'=> '验证码错误')));
+        }
+
+        if(!$password || $password != $repassword) {
+            return $this->cbc_encode(json_encode(array('code'=> 1109, 'msg'=> '两次密码错误')));
+        }
+
+        User::where("Mobile", $mobile)->update(compact("password"));
+        return $this->cbc_encode(json_encode(array('code'=> 200, 'msg'=> '密码修改成功')));
     }
 
     public function postImg()
