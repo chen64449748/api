@@ -56,16 +56,20 @@ class BaseController extends Controller {
 			}
 			$token = $this->data['token'];
         	$this->user = User::where('token', $token)->first();
-        	if ($this->user) {
-        		$this->IdCard = UserContact::where("UserId", $this->user->UserId)
-        			->where("CertType", 1)
-        			->where("Isvalid", 1)
-        			->where("IsActivated", 1)
-        			->pluck('CertNo');
-        	} else {
-        		echo $this->cbc_encode(json_encode(array('code'=> '1001', 'msg'=> '用户未登录')));
-        		exit();
+
+        	if (!in_array($path, $url_ary)) {
+        		if ($this->user) {
+	        		$this->IdCard = UserContact::where("UserId", $this->user->UserId)
+	        			->where("CertType", 1)
+	        			->where("Isvalid", 1)
+	        			->where("IsActivated", 1)
+	        			->pluck('CertNo');
+	        	} else {
+	        		echo $this->cbc_encode(json_encode(array('code'=> '1001', 'msg'=> '用户未登录')));
+	        		exit();
+	        	}
         	}
+        	
 
 		// 	if (!$data) {
 		// 		throw new Exception("data参数必传", 9999);
