@@ -341,7 +341,7 @@ class UserController extends BaseController
      * @version   [version]
      * @return    [type]                   [description]
      */
-    public function getMycards()
+    public function postMycards()
     {
         $type = $this->data['type'];
 
