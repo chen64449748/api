@@ -18,12 +18,13 @@ class BaseController extends Controller {
 
 	function __construct()
 	{
+
 		header('Content-type:text/html;charset=utf-8');
 		// $data = array('token'=> '2sdw2123ddqw', 'params1'=> 'add');
 
 		// echo $this->cbc_encode(json_encode($data));exit;
 		
-    	$url_ary = array("user/login", "user/checkin", "user/verify");
+    	$url_ary = array("user/login", "user/checkin", "user/verify", "user/img");
 
 		// try {
 			// $mcrypt_str = Input::get('data');

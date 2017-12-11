@@ -400,4 +400,32 @@ class UserController extends BaseController
         }
         return $this->cbc_encode(json_encode(array('code'=> 200, 'msg'=> '请求成功', 'data'=> $profits)));
     }
+
+    public function getTest()
+    {
+        echo '<form action="/user/img" method="post" enctype="multipart/form-data"><input type="file" name="img" class="file" /><br /><input type="submit" name="submit" value="提交"/></form>';exit();
+    }
+
+    public function postImg()
+    {
+        $file = Input::file('img');
+        $upload_dir = './upload/user';
+
+        try {
+
+            if (!Input::hasFile('img')) {
+                throw new Exception("没有上传文件");
+            }
+            $ext = $file->getClientOriginalExtension();
+            $web_dir = ltrim($upload_dir, '.');
+
+            $file_name = date('YmdHis').uniqid().'.'.trim($ext);
+            $file->move($upload_dir, $file_name);
+
+            $url = $_SERVER['HTTP_HOST'] . $web_dir . '/' . $file_name;
+            return Response::json(array('code'=> 200, 'msg'=> '上传成功', 'data'=> $url));
+        } catch (Exception $e) {
+            return Response::json(array('code'=> 500, 'message'=> '上传失败:'.$e->getMessage()));
+        }
+    }
 }
