@@ -47,11 +47,10 @@ class UserController extends BaseController
     		return $this->cbc_encode(json_encode(array('code'=> 1101, 'msg'=> '手机号格式错误')));
     	}
 
-    	$user = User::where("Mobile", $mobile)
-    		->first();
+    	$user = User::where("Mobile", $mobile)->first();
 
-    	if(!$user) {
-    		return $this->cbc_encode(json_encode(array('code'=> 1102, 'msg'=> '手机号未注册')));
+    	if($user) {
+    		return $this->cbc_encode(json_encode(array('code'=> 1102, 'msg'=> '手机号已注册')));
     	}
 
     	if($user['Password'] != $password) {
