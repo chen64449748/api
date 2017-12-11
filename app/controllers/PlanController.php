@@ -555,10 +555,10 @@ class PlanController extends BaseController
 	    
 	    if(!$planDetail->isEmpty()){
 	        foreach ($planDetail as $key => &$val){
-	            $val->BankNumber = '';
+	            $val->CreditInfo = array();
 	            //获取信用卡号
 	            if($val->BankId != ''){
-	                $val->BankNumber = BankcCard::where('Id',$val['BankId'])->pluck('BankNumber');
+	                $val->CreditInfo = BankdCard::where('Id',$val['BankId'])->first();
 	            }
 	             
 	        }
