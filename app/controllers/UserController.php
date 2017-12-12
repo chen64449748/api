@@ -411,7 +411,9 @@ class UserController extends BaseController
 
     public function postProfits()
     {
-        $profits = Profit::where("user_id", $this->user->UserId)
+        $offset = $this->data['offset'];
+        $limit = $this->data['limit'];
+        $profits = Profit::where("user_id", $this->user->UserId)->skip($offset)->take($limit)
             ->get();
         foreach ($profits as $k => $v) {
             $profits[$k]['first'] = User::where("UserId", $v['first_user_id'])->get();
