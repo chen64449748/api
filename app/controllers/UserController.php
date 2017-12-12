@@ -20,6 +20,7 @@
 //      身份认证不一致：1107
 //      身份证认证无结果：1108
 //      两次密码错误： 1109
+//      邀请人不存在：1110
 //----------------------------------
 
 class UserController extends BaseController
@@ -128,6 +129,10 @@ class UserController extends BaseController
     		return $this->cbc_encode(json_encode(array('code'=> 1002, 'msg'=> '手机号格式错误')));
     	}
 
+        if(!preg_match("/^1(3|4|5|7|8)\d{9}$/", $invite)) {
+            return $this->cbc_encode(json_encode(array('code'=> 1002, 'msg'=> '邀请人手机格式错误')));
+        }
+
     	$ary = Verify::where('mobile', $mobile)
             ->orderBy('time', 'desc')
             ->first();
@@ -144,7 +149,10 @@ class UserController extends BaseController
     	try {
     		$username = '';
             /* 邀请人开始 */
-            $inviter_user = User::where("UserId", $invite)->first();
+            $inviter_user = User::where("Mobile", $invite)->first();
+            if ($invite && !$inviter_user) {
+                return $this->cbc_encode(json_encode(array('code'=> 1110, 'msg'=> '邀请人不存在')));
+            }
             $first = $second = 0;
 
             if ($inviter_user) {
@@ -159,7 +167,7 @@ class UserController extends BaseController
 	    		'Username'  => $username,
                 'Status'    => 1,
                 'AddTime'   => time(),
-                'InviterId' => $invite,
+                'InviterId' => $first,
                 'InviteOne'=> $first,
                 'InviteTwo'=> $second
 	    	));
