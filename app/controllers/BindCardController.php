@@ -10,10 +10,31 @@ class BindCardController extends BaseController
 	{
 	    $offset = $this->data['offset'] ? $this->data['offset'] : '0';
 	    $limit = $this->data['limit'] ? $this->data['limit'] : '20';
-	   
-	    $bindCards = BankdCard::skip($offset)->take($limit)->get();
+	   	
+	   	$select = BankdCard::skip($offset)->take($limit);
+
+	   	if (isset($this->data['type'])) {
+	   		$select->where('type', $this->data['type']); // 1 银行  2 信用卡
+	   	}
+
+	    $binddCards = $select->get();
 	    
-	    return json_encode(array('code'=> '200', 'bindCards'=> $bindCards));
+	    return json_encode(array('code'=> '200', 'binddCards'=> $binddCards));
+	}
+	
+	
+	/**
+	 * 结算卡列表
+	 * @return multitype:unknown
+	 */
+	public function postBindccardlist()
+	{
+	    $offset = $this->data['offset'] ? $this->data['offset'] : '0';
+	    $limit = $this->data['limit'] ? $this->data['limit'] : '20';
+	
+	    $bindcCards = BankcCard::skip($offset)->take($limit)->get();
+	     
+	    return json_encode(array('code'=> '200', 'bindcCards'=> $bindcCards));
 	}
 
 

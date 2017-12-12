@@ -27,7 +27,8 @@ class UserController extends BaseController
     // 姓名，余额，头像
 	public function postIndex()
 	{
-        return $this->cbc_encode(json_encode(array('code'=> 200, 'msg'=> '数据请求成功', 'data'=> $this->user)));
+        $this->user->IdCard = $this->IdCard;
+        return $this->cbc_encode(json_encode(array('code'=> 200, 'msg'=> '数据请求成功', 'data'=> $this->user, 'IdCard'=> $this->IdCard)));
 	}
 
     /**
@@ -77,7 +78,13 @@ class UserController extends BaseController
     		->update(compact("token"));
         $user['token'] = $token;
 
-    	return $this->cbc_encode(json_encode(array('code'=> 200, 'msg'=> '登录成功', 'data'=> $user)));
+        $IdCard = UserContact::where("UserId", $user->UserId)
+            ->where("CertType", 1)
+            ->where("Isvalid", 1)
+            ->where("IsActivated", 1)
+            ->pluck('CertNo');
+
+    	return $this->cbc_encode(json_encode(array('code'=> 200, 'msg'=> '登录成功', 'data'=> $user, 'IdCard'=> $IdCard)));
     }
 
     /**
@@ -135,7 +142,7 @@ class UserController extends BaseController
     	}
 
     	try {
-    		$username = $mobile;
+    		$username = '';
             /* 邀请人开始 */
             $inviter_user = User::where("UserId", $invite)->first();
             $first = $second = 0;
@@ -318,13 +325,16 @@ class UserController extends BaseController
         if ($result['code'] != 200) {
             return $this->cbc_encode(json_encode(array('code'=> $result['code'], 'msg'=> $result['msg'])));
         }
+        User::where('UserId', $this->user->UserId)->update(array(
+            'Username' => $name,
+        ));
         $contact->insert(array(
             'UserId'        => $this->user->UserId,
             'Contact'       => $name,
             'CertType'      => 1,
             'CertNo'        => $no,
             'Isvalid'       => 1,
-            'IsActiv ted'   => 1,
+            'IsActivated'   => 1,
             'AddTime'       => time(),
             'UpdateTime'    => time()
         ));
@@ -449,7 +459,12 @@ class UserController extends BaseController
             $file_name = date('YmdHis').uniqid().'.'.trim($ext);
             $file->move($upload_dir, $file_name);
 
-            $url = $_SERVER['HTTP_HOST'] . $web_dir . '/' . $file_name;
+            $url = 'http://'.$_SERVER['HTTP_HOST'] . $web_dir . '/' . $file_name;
+
+            User::where('UserId', $this->user->UserId)->update(array(
+                'UserAvatar' => $url,
+            ));
+
             return Response::json(array('code'=> 200, 'msg'=> '上传成功', 'data'=> $url));
         } catch (Exception $e) {
             return Response::json(array('code'=> 500, 'message'=> '上传失败:'.$e->getMessage()));

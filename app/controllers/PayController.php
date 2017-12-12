@@ -4,17 +4,13 @@
 * 
 */
 class PayController extends BaseController
-{
-	function __construct()
-	{
-		header('Content-type:text/html;charset=utf-8');
-	}
+{	
 
 	function postBankcode()
 	{	
 	
 		try {
-
+			
 			if (!$this->user) {
 				throw new Exception("请先登录", '1000');
 			}
@@ -283,6 +279,10 @@ class PayController extends BaseController
 				throw new Exception("没有找到该卡", 8996);
 			}
 
+			if ($bank_card->status != 0) {
+				throw new Exception("该卡被系统冻结", 8896);
+			}
+
 			$money = (float)$this->data['money'];
 			$y_money = (float)$this->data['money'];
 			$user = User::where('Id', $this->user->UserId)->first();
@@ -382,6 +382,10 @@ class PayController extends BaseController
 
 			if (!$bank_card) {
 				throw new Exception("没有找到该卡", 8996);
+			}
+
+			if ($bank_card->status != 0) {
+				throw new Exception("该卡被系统冻结", 8896);
 			}
 
 			if (!is_numeric($money)) {
@@ -692,18 +696,10 @@ class PayController extends BaseController
 
 	}
 
-	function getQuery()
+	function postBanks()
 	{
-		$params = array(
-			'out_order_id' => '123',
-		);
-
-		$pay = new Pay('HLBPay');
-		$pay->payQuery();
-		$pay->setParams($params);
-		$pay->sendRequest();
-		$result = $pay->getResult();
-		print_r($result);
+		$banks = DB::table('xyk_bankcard')->get();
+		return $this->cbc_encode(json_encode(array('code'=> '200', 'msg'=>'成功', 'banks'=> $banks)));
 	}
 
 }
