@@ -77,7 +77,13 @@ class UserController extends BaseController
     		->update(compact("token"));
         $user['token'] = $token;
 
-    	return $this->cbc_encode(json_encode(array('code'=> 200, 'msg'=> '登录成功', 'data'=> $user)));
+        $IdCard = UserContact::where("UserId", $user->UserId)
+            ->where("CertType", 1)
+            ->where("Isvalid", 1)
+            ->where("IsActivated", 1)
+            ->pluck('CertNo');
+
+    	return $this->cbc_encode(json_encode(array('code'=> 200, 'msg'=> '登录成功', 'data'=> $user, 'IdCard'=> $IdCard)));
     }
 
     /**
