@@ -102,11 +102,12 @@ class PayController extends BaseController
 				'user_phone' => $this->user->Mobile,
 				'bank_number' => $this->data['bank_number'],
 				'validateCode' => $this->data['validateCode'],
-				'account_date' => date('Y-m-d 00:00:00', strtotime($this->data['account_date'])),
-				'repayment_date' => date('Y-m-d 23:59:59', strtotime($this->data['repayment_date'])),
+				'account_date' => $this->data['account_date'],
+				'repayment_date' => $this->data['repayment_date'],
 				'bank_year' => '',
 				'bank_month' => '',
 				'cvv2' => '',
+				'quota' => '',
 			);
 
 			// 测试数据
@@ -169,7 +170,7 @@ class PayController extends BaseController
 						'bindId' => $result['result']['rt10_bindId'],
 						'bank_number' => $params['bank_number'],
 						'cvv2' => $params['cvv2'],
-						'quota' => $this->data['quota'],
+						'quota' => $params['quota'],
 						'type' => $type,
 						'bankId' => $result['result']['rt8_bankId'],
 					);
