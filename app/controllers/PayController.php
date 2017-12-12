@@ -107,7 +107,7 @@ class PayController extends BaseController
 				'bank_year' => '',
 				'bank_month' => '',
 				'cvv2' => '',
-				'quota' => '',
+				'quota' => 0,
 			);
 
 			// 测试数据
