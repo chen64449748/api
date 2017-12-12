@@ -5,7 +5,7 @@
 */
 class FeeController extends BaseController
 {
-	function getFee()
+	function postFee()
 	{
 		try {
 			$fee = DB::table('xyk_fee')->first();

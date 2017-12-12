@@ -641,7 +641,7 @@ class PayController extends BaseController
 
 		try {
 			$params = array(
-				'user_id' => $this->user->UserId,
+				'user_id' => '82',
 				'hlb_bindId' => '' # 选填 不填为空
 			);
 
