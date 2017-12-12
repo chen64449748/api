@@ -56,7 +56,7 @@ class PayController extends BaseController
 
 	}
 	// 绑卡
-	function postBankbind()
+	function getBankbind()
 	{
 		/*
 		需要参数
@@ -104,6 +104,9 @@ class PayController extends BaseController
 				'validateCode' => $this->data['validateCode'],
 				'account_date' => date('Y-m-d 00:00:00', strtotime($this->data['account_date'])),
 				'repayment_date' => date('Y-m-d 23:59:59', strtotime($this->data['repayment_date'])),
+				'bank_year' => '',
+				'bank_month' => '',
+				'cvv2' => '',
 			);
 
 			// 测试数据
