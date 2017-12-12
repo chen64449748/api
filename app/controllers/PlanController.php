@@ -83,7 +83,7 @@ class PlanController extends BaseController
 		}
 	}
 
-	function postAdd()
+	function getAdd()
 	{
 
 		try {
@@ -97,10 +97,10 @@ class PlanController extends BaseController
 			// $user = new stdClass();
 			// $user->UserId = 82;
 			// $this->user = $user;
-			// $this->data['total_money'] = 10000;
-			// $this->data['cash_deposit'] = 2500;
-			// $this->data['ratio'] = 50;
-			// $this->data['bank_id'] = 1;
+			$this->data['total_money'] = 10000;
+			$this->data['cash_deposit'] = 2500;
+			$this->data['ratio'] = 50;
+			$this->data['bank_id'] = 1;
 
 			if (!isset($this->data['total_money'])) {
 				throw new Exception("还款总额必填", 0);
@@ -161,8 +161,35 @@ class PlanController extends BaseController
 				throw new Exception("该卡未设置还款日", 8980);
 			}
 
-			$plan_start_date = $bank_card->AccountDate;
-			$plan_end_date = $bank_card->RepaymentDate;
+			$ddate = $bank_card->RepaymentDate - $bank_card->AccountDate;
+			
+			$s_month = date('m');
+			$e_month = intval(date('m'));
+			
+
+			if ($e_month < 10) {
+				$e_month = '0'.$e_month;
+			}
+
+			if ($bank_card->AccountDate < 10) {
+				$bank_card->AccountDate = '0'.$bank_card->AccountDate;
+			}
+
+			if ($bank_card->RepaymentDate < 10) {
+				$bank_card->RepaymentDate = '0'.$bank_card->RepaymentDate;
+			}
+
+			$plan_start_date = date('Y-m').'-'.$bank_card->AccountDate.' 00:00:00';
+
+			if ( $ddate < 20 ) {
+				$plan_end_date = date('Y-m', strtotime('+1 month', strtotime($plan_start_date))). '-'. $bank_card->RepaymentDate.' 23:59:59';
+			} else {
+				$plan_end_date = date('Y-m').'-'.$bank_card->RepaymentDate.' 00:00:00';
+			}
+
+
+			// $plan_start_date = $bank_card->AccountDate;
+			// $plan_end_date = $bank_card->RepaymentDate;
 			$d_time = $plan_sys->PlanDayTimes; // 后台获取
 
 
@@ -174,14 +201,15 @@ class PlanController extends BaseController
 			$plan_e_time = strtotime($plan_end_date);
 
 			if (time() >= $plan_e_time) {
-				throw new Exception("请重新设置账单日 还款日", 3005);
+				$plan_s_time = strtotime('+1 month', $plan_s_time);
+				$plan_e_time = strtotime('+1 month', $plan_e_time);
 			}
-
+			
 			if ($plan_s_time < time() && $plan_s_time > time()) {
 				// 如果再还款中间
 				$plan_s_time = time();
 			}
-
+			// echo date('Y-m-d', $plan_s_time);exit;
 			// $plan_s_time = strtotime($plan_start_date);	# 测
 			// 生成还款计划 次数
 			$plan_time = floor(100 / $this->data['ratio']) + 1;
