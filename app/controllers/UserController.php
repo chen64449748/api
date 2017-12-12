@@ -21,6 +21,7 @@
 //      身份证认证无结果：1108
 //      两次密码错误： 1109
 //      邀请人不存在：1110
+//      邀请码不正确： 1111
 //----------------------------------
 
 class UserController extends BaseController
@@ -116,10 +117,16 @@ class UserController extends BaseController
      */
     public function postCheckin()
     {
-    	$mobile = $this->data['mobile'];
-    	$code = $this->data['code'];
-    	$password = $this->data['password'];
+        $key = isset($this->data['key']) ? $this->data['key'] : '';
+    	$mobile = isset($this->data['mobile']) ? $this->data['mobile'] : '';
+    	$code = isset($this->data['code']) ? $this->data['code'] : '';
+    	$password = isset($this->data['password']) ? $this->data['password'] : '';
         $invite = isset($this->data['invite']) ? $this->data['invite'] : 0;
+
+        $keyObj = Key::first();
+        if ($keyObj->key !== $key) {
+            return $this->cbc_encode(json_encode(array('code'=> 1111, 'msg'=> '注册码不正确')));
+        }
 
     	if(!$password) {
     		return $this->cbc_encode(json_encode(array('code'=> 1005, 'msg'=> '密码格式错误')));
@@ -129,7 +136,7 @@ class UserController extends BaseController
     		return $this->cbc_encode(json_encode(array('code'=> 1002, 'msg'=> '手机号格式错误')));
     	}
 
-        if(!preg_match("/^1(3|4|5|7|8)\d{9}$/", $invite)) {
+        if($invite && !preg_match("/^1(3|4|5|7|8)\d{9}$/", $invite)) {
             return $this->cbc_encode(json_encode(array('code'=> 1002, 'msg'=> '邀请人手机格式错误')));
         }
 
