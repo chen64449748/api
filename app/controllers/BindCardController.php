@@ -13,8 +13,8 @@ class BindCardController extends BaseController
 	   	
 	   	$select = BankdCard::skip($offset)->take($limit);
 
-	   	if (isset($this->data['Type'])) {
-	   		$select->where('Type', $this->data['Type']); // 1 银行  2 信用卡
+	   	if (isset($this->data['type'])) {
+	   		$select->where('type', $this->data['type']); // 1 银行  2 信用卡
 	   	}
 
 	    $binddCards = $select->get();
