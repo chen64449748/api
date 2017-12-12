@@ -26,7 +26,7 @@ class PayController extends BaseController
 			$params = array(
 				'user_id' => $this->user->UserId,
 				'bank_number'=> $this->data['bank_number'],
-				'user_phone' => $this->user->Moblie,
+				'user_phone' => $this->user->Mobile,
 			);
 
 			// $params = array(
@@ -99,7 +99,7 @@ class PayController extends BaseController
 				'user_id' => $this->user->UserId,
 				'user_name' => $this->user->Username,
 				'id_card_number' => $this->IdCard,
-				'user_phone' => $this->user->Moblie,
+				'user_phone' => $this->user->Mobile,
 				'bank_number' => $this->data['bank_number'],
 				'validateCode' => $this->data['validateCode'],
 				'account_date' => date('Y-m-d 00:00:00', strtotime($this->data['account_date'])),
@@ -208,7 +208,7 @@ class PayController extends BaseController
 				'user_name' => $this->user->Username,
 				'id_card_number' => $this->IdCard,
 				'bank_number' => $this->data['bank_number'],
-				'user_phone' => $this->user->Moblie,
+				'user_phone' => $this->user->Mobile,
 			);
 
 			// $params = array(
@@ -533,7 +533,7 @@ class PayController extends BaseController
 				'hlb_bindId' => $bank_card->CreditId,
 				'user_id'	=> $this->user->UserId,
 				'money'	=> $money,
-				'user_phone' => $this->user->Moblie,
+				'user_phone' => $this->user->Mobile,
 			);
 
 

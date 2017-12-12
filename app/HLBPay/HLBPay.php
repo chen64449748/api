@@ -92,6 +92,7 @@ class HLBPay
 		}
 
 		$pageContents = HttpClient::quickPost($this->send_url, $this->send_data);
+		// echo $pageContents;
 		$this->response = $pageContents;
 		$result = json_decode($pageContents, 1);
 		$this->result = $result;
