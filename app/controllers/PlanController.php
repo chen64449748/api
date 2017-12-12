@@ -206,7 +206,7 @@ class PlanController extends BaseController
 			}
 			
 			if ($this->data['over']) {
-				$plan_e_time = strtotime('+'$this->data['over']. ' day', $plan_e_time);
+				$plan_e_time = strtotime('+'.$this->data['over']. ' day', $plan_e_time);
 			}
 
 			if ($plan_s_time < time() && $plan_s_time > time()) {
