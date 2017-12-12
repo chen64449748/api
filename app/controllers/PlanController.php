@@ -101,7 +101,7 @@ class PlanController extends BaseController
 			// $this->data['cash_deposit'] = 2500;
 			// $this->data['ratio'] = 50;
 			// $this->data['bank_id'] = 1;
-
+			// $this->data['over'] = 0;
 			if (!isset($this->data['total_money'])) {
 				throw new Exception("还款总额必填", 0);
 			}
@@ -205,6 +205,10 @@ class PlanController extends BaseController
 				$plan_e_time = strtotime('+1 month', $plan_e_time);
 			}
 			
+			if ($this->data['over']) {
+				$plan_e_time = strtotime('+'$this->data['over']. 'day', $plan_e_time);
+			}
+
 			if ($plan_s_time < time() && $plan_s_time > time()) {
 				// 如果再还款中间
 				$plan_s_time = time();
