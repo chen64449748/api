@@ -56,7 +56,7 @@ class PayController extends BaseController
 
 	}
 	// 绑卡
-	function getBankbind()
+	function postBankbind()
 	{
 		/*
 		需要参数
