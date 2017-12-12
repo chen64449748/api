@@ -10,8 +10,14 @@ class BindCardController extends BaseController
 	{
 	    $offset = $this->data['offset'] ? $this->data['offset'] : '0';
 	    $limit = $this->data['limit'] ? $this->data['limit'] : '20';
-	   
-	    $binddCards = BankdCard::skip($offset)->take($limit)->get();
+	   	
+	   	$select = BankdCard::skip($offset)->take($limit);
+
+	   	if (isset($this->data['Type'])) {
+	   		$select->where('Type', $this->data['Type']); // 1 银行  2 信用卡
+	   	}
+
+	    $binddCards = $select->get();
 	    
 	    return json_encode(array('code'=> '200', 'binddCards'=> $binddCards));
 	}
