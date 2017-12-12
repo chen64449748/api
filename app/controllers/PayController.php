@@ -688,9 +688,7 @@ class PayController extends BaseController
 
 			if ($result['action'] != 1) { throw new Exception($result['msg'], $result['code']);}
 
-			BankdCard::where('Id', $bank_card->Id)->update(array(
-				'status' => 2,
-			));
+			BankdCard::where('Id', $bank_card->Id)->delete();
 
 			return $this->cbc_encode(json_encode(array('code'=> '200', 'msg'=> '解绑成功')));
 
