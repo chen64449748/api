@@ -83,7 +83,7 @@ class PlanController extends BaseController
 		}
 	}
 
-	function getAdd()
+	function postAdd()
 	{
 
 		try {
@@ -97,10 +97,10 @@ class PlanController extends BaseController
 			// $user = new stdClass();
 			// $user->UserId = 82;
 			// $this->user = $user;
-			$this->data['total_money'] = 10000;
-			$this->data['cash_deposit'] = 2500;
-			$this->data['ratio'] = 50;
-			$this->data['bank_id'] = 1;
+			// $this->data['total_money'] = 10000;
+			// $this->data['cash_deposit'] = 2500;
+			// $this->data['ratio'] = 50;
+			// $this->data['bank_id'] = 1;
 
 			if (!isset($this->data['total_money'])) {
 				throw new Exception("还款总额必填", 0);
