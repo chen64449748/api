@@ -257,7 +257,7 @@ class PayController extends BaseController
 				'UserId' => $card_data['rt5_userId'],
 				'BankName' => $bank->BankName,
 				'BankNumber' => $params['bank_number'],
-				'status' => 1,
+				'status' => 0,
 				'AddTime' => time(),
 			);
 
