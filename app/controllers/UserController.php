@@ -27,7 +27,7 @@ class UserController extends BaseController
     // 姓名，余额，头像
 	public function postIndex()
 	{
-        return $this->cbc_encode(json_encode(array('code'=> 200, 'msg'=> '数据请求成功', 'data'=> $this->user)));
+        return $this->cbc_encode(json_encode(array('code'=> 200, 'msg'=> '数据请求成功', 'data'=> $this->user, 'IdCard'=> $this->IdCard)));
 	}
 
     /**
