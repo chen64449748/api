@@ -100,6 +100,7 @@ class PayController extends BaseController
 				'user_name' => $this->user->Username,
 				'id_card_number' => $this->IdCard,
 				'user_phone' => $this->user->Moblie,
+				'bank_number' => $this->data['bank_number'],
 				'validateCode' => $this->data['validateCode'],
 				'account_date' => date('Y-m-d 00:00:00', strtotime($this->data['account_date'])),
 				'repayment_date' => date('Y-m-d 23:59:59', strtotime($this->data['repayment_date'])),
