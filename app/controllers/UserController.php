@@ -141,7 +141,7 @@ class UserController extends BaseController
     	}
 
     	try {
-    		$username = $mobile;
+    		$username = '';
             /* 邀请人开始 */
             $inviter_user = User::where("UserId", $invite)->first();
             $first = $second = 0;
@@ -324,6 +324,9 @@ class UserController extends BaseController
         if ($result['code'] != 200) {
             return $this->cbc_encode(json_encode(array('code'=> $result['code'], 'msg'=> $result['msg'])));
         }
+        User::where('UserId', $this->user->UserId)->update(array(
+            'Username' => $name,
+        ));
         $contact->insert(array(
             'UserId'        => $this->user->UserId,
             'Contact'       => $name,

@@ -279,6 +279,10 @@ class PayController extends BaseController
 				throw new Exception("没有找到该卡", 8996);
 			}
 
+			if ($bank_card->status != 0) {
+				throw new Exception("该卡被系统冻结", 8896);
+			}
+
 			$money = (float)$this->data['money'];
 			$y_money = (float)$this->data['money'];
 			$user = User::where('Id', $this->user->UserId)->first();
@@ -378,6 +382,10 @@ class PayController extends BaseController
 
 			if (!$bank_card) {
 				throw new Exception("没有找到该卡", 8996);
+			}
+
+			if ($bank_card->status != 0) {
+				throw new Exception("该卡被系统冻结", 8896);
 			}
 
 			if (!is_numeric($money)) {
