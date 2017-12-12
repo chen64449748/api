@@ -50,7 +50,7 @@ class BaseController extends Controller {
 			$path = Request::path();
 			$data = Input::all();
 			$this->data = $data;
-			
+
 			if (!in_array($path, $url_ary) && !isset($this->data['token'])) {
 				echo $this->cbc_encode(json_encode(array('code'=> '500', 'msg'=> 'token必传')));
 				exit();

@@ -4,17 +4,13 @@
 * 
 */
 class PayController extends BaseController
-{
-	function __construct()
-	{
-		header('Content-type:text/html;charset=utf-8');
-	}
+{	
 
 	function postBankcode()
 	{	
 	
 		try {
-
+			
 			if (!$this->user) {
 				throw new Exception("请先登录", '1000');
 			}

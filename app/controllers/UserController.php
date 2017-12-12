@@ -324,7 +324,7 @@ class UserController extends BaseController
             'CertType'      => 1,
             'CertNo'        => $no,
             'Isvalid'       => 1,
-            'IsActiv ted'   => 1,
+            'IsActivted'    => 1,
             'AddTime'       => time(),
             'UpdateTime'    => time()
         ));
