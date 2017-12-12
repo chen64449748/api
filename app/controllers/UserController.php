@@ -459,7 +459,7 @@ class UserController extends BaseController
             $file_name = date('YmdHis').uniqid().'.'.trim($ext);
             $file->move($upload_dir, $file_name);
 
-            $url = $_SERVER['HTTP_HOST'] . $web_dir . '/' . $file_name;
+            $url = 'http://'.$_SERVER['HTTP_HOST'] . $web_dir . '/' . $file_name;
             return Response::json(array('code'=> 200, 'msg'=> '上传成功', 'data'=> $url));
         } catch (Exception $e) {
             return Response::json(array('code'=> 500, 'message'=> '上传失败:'.$e->getMessage()));
