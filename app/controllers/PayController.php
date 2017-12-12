@@ -696,18 +696,10 @@ class PayController extends BaseController
 
 	}
 
-	function getQuery()
+	function postBanks()
 	{
-		$params = array(
-			'out_order_id' => '123',
-		);
-
-		$pay = new Pay('HLBPay');
-		$pay->payQuery();
-		$pay->setParams($params);
-		$pay->sendRequest();
-		$result = $pay->getResult();
-		print_r($result);
+		$banks = DB::table('xyk_bankcard')->get();
+		return $this->cbc_encode(json_encode(array('code'=> '200', 'msg'=>'成功', 'banks'=> $banks)));
 	}
 
 }
