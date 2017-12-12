@@ -415,10 +415,10 @@ class UserController extends BaseController
         $limit = $this->data['limit'];
         $profits = Profit::where("user_id", $this->user->UserId)->skip($offset)->take($limit)
             ->get();
-        foreach ($profits as $k => $v) {
-            $profits[$k]['first'] = User::where("UserId", $v['first_user_id'])->get();
-            $profits[$k]['second'] = User::where("UserId", $v['second_user_id'])->get();
-        }
+        // foreach ($profits as $k => $v) {
+        //     $profits[$k]['first'] = User::where("UserId", $v['first_user_id'])->get();
+        //     $profits[$k]['second'] = User::where("UserId", $v['second_user_id'])->get();
+        // }
         return $this->cbc_encode(json_encode(array('code'=> 200, 'msg'=> '请求成功', 'data'=> $profits)));
     }
 
