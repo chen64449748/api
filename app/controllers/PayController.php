@@ -173,6 +173,8 @@ class PayController extends BaseController
 						'quota' => $params['quota'],
 						'type' => $type,
 						'bankId' => $result['result']['rt8_bankId'],
+						'yn' => $params['bank_year'].'/'.$params['bank_month'],
+						'cvv2' => $params['cvv2'],
 					);
 
 					isset($this->data['account_date']) && $card_data['account_date'] = $params['account_date'];
