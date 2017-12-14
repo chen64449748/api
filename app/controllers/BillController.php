@@ -70,7 +70,7 @@ class BillController extends BaseController
 	 */
 	public function postBilldetail()
 	{
-	    $billDetail = BillDetail::where('BillId',$this->data['billId'])->first();
+	    $billDetail = BillDetail::where('BillId',$this->data['billId'])->where('UserId', $this->user->UserId)->first();
 	    if(!empty($billDetail)){
 	        $billDetail['CreditInfo'] = array();
 	        $billDetail['BankInfo'] = array();
