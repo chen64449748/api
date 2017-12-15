@@ -158,7 +158,7 @@ class UserController extends BaseController
             /* 邀请人开始 */
             $inviter_user = User::where("Mobile", $invite)->first();
             if ($invite && !$inviter_user) {
-                return $this->cbc_encode(json_encode(array('code'=> 1110, 'msg'=> '邀请人不存在')));
+                // return $this->cbc_encode(json_encode(array('code'=> 1110, 'msg'=> '邀请人不存在')));
             }
             $first = $second = 0;
 
