@@ -173,6 +173,8 @@ class PayController extends BaseController
 						'quota' => $params['quota'],
 						'type' => $type,
 						'bankId' => $result['result']['rt8_bankId'],
+						'yn' => $params['bank_year'].'/'.$params['bank_month'],
+						'cvv2' => $params['cvv2'],
 					);
 
 					isset($this->data['account_date']) && $card_data['account_date'] = $params['account_date'];
@@ -688,9 +690,7 @@ class PayController extends BaseController
 
 			if ($result['action'] != 1) { throw new Exception($result['msg'], $result['code']);}
 
-			BankdCard::where('Id', $bank_card->Id)->update(array(
-				'status' => 2,
-			));
+			BankdCard::where('Id', $bank_card->Id)->delete();
 
 			return $this->cbc_encode(json_encode(array('code'=> '200', 'msg'=> '解绑成功')));
 

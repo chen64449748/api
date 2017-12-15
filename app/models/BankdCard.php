@@ -43,6 +43,8 @@ class BankdCard extends Eloquent
 			'AccountDate' => $card_data['account_date'], // 还款日
 			'RepaymentDate' => $card_data['repayment_date'], // 结算日
 			'Type' => $card_data['type'], // 1 借记卡  2 贷记卡
+			'YN' => $card_data['yn'], // 月年
+			'CVV2' => $card_data['cvv2'],
 		));
 
 	}

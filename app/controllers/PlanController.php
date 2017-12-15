@@ -206,7 +206,7 @@ class PlanController extends BaseController
 			}
 			
 			if ($this->data['over']) {
-				$plan_e_time = strtotime('+'$this->data['over']. ' day', $plan_e_time);
+				$plan_e_time = strtotime('+'.$this->data['over']. ' day', $plan_e_time);
 			}
 
 			if ($plan_s_time < time() && $plan_s_time > time()) {
@@ -576,7 +576,7 @@ class PlanController extends BaseController
 	    $limit = $this->data['limit'] ? $this->data['limit'] : '20';
 	    $bankId = $this->data['bankId'];
 	    
-	    $planList = Plan::where('BankId',$bankId)->skip($offset)->take($limit)->get();
+	    $planList = Plan::where('BankId',$bankId)->where('UserId', $this->user->UserId)->skip($offset)->take($limit)->get();
 	    
 	    return json_encode(array('code'=> '200', 'planList'=> $planList));
 	}

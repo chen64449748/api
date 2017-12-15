@@ -718,6 +718,7 @@ class HLBPay
 		$rt_sign_arr = array(
 			'rt1_bizType'           => $params['rt1_bizType'],
 			'rt2_retCode'			=> $params['rt2_retCode'],
+			'rt3_retMsg'			=> $params['rt3_retMsg'],
 			'rt4_customerNumber'	=> $params['rt4_customerNumber'],
 		);
 
