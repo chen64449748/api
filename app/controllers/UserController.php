@@ -198,7 +198,7 @@ class UserController extends BaseController
      * @version   [version]
      * @return    [type]                   [description]
      */
-    public function postVerify()
+    public function getVerify()
     {
     	$mobile = $this->data['mobile'];
     	if(!preg_match("/^1(3|4|5|7|8)\d{9}$/", $mobile)){
@@ -230,6 +230,16 @@ class UserController extends BaseController
      */
     public function sendSMS($mobile, $code)
     {
+        $account = 878001;
+        $text = "【卡邦】您的验证码是{$code}";
+        $sign = "Yzc2NzQ2ZjhiZWFjY2E4MzJkNmZiOThiZTZkMzU5MzM=";
+        $url = "http://202.91.244.252:30001/yqx/v1/sms/single_send";
+
+        $obj = new UserContact();
+        $result = json_decode($obj->curlPost($url, compact("account","text","sign","mobile")));
+        if (!$result || $result->code !== 0) {
+            return $this->cbc_encode(json_encode(array('code'=> 10003, 'msg'=> '验证码发送失败')));
+        }
         $time = time() + 300;
         Verify::insert(compact("mobile", "code", "time"));
     	return true;
