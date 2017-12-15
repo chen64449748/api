@@ -666,7 +666,7 @@ class PayController extends BaseController
 
 	}
 
-	function getDeletebank()
+	function postDeletebank()
 	{
 
 		try {
