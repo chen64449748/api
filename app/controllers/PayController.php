@@ -561,13 +561,18 @@ class PayController extends BaseController
 	{
 		try {
 
-			$bank_card = BankdCard::where('UserId', $this->user->UserId)->where('CreditId', $this->data['bindId'])->first();
+			$bank_card = BankdCard::where('UserId', $this->user->UserId)->where('Id', $this->data['bank_id'])->first();
 			$fee = DB::table('xyk_fee')->first();
 			if (!$fee) {
 				throw new Exception("商家未设置费率", 3001);
 			}
+
 			if (!$bank_card) {
 				throw new Exception("没有找到该卡", 8996);
+			}
+
+			if ($bank_card->Type != 2) {
+				throw new Exception("还款必须是信用卡", 8970);	
 			}
 
 			$money = (float)$this->data['money'];
@@ -579,7 +584,7 @@ class PayController extends BaseController
 			$money = $money - $repay_fee;
 			$params = array(
 				'user_id' => $this->user->UserId,
-				'hlb_bindId' => $this->data['bindId'],
+				'hlb_bindId' => $bank_card->CreditId,
 				'money' => $money,
 				'feeType' => 'PAYER', // RECEIVER 收款方 自己      PAYER 付款方  用户
 				'remark' => '',
