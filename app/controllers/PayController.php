@@ -291,7 +291,7 @@ class PayController extends BaseController
 
 			$money = (float)$this->data['money'];
 			$y_money = (float)$this->data['money'];
-			$user = User::where('Id', $this->user->UserId)->first();
+			$user = User::where('UserId', $this->user->UserId)->first();
 
 			if ($user->Account > $money) {
 				throw new Exception("最多可提现".$user->Account, 1003);
@@ -351,7 +351,7 @@ class PayController extends BaseController
 
 			Bill::billUpdate($bill_id, 'SUCCESS');
 
-			User::where('Id', $this->user->UserId)->decrement('Account', (float)$y_money);
+			User::where('UserId', $this->user->UserId)->decrement('Account', (float)$y_money);
 
 			return $this->cbc_encode(json_encode(array('code'=> '200', 'msg'=> '提现成功!')));
 		} catch (Exception $e) {
@@ -454,7 +454,7 @@ class PayController extends BaseController
 				// 添加余额 扣除手续废
 				$d_money = $money - $pay_fee;
 				Profit::doProfit($this->user->UserId, $money);
-				User::where('Id', $this->user->UserId)->increment('Account', (float)$d_money);
+				User::where('UserId', $this->user->UserId)->increment('Account', (float)$d_money);
 			}
 
 			
@@ -497,7 +497,7 @@ class PayController extends BaseController
 			Bill::where('Id', $bill->Id)->update(array('status'=> 1));
 
 			// 添加余额
-			User::where('Id', $bill->UserId)->increment('Account', (float)$result['result']['rt8_orderAmount']);
+			User::where('UserId', $bill->UserId)->increment('Account', (float)$result['result']['rt8_orderAmount']);
 
 
 			DB::commit();
@@ -619,7 +619,7 @@ class PayController extends BaseController
 			Bill::billUpdate($bill_id, 'SUCCESS');
 
 			// 扣除余额
-			User::where('Id', $this->user->UserId)->decrement('Account', $y_money);
+			User::where('UserId', $this->user->UserId)->decrement('Account', $y_money);
 
 			// $repay_id = Repay::insertGetId(array(
 			// 	'OrderNum' => $result['result']['rt6_orderId'],
