@@ -144,7 +144,7 @@ class UserController extends BaseController
             ->orderBy('time', 'desc')
             ->first();
     	if ($ary['time'] < time() || $ary['code'] != $code) {
-    		// return $this->cbc_encode(json_encode(array('code'=> 1001, 'msg'=> '验证码错误')));
+    		return $this->cbc_encode(json_encode(array('code'=> 1001, 'msg'=> '验证码错误')));
     	}
 
     	$have_user = User::where("Mobile", $mobile)
@@ -230,6 +230,45 @@ class UserController extends BaseController
      */
     public function sendSMS($mobile, $code)
     {
+
+        $account = "878001";
+        $text = "【卡邦】您的验证码是{$code}";
+        $sign = base64_encode(MD5("878001cd0df95e46e32c00719f156c8ec7c067"));
+        $url = "http://202.91.244.252:30001/yqx/v1/sms/single_send";
+
+        $post_data = json_encode(compact("account","text","sign","mobile"));
+
+        $ch = curl_init();
+
+        curl_setopt($ch, CURLOPT_POST, 1);
+
+        curl_setopt($ch, CURLOPT_URL, $url);
+
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $post_data);
+
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+
+            'Content-Type: application/json; charset=utf-8',
+
+            'Content-Length: ' . strlen($post_data))
+
+        );
+
+
+        ob_start();
+
+        curl_exec($ch);
+
+        $return_content = ob_get_contents();
+
+        ob_end_clean();
+        $return_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+        $result = json_decode($return_code, true);
+
+        if (!$result || $result['code'] != 0) {
+            return false;
+        }
         $time = time() + 300;
         Verify::insert(compact("mobile", "code", "time"));
     	return true;
@@ -275,7 +314,7 @@ class UserController extends BaseController
                     ->orderBy('time')
                     ->first();
                     if ($verify->code != $code || $verify->time < time()) {
-                        // return $this->cbc_encode(json_encode(array('code'=> 1001, 'msg'=> '验证码错误')));
+                        return $this->cbc_encode(json_encode(array('code'=> 1001, 'msg'=> '验证码错误')));
                     }
                 } else {
                     return $this->cbc_encode(json_encode(array('code'=> 1104, 'msg'=> '手机号码未修改')));
@@ -288,7 +327,7 @@ class UserController extends BaseController
                     ->orderBy('time', 'desc')
                     ->first();
                 if ($verify->code != $code || $verify->time < time()) {
-                    // return $this->cbc_encode(json_encode(array('code'=> 1001, 'msg'=> '验证码错误')));
+                    return $this->cbc_encode(json_encode(array('code'=> 1001, 'msg'=> '验证码错误')));
                 }
                 $password = md5($password);
                 break;
@@ -299,7 +338,7 @@ class UserController extends BaseController
                     ->orderBy('time', 'desc')
                     ->first();
                 if ($verify->code != $code || $verify->time < time()) {
-                    // return $this->cbc_encode(json_encode(array('code'=> 1001, 'msg'=> '验证码错误')));
+                    return $this->cbc_encode(json_encode(array('code'=> 1001, 'msg'=> '验证码错误')));
                 }
                 $pay_password = md5($pay_password);
                 break;
@@ -449,7 +488,7 @@ class UserController extends BaseController
             ->orderBy('time')
             ->first();
         if ($verify->code != $code || $verify->time < time()) {
-            // return $this->cbc_encode(json_encode(array('code'=> 1001, 'msg'=> '验证码错误')));
+            return $this->cbc_encode(json_encode(array('code'=> 1001, 'msg'=> '验证码错误')));
         }
 
         if(!$password || $password != $repassword) {
