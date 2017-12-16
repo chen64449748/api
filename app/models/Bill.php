@@ -21,7 +21,7 @@ class Bill extends Eloquent
 		}
 
 		if (!isset($data['TableId'])) {
-			$data['TableId'] = '';
+			$data['TableId'] = 0;
 		}
 
 		if (!isset($data['SysFee'])) {
