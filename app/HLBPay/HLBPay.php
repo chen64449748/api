@@ -614,7 +614,6 @@ class HLBPay
 		$rt_sign_arr = array(
 			'rt1_bizType'           => $params['rt1_bizType'],
 			'rt2_retCode'			=> $params['rt2_retCode'],
-			'rt3_retMsg'			=> $params['rt3_retMsg'],
 			'rt4_customerNumber'	=> $params['rt4_customerNumber'],
 			'rt5_userId'			=> $params['rt5_userId'],
 			'rt6_orderId'			=> $params['rt6_orderId'],
@@ -628,7 +627,7 @@ class HLBPay
 			$sign_str .= '&'.$value;
 		}
 
-		$sign_str .= '&'.$this->signkey;
+		$sign_str .= '&'.$this->rt_signkey;
 		$this->rt_sign = md5($sign_str);
 	}
 
