@@ -293,7 +293,7 @@ class PayController extends BaseController
 			$y_money = (float)$this->data['money'];
 			$user = User::where('UserId', $this->user->UserId)->first();
 
-			if ($user->Account > $money) {
+			if ($user->Account < $y_money) {
 				throw new Exception("最多可提现".$user->Account, 1003);
 			}
 
