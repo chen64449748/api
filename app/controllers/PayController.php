@@ -291,9 +291,9 @@ class PayController extends BaseController
 
 			$money = (float)$this->data['money'];
 			$y_money = (float)$this->data['money'];
-			$user = User::where('Id', $this->user->UserId)->first();
+			$user = User::where('UserId', $this->user->UserId)->first();
 
-			if ($user->Account > $money) {
+			if ($user->Account < $y_money) {
 				throw new Exception("最多可提现".$user->Account, 1003);
 			}
 
@@ -354,7 +354,7 @@ class PayController extends BaseController
 
 			Bill::billUpdate($bill_id, 'SUCCESS');
 
-			User::where('Id', $this->user->UserId)->decrement('Account', (float)$y_money);
+			User::where('UserId', $this->user->UserId)->decrement('Account', (float)$y_money);
 
 			return $this->cbc_encode(json_encode(array('code'=> '200', 'msg'=> '提现成功!')));
 		} catch (Exception $e) {
@@ -370,8 +370,8 @@ class PayController extends BaseController
 			// 测试数据
 			// $this->data['bank_id'] = 1;
 			// $this->data['money'] = '1.00';
-			// $this->data['goods_name'] = '特产';
-			// $this->data['goods_desc'] = '特色产品';
+			$this->data['goods_name'] = '充值';
+			$this->data['goods_desc'] = '充值';
 			// $this->data['validateCode'] = '184216';
 			// $user = new stdClass();
 			// $user->UserId = 82;
@@ -462,7 +462,7 @@ class PayController extends BaseController
 				// 添加余额 扣除手续废
 				$d_money = $money - $pay_fee;
 				Profit::doProfit($this->user->UserId, $money);
-				User::where('Id', $this->user->UserId)->increment('Account', (float)$d_money);
+				User::where('UserId', $this->user->UserId)->increment('Account', (float)$d_money);
 			} else {
 				Bill::billUpdate($bill_id, 'FAIL');
 			}
@@ -507,7 +507,7 @@ class PayController extends BaseController
 			Bill::where('Id', $bill->Id)->update(array('status'=> 1));
 
 			// 添加余额
-			User::where('Id', $bill->UserId)->increment('Account', (float)$result['result']['rt8_orderAmount']);
+			User::where('UserId', $bill->UserId)->increment('Account', (float)$result['result']['rt8_orderAmount']);
 
 
 			DB::commit();
@@ -571,13 +571,18 @@ class PayController extends BaseController
 	{
 		try {
 
-			$bank_card = BankdCard::where('UserId', $this->user->UserId)->where('CreditId', $this->data['bindId'])->first();
+			$bank_card = BankdCard::where('UserId', $this->user->UserId)->where('Id', $this->data['bank_id'])->first();
 			$fee = DB::table('xyk_fee')->first();
 			if (!$fee) {
 				throw new Exception("商家未设置费率", 3001);
 			}
+
 			if (!$bank_card) {
 				throw new Exception("没有找到该卡", 8996);
+			}
+
+			if ($bank_card->Type != 2) {
+				throw new Exception("还款必须是信用卡", 8970);	
 			}
 
 			$money = (float)$this->data['money'];
@@ -589,7 +594,7 @@ class PayController extends BaseController
 			$money = $money - $repay_fee;
 			$params = array(
 				'user_id' => $this->user->UserId,
-				'hlb_bindId' => $this->data['bindId'],
+				'hlb_bindId' => $bank_card->CreditId,
 				'money' => $money,
 				'feeType' => 'PAYER', // RECEIVER 收款方 自己      PAYER 付款方  用户
 				'remark' => '',
@@ -627,7 +632,7 @@ class PayController extends BaseController
 			Bill::billUpdate($bill_id, 'SUCCESS');
 
 			// 扣除余额
-			User::where('Id', $this->user->UserId)->decrement('Account', $y_money);
+			User::where('UserId', $this->user->UserId)->decrement('Account', $y_money);
 
 			// $repay_id = Repay::insertGetId(array(
 			// 	'OrderNum' => $result['result']['rt6_orderId'],

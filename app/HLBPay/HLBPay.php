@@ -627,7 +627,7 @@ class HLBPay
 			$sign_str .= '&'.$value;
 		}
 
-		$sign_str .= '&'.$this->signkey;
+		$sign_str .= '&'.$this->rt_signkey;
 		$this->rt_sign = md5($sign_str);
 	}
 

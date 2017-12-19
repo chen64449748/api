@@ -13,15 +13,15 @@ class Bill extends Eloquent
 		$time = time();
 
 		if (!isset($data['BankId'])) {
-			$data['BankId'] = '';
+			$data['BankId'] = 0;
 		}
 
 		if (!isset($data['CreditId'])) {
-			$data['CreditId'] = '';
+			$data['CreditId'] = 0;
 		}
 
 		if (!isset($data['TableId'])) {
-			$data['TableId'] = '';
+			$data['TableId'] = 0;
 		}
 
 		if (!isset($data['SysFee'])) {
