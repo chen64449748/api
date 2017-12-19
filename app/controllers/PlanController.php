@@ -560,7 +560,7 @@ class PlanController extends BaseController
 			} else {
 				$di_rate = intval(100 / ($times - 1));
 
-				if ($di_rate <= 5) {
+				if ($di_rate <= 10) {
 					$ratio_arr[] = 5;
 				}
 
@@ -570,7 +570,7 @@ class PlanController extends BaseController
 			}
 			
 			$now = $di_rate;
-			echo $now;exit;
+			// echo $now;exit;
 			if ($di_rate <= 50) {
 
 				while ($now <= $top) {
