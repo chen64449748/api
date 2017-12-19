@@ -470,6 +470,13 @@ class PlanController extends BaseController
 			// $this->data['bank_id'] = 1;
 			// $this->user = new stdClass();
 			// $this->user->UserId = 82;
+
+			$over = $this->data['over']; // 延后天数
+
+			if ($over == '') {
+				$over = 0;
+			}
+
 			if (!isset($this->data['bank_id'])) {
 				throw new Exception("bank_id必传", 0);
 			}
@@ -488,8 +495,32 @@ class PlanController extends BaseController
 				throw new Exception("没有找到交易卡", 8996);
 			}
 
-			$plan_start_date = $bank_card->AccountDate;
-			$plan_end_date = $bank_card->RepaymentDate;
+			$ddate = $bank_card->RepaymentDate - $bank_card->AccountDate;
+
+			$s_month = date('m');
+			$e_month = intval(date('m'));
+			
+
+			if ($e_month < 10) {
+				$e_month = '0'.$e_month;
+			}
+
+			if ($bank_card->AccountDate < 10) {
+				$bank_card->AccountDate = '0'.$bank_card->AccountDate;
+			}
+
+			if ($bank_card->RepaymentDate < 10) {
+				$bank_card->RepaymentDate = '0'.$bank_card->RepaymentDate;
+			}
+
+			$plan_start_date = date('Y-m').'-'.$bank_card->AccountDate.' 00:00:00';
+			$plan_end_date = '';
+			if ( $ddate < 20 ) {
+				$plan_end_date = date('Y-m', strtotime('+1 month', strtotime($plan_start_date))). '-'. $bank_card->RepaymentDate.' 23:59:59';
+			} else {
+				$plan_end_date = date('Y-m').'-'.$bank_card->RepaymentDate.' 00:00:00';
+			}
+
 			$d_time = $plan_sys->PlanDayTimes; // 后台获取
 
 			if (date('H') >= 15) {
@@ -498,6 +529,15 @@ class PlanController extends BaseController
 
 			$plan_s_time = strtotime($plan_start_date);
 			$plan_e_time = strtotime($plan_end_date);
+
+			if (time() >= $plan_e_time) {
+				$plan_s_time = strtotime('+1 month', $plan_s_time);
+				$plan_e_time = strtotime('+1 month', $plan_e_time);
+			}
+
+			if ($over) {
+				$plan_e_time = strtotime('+'.$this->data['over']. ' day', $plan_e_time);
+			}
 
 			if ($plan_s_time < time() && $plan_s_time > time()) {
 				// 如果再还款中间
