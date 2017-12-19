@@ -524,7 +524,7 @@ class PlanController extends BaseController
 			$d_time = $plan_sys->PlanDayTimes; // 后台获取
 
 			if (date('H') >= 15) {
-				throw new Exception("请在15点以前生成计划", 3003);
+				// throw new Exception("请在15点以前生成计划", 3003);
 			}
 
 			$plan_s_time = strtotime($plan_start_date);
@@ -616,7 +616,7 @@ class PlanController extends BaseController
 	    $limit = $this->data['limit'] ? $this->data['limit'] : '20';
 	    $bankId = $this->data['bankId'];
 	    
-	    $planList = Plan::where('BankId',$bankId)->where('UserId', $this->user->UserId)->skip($offset)->take($limit)->get();
+	    $planList = Plan::where('BankId',$bankId)->where('UserId', $this->user->UserId)->where('status', '<>', 6)->skip($offset)->take($limit)->get();
 	    
 	    return json_encode(array('code'=> '200', 'planList'=> $planList));
 	}
