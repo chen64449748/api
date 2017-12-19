@@ -212,7 +212,6 @@ class PlanController extends BaseController
 			if ($plan_s_time < time() && $plan_e_time > time()) {
 				// 如果再还款中间
 				$plan_s_time = time();
-				echo 1;exit;
 			}
 			// echo date('Y-m-d', $plan_s_time);exit;
 			// $plan_s_time = strtotime($plan_start_date);	# 测
@@ -565,7 +564,7 @@ class PlanController extends BaseController
 					$di_rate = ($di_rate % 5) * 10;
 				} 	
 			}
-			echo date('Y-m-d', $plan_s_time);exit;
+			
 			echo $times;exit;
 			if ($times >= 21) {
 				$ratio_arr[] = 5;
