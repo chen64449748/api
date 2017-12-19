@@ -520,7 +520,7 @@ class PlanController extends BaseController
 			} else {
 				$plan_end_date = date('Y-m').'-'.$bank_card->RepaymentDate.' 00:00:00';
 			}
-			echo $plan_end_date;exit;
+			
 			$d_time = $plan_sys->PlanDayTimes; // 后台获取
 
 			if (date('H') >= 15) {
