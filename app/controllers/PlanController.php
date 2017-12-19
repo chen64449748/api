@@ -524,7 +524,7 @@ class PlanController extends BaseController
 			$d_time = $plan_sys->PlanDayTimes; // 后台获取
 
 			if (date('H') >= 15) {
-				throw new Exception("请在15点以前生成计划", 3003);
+				// throw new Exception("请在15点以前生成计划", 3003);
 			}
 
 			$plan_s_time = strtotime($plan_start_date);
