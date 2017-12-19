@@ -520,7 +520,7 @@ class PlanController extends BaseController
 			} else {
 				$plan_end_date = date('Y-m').'-'.$bank_card->RepaymentDate.' 00:00:00';
 			}
-			
+
 			$d_time = $plan_sys->PlanDayTimes; // 后台获取
 
 			if (date('H') >= 15) {
@@ -536,9 +536,10 @@ class PlanController extends BaseController
 			}
 
 			if ($over) {
-				$plan_e_time = strtotime('+'.$this->data['over']. ' day', $plan_e_time);
+				$plan_e_time = strtotime('+'.$over. ' day', $plan_e_time);
 			}
 
+			echo date('Y-m-d H:i:s', $plan_e_time);exit;
 			if ($plan_s_time < time() && $plan_s_time > time()) {
 				// 如果再还款中间
 				$plan_s_time = time();
