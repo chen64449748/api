@@ -150,7 +150,7 @@ class PlanPay extends Command {
 						// 取余额
 						try {
 							DB::beginTransaction();
-							$user = User::where('Id', $plan->UserId)->get();
+							$user = User::where('UserId', $plan->UserId)->get();
 							
 							// 收取费用 保证金 加 计划手续费 加 系统手续费
 							$money = $plan->CashDeposit + $plan->fee + $plan->SysFee;
@@ -177,7 +177,7 @@ class PlanPay extends Command {
 							// 用余额 直接成功
 					    	Bill::billUpdate($bill_id, 'SUCCESS');
 							//扣除余额 ， 修改计划准备中
-							User::where('Id', $plan->UserId)->decrement('Account', (float)$money);
+							User::where('UserId', $plan->UserId)->decrement('Account', (float)$money);
 
 							// 判断 分销
 				    		if ($plan_sys->OpenPlanProfit) {

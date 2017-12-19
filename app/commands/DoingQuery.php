@@ -170,7 +170,7 @@ class DoingQuery extends Command {
 					$pay_fee = round($pay_fee, 2);
 					$money = $money - $pay_fee;
 
-					User::where('Id', $bill->UserId)->increment('Account', (float)$money);
+					User::where('UserId', $bill->UserId)->increment('Account', (float)$money);
 					break;
 				case '4':
 					// 还款消费

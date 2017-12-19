@@ -72,7 +72,7 @@ class PlanSettle extends Command {
 					Bill::billUpdate($bill_id, 'SUCCESS');
 					// 结算到余额
 					Plan::where('Id', $plan->Id)->update(array('status'=> 3));
-					User::where('Id', $plan->UserId)->increment('Account', (float)$plan->CashDeposit);
+					User::where('UserId', $plan->UserId)->increment('Account', (float)$plan->CashDeposit);
 
 					$this->info('planid: '.$plan->Id.', cash:'. $plan->CashDeposit. ', SUCCESS');
 					DB::commit();

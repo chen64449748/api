@@ -345,7 +345,10 @@ class PayController extends BaseController
 
 			$result = $pay->getResult();
 
-			if ($result['action'] != 1) { throw new Exception('错误代码：'.$result['code'].','.$result['msg'], $result['code']);}
+			if ($result['action'] != 1) { 
+				Bill::billUpdate($bill_id, 'FAIL');
+				throw new Exception('错误代码：'.$result['code'].','.$result['msg'], $result['code']);
+			}
 
 			// 扣除余额
 
@@ -445,7 +448,12 @@ class PayController extends BaseController
 			// $res = $pay->getResult($result);
 			// print_r($res);exit;
 
-			if ($result['action'] != 1) { throw new Exception($result['msg'], $result['code']);}
+			// if ($result['action'] != 1) { throw new Exception($result['msg'], $result['code']);}
+			// 验签不通过
+			if ($result['code'] == '8000') {
+				throw new Exception($result['msg'], $result['code']);
+			}
+
 			
 			if ($result['result']['rt9_orderStatus'] == 'DOING' || $result['result']['rt9_orderStatus'] == 'INIT') {
 				Bill::billUpdate($bill_id, 'DOING'); //  账单修改为处理中
@@ -455,6 +463,8 @@ class PayController extends BaseController
 				$d_money = $money - $pay_fee;
 				Profit::doProfit($this->user->UserId, $money);
 				User::where('Id', $this->user->UserId)->increment('Account', (float)$d_money);
+			} else {
+				Bill::billUpdate($bill_id, 'FAIL');
 			}
 
 			
@@ -608,7 +618,10 @@ class PayController extends BaseController
 
 			$result = $pay->getResult();
 
-			if ($result['action'] != 1) { throw new Exception($result['msg'], $result['code']);}
+			if ($result['action'] != 1) {
+				Bill::billUpdate($bill_id, 'FAIL');
+				throw new Exception($result['msg'], $result['code']);
+			}
 
 			// 还款成功	
 			Bill::billUpdate($bill_id, 'SUCCESS');

@@ -77,6 +77,10 @@ class Bill extends Eloquent
 			Bill::where('Id', $bill_id)->update(array(
 				'status' => 2,
 			));
+		} else if ($type == 'FAIL') {
+			Bill::where('Id', $bill_id)->update(array(
+				'status' => 0,
+			));
 		}
 
 	}
