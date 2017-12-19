@@ -554,7 +554,7 @@ class PlanController extends BaseController
 			$ratio_arr = array();
 
 			
-
+			$di_rate = 0;
 			if ($times <= 2) {
 				$di_rate = 100;
 			} else {
