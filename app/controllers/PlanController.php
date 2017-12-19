@@ -560,16 +560,17 @@ class PlanController extends BaseController
 			} else {
 				$di_rate = intval(100 / ($times - 1));
 
-				if ($di_rate <= 10) {
-					$ratio_arr[] = 5;
-				}
-
 				if ($di_rate % 5) {
 					$di_rate = ($di_rate % 5) * 10;
 				} 	
 			}
 			
+			if ($times => 21) {
+				$ratio_arr[] = 5;
+			}
+
 			$now = $di_rate;
+
 			// echo $now;exit;
 			if ($di_rate <= 50) {
 
