@@ -560,7 +560,7 @@ class PlanController extends BaseController
 			} else {
 				$di_rate = intval(100 / ($times - 1));
 
-				if ($di_rate == ) {
+				if ($di_rate <= 5) {
 					$ratio_arr[] = 5;
 				}
 
