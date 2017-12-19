@@ -545,8 +545,8 @@ class PlanController extends BaseController
 				$plan_s_time = time();
 			}
 
-			$day_diff = (int)date('d', $plan_e_time) - (int)date('d', $plan_s_time);
-
+			// $day_diff = (int)date('d', $plan_e_time) - (int)date('d', $plan_s_time);
+			$day_diff = ceil(($plan_e_time - $plan_s_time) / 86400);
 			// 计算次数 如一天两次 计算结果 加1 因为同一天 差距diff为0
 			$times = ($day_diff + 1) * $d_time;
 			
