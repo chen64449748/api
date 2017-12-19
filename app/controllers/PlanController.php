@@ -564,7 +564,7 @@ class PlanController extends BaseController
 					$di_rate = ($di_rate % 5) * 10;
 				} 	
 			}
-			
+			echo $times;exit;
 			if ($times >= 21) {
 				$ratio_arr[] = 5;
 			}
