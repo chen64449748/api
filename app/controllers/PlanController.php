@@ -559,8 +559,8 @@ class PlanController extends BaseController
 			} else {
 				$di_rate = intval(100 / ($times - 1));
 
-				if ($di_rate % 5) {
-					$di_rate = ($di_rate % 5) * 10;
+				if ($di_rate % 10) {
+					$di_rate = ($di_rate % 10) * 10;
 				} 	
 			}
 			echo $times;
