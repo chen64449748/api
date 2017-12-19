@@ -561,6 +561,11 @@ class PlanController extends BaseController
 			$top = 50;
 			$now = $di_rate;
 			$ratio_arr = array();
+
+			if ($now <= 5) {
+				$ratio_arr[] = 5;
+			}
+
 			if ($di_rate <= 50) {
 
 				while ($now <= $top) {
