@@ -565,7 +565,7 @@ class PlanController extends BaseController
 				} 	
 			}
 			
-			if ($times => 21) {
+			if ($times >= 21) {
 				$ratio_arr[] = 5;
 			}
 
