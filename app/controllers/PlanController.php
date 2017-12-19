@@ -550,6 +550,13 @@ class PlanController extends BaseController
 			// 计算次数 如一天两次 计算结果 加1 因为同一天 差距diff为0
 			$times = ($day_diff + 1) * $d_time;
 			
+			$top = 50;
+			$ratio_arr = array();
+
+			if ($now <= 5) {
+				$ratio_arr[] = 5;
+			}
+
 			if ($times <= 2) {
 				$di_rate = 100;
 			} else {
@@ -558,13 +565,9 @@ class PlanController extends BaseController
 					$di_rate = ($di_rate % 5) * 10;
 				} 	
 			}
-			$top = 50;
+			
 			$now = $di_rate;
-			$ratio_arr = array();
-
-			if ($now <= 5) {
-				$ratio_arr[] = 5;
-			}
+			
 
 			if ($di_rate <= 50) {
 
