@@ -457,7 +457,7 @@ class PayController extends BaseController
 			
 			if ($result['result']['rt9_orderStatus'] == 'DOING' || $result['result']['rt9_orderStatus'] == 'INIT') {
 				Bill::billUpdate($bill_id, 'DOING'); //  账单修改为处理中
-			} else {
+			} else if ($result['result']['rt9_orderStatus'] == 'SUCCESS') {
 				Bill::billUpdate($bill_id, 'SUCCESS'); // 成功 
 				// 添加余额 扣除手续废
 				$d_money = $money - $pay_fee;
