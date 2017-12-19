@@ -209,7 +209,7 @@ class PlanController extends BaseController
 				$plan_e_time = strtotime('+'.$this->data['over']. ' day', $plan_e_time);
 			}
 
-			if ($plan_s_time < time() && $plan_s_time > time()) {
+			if ($plan_s_time < time() && $plan_e_time > time()) {
 				// 如果再还款中间
 				$plan_s_time = time();
 			}
@@ -540,7 +540,7 @@ class PlanController extends BaseController
 			}
 
 			// echo date('Y-m-d H:i:s', $plan_e_time);exit;
-			if ($plan_s_time < time() && $plan_s_time > time()) {
+			if ($plan_s_time < time() && $plan_e_time > time()) {
 				// 如果再还款中间
 				$plan_s_time = time();
 			}
