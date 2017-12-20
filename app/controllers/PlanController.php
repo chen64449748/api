@@ -31,13 +31,15 @@ class PlanController extends BaseController
 		}
 	} 
 
-	private function getRandTimeDay($arr, $d_time = 2, $times, $t_time = 1200)
+	private function getRandTimeDay($arr, $d_time = 2, $times, $t_time = 1200, $t = 0)
 	{
+
 		$tmp_arr = array();
 		sort($arr);
 		foreach ($arr as $key => $value) {
 			$tmp_arr[date('d', $value)][] = $value;
 		}
+		
 
 		$r_arr = array();
 		$tmp_time = 0;
@@ -46,9 +48,8 @@ class PlanController extends BaseController
 			$tmp_count = count($tv) - 1;
 						
 			for ($i=0; $i < $d_time; $i++) { 	
-				if ($tmp_time == $times) {
-					break;
-				}
+				
+				
 
 				$dk = mt_rand(0, $tmp_count);
 				$flag_t = true;
@@ -62,8 +63,14 @@ class PlanController extends BaseController
 				// }
 
 				if ($flag_t) {
+
 					$r_arr[] = $tv[$dk];
 					$tmp_time++;
+					// echo $tmp_time.'<br>';
+				}
+
+				if ($tmp_time == $times) {
+					break;
 				}
 					
 			}
@@ -115,6 +122,8 @@ class PlanController extends BaseController
 			}
 
 			$this->data['cash_deposit'] = round($this->data['total_money'], 2) * (int)$this->data['ratio'] / 100;
+
+
 
 			$pay_bank_id = 0;
 			isset($this->data['pay_bank_id']) && $pay_bank_id = $this->data['pay_bank_id'];
@@ -186,7 +195,7 @@ class PlanController extends BaseController
 			if ( $ddate < 20 ) {
 				$plan_end_date = date('Y-m', strtotime('+1 month', strtotime($plan_start_date))). '-'. $bank_card->RepaymentDate.' 23:59:59';
 			} else {
-				$plan_end_date = date('Y-m').'-'.$bank_card->RepaymentDate.' 00:00:00';
+				$plan_end_date = date('Y-m').'-'.$bank_card->RepaymentDate.' 23:59:59';
 			}
 
 
@@ -215,7 +224,7 @@ class PlanController extends BaseController
 				// 如果再还款中间
 				$plan_s_time = time();
 			}
-			// echo date('Y-m-d', $plan_s_time);exit;
+			// echo date('Y-m-d H:i:s', $plan_e_time);exit;
 			// $plan_s_time = strtotime($plan_start_date);	# 测
 			// 生成还款计划 次数
 			$plan_time = floor(100 / $this->data['ratio']) + 1;
@@ -237,6 +246,10 @@ class PlanController extends BaseController
 			$foot_money = round(($this->data['cash_deposit'] * $o_time) / $plan_time, 2);
 			$total_money = round($this->data['total_money'], 2);
 			// 生成计划
+			if ($header_money < 5) {
+				$zuidi_total = 5 * $o_time;
+				throw new Exception("最低总金额". $zuidi_total, 3010);
+			}
 
 			// 保证金费率
 			$cash_deposit_fee = 0;
@@ -269,7 +282,6 @@ class PlanController extends BaseController
 			$this->getRandTime($plan_time, $plan_s_time, $plan_e_time, $arr);
 			$pay_t_arr = $this->getRandTimeDay($arr, $d_time, $plan_time);
 			sort($pay_t_arr);
-			
 
 			$plan_pay_fee_total = 0; # 接口调用费率
 			$t_sort = 0;
@@ -359,6 +371,7 @@ class PlanController extends BaseController
 					PlanDetail::insert($tao_item);
 				}
 			}
+
 			// 费率添加
 			Plan::where('Id', $plan_id)->increment('SysFee', $plan_pay_fee_total);
 			$this->getHuanpaytime($plan_id, $tao_time, $pay_t_arr, $plan_e_time, $d_time);
@@ -374,9 +387,9 @@ class PlanController extends BaseController
 
 	}
 	
-	private function getHuanpaytime($plan_id, $tao_time, $pay_t_arr, $plan_e_time, $d_time)
+	private function getHuanpaytime($plan_id, $tmp_tao_time, $pay_t_arr, $plan_e_time, $d_time)
 	{
-	
+		
 		$plan_detail = PlanDetail::where('PlanId', $plan_id)->where('Type', 1)->orderBy('sort', 'asc')->get();
 
 		foreach ($plan_detail as $key => $value) {
@@ -386,8 +399,8 @@ class PlanController extends BaseController
 
 			if ($addkey == count($pay_t_arr)) {
 				// 最后一笔还款 时间随意
-				$this->getRandTime($tao_time, $pay_t_arr[$key], $plan_e_time, $arr, 24, 600);
-				$huan_t_arr = $this->getRandTimeDay($arr, $d_time, $tao_time);
+				$this->getRandTime($tmp_tao_time, $pay_t_arr[$key], $plan_e_time, $arr, 24, 600);
+				$huan_t_arr = $this->getRandTimeDay($arr, $d_time, $tmp_tao_time);
 			} else {
 
 				if (date('d', $pay_t_arr[$key]) != date('d', $pay_t_arr[$addkey])) {
@@ -395,14 +408,14 @@ class PlanController extends BaseController
 				} else {
 					$tmp_e_time = $pay_t_arr[$addkey];
 				}
+				
 				$tmp_e_time = $pay_t_arr[$addkey];
-				$this->getRandTime($tao_time, $pay_t_arr[$key], $tmp_e_time, $arr, 24, 600);
-				$huan_t_arr = $this->getRandTimeDay($arr, $d_time, $tao_time);
+				$this->getRandTime($tmp_tao_time, $pay_t_arr[$key], $tmp_e_time, $arr, 24, 600);
+				$huan_t_arr = $this->getRandTimeDay($arr, $d_time, $tmp_tao_time, 1200, 1);
 			}
 			
 			sort($huan_t_arr);
-
-			for ($j=0; $j < $tao_time; $j++) { 
+			for ($j=0; $j < $tmp_tao_time; $j++) { 
 				PlanDetail::where('PlanId', $value->PlanId)->where('Batch', $value->Batch)->take(1)->whereNull('PayTime')->update(array(
 					'PayTime' => date('Y-m-d H:i:s', $huan_t_arr[$j]),
 				));
