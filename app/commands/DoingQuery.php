@@ -136,9 +136,9 @@ class DoingQuery extends Command {
 					PlanDetail::where('PlanId', $bill->TableId)->where('OrderNum', $bill_detail->OrderNum)->update(array('status'=> 0));
 					break;
 				case '5':
-					// 保证金收取
-					// 将计划表 状态改为  2 计划完成，等待退保证金
-					Plan::where('Id', $bill->TableId)->update(array('status'=> 2));
+					// 保证金收取 失败
+					// 将计划表 失败
+					Plan::where('Id', $bill->TableId)->update(array('status'=> 5));
 					break;
 				default:
 					# code...

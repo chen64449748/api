@@ -104,7 +104,7 @@ class PlanController extends BaseController
 		}
 	}
 
-	function getAdd()
+	function postAdd()
 	{
 
 		try {
@@ -274,8 +274,8 @@ class PlanController extends BaseController
 			}
 			
 			$plan_id = Plan::insertGetId(array(
-				'StartDate' => $plan_start_date,
-				'EndDate'   => $plan_end_date,
+				'StartDate' => date('Y-m-d H:i:s', $plan_s_time),
+				'EndDate'   => date('Y-m-d H:i:s', $plan_e_time),
 				'status' => 6,
 				'UserId' => $this->user->UserId,
 				'BankId' => $bank_card->Id,
@@ -440,14 +440,168 @@ class PlanController extends BaseController
 	}
 
 	// 计划确认
-	public function postConfirm()
+	public function getConfirm()
 	{
-		$plan_id = $this->data['plan_id'];
+		
 		try {
-			Plan::where('Id', $plan_id)->update(array('status'=> 0));
+			$plan_id = $this->data['plan_id'];
+			$sys = DB::table('xyk_sys')->first();
+			$fee = DB::table('xyk_fee')->first();
+			$plan_sys = DB::table('xyk_plan_sys')->first();
+
+			if (!$plan_sys) {
+				throw new Exception("商户未设置计划配置", 0);	
+			}
+			if (!$fee) {
+				throw new Exception("商户未设置计划费率", 0);	
+			}
+
+			if (!$sys) {
+				throw new Exception("商户未设置ip mac 配置", 0);	
+			}
+
+			$plan = Plan::where('Id', $plan_id)->first();
+
+			if (!$plan) {
+				throw new Exception("没有找到该计划", 0);
+			}
+
+			if ($plan->status != 6) {
+				throw new Exception("该计划不需要确认", 0);	
+			}
+
+			// 保证金卡收取 收取公式 保证金 加 计划手续费 加 系统手续费
+			if ($plan->PayBankId) {
+				try {
+					DB::beginTransaction();
+					$bank_card = BankdCard::where('Id', $plan->PayBankId)->first();
+					if (!$bank_card) {
+						throw new Exception("没有找到支付卡");
+					}
+					// 修改为收取中
+					Plan::where('Id', $plan->Id)->update(array('status'=> 4));
+					// 保证金 加 计划手续费 加 系统手续费
+					$money = $plan->CashDeposit + $plan->SysFee + $plan->fee;
+
+					$pay_params = array(
+						'hlb_bindId' => $bank_card->CreditId,
+						'user_id' => $plan->UserId,
+						'money' => $money,
+						'goods_name' => '保证金',
+						'goods_desc' => '保证金',
+						'server_mac' => $sys->mac,
+						'server_ip'  => $sys->ip,
+						'callback_url' => '',
+					);
+					$pay->setParams($pay_params);
+					// 生成账单 默认失败 交易卡带商户
+			    	$bill_id = Bill::createBill(array(
+						'CreditId' => $bank_card->Id,
+						'UserId' => $pay_params['user_id'],
+						'money' => $plan->CashDeposit, // 不含手续
+						'Type' => 5, // 保证金收取
+						'bank_number' => $bank_card->CreditNumber,
+						'OrderNum' => $pay->getOrderId(),
+						'feeType' => '',
+						'TableId' => $plan->Id,
+						'SysFee' => $plan->fee + $plan->SysFee,
+						'From' => '交易卡',
+						'To' => '商户',
+					));
+
+			    	// $pay->sendRequest();
+			    	// $result = $pay->getResult();
+			    	
+			    	$result = array(
+			    		'code' => 2,
+			    		'result' => array(
+			    			'rt9_orderStatus' => 'DOING',
+				    		),
+			    		'msg' => '待查询'
+			    	);
+
+			    	if ($result['code'] == '8000') {
+			    		Plan::where('Id', $plan->Id)->update(array('status'=> 4));
+			    		DB::commit();
+			    		throw new Exception("请注意网络环境安全， 计划确认待查询，稍后查看计划", 0);	
+			    	}
+
+			    	if ($result['result']['rt9_orderStatus'] == 'SUCCESS') {
+			    		// 保证金收取完成 准备开始
+			    		Plan::where('Id', $plan->Id)->update(array('status'=> 1));
+			    		Bill::billUpdate($bill_id, 'SUCCESS');
+			    		// 判断 分销
+			    		if ($plan_sys->OpenPlanProfit) {
+							Profit::doProfit($plan->UserId, $plan->CashDeposit);
+						}
+			    	} elseif ($result['result']['rt9_orderStatus'] == 'DOING' || $result['result']['rt9_orderStatus'] == 'INIT') {
+			    		// 保证金收取中
+			    		Plan::where('Id', $plan->Id)->update(array('status'=> 4));
+			    		Bill::billUpdate($bill_id, 'DOING');
+			    		throw new Exception("保证金收取中, 请稍后查看", 0);	
+			    	} else {
+			    		// 计划失败
+			    		Plan::where('Id', $plan->Id)->update(array('status'=> 5, 'res'=> $result['msg']));
+			    		DB::commit();
+			    		throw new Exception($result['msg'], 0);
+			    	}
+
+			    	DB::commit();
+				} catch (Exception $e) {
+					DB::rollback();
+					Plan::where('Id', $plan->Id)->update(array('status'=> 5, 'res'=> $e->getMessage()));
+					throw new Exception($e->getMessage(), 0);
+				}
+			} else {
+				// 取余额
+				try {
+					DB::beginTransaction();
+					$user = User::where('UserId', $plan->UserId)->first();
+					
+					// 收取费用 保证金 加 计划手续费 加 系统手续费
+					$money = $plan->CashDeposit + $plan->fee + $plan->SysFee;
+					// 余额不足
+					if ($user->Account < $money) {
+						Plan::where('Id', $plan->Id)->update(array('status'=> 5, 'res'=> '用户余额不足，不够扣除保证金，计划执行失败'));
+						DB::commit();
+						throw new Exception("用户余额不足，不够扣除保证金，计划执行失败", 0);	
+					}
+
+					// 生成账单 默认失败  余额到商户
+			    	$bill_id = Bill::createBill(array(
+						'UserId' => $plan->UserId,
+						'money' => $plan->CashDeposit, // 不含手续
+						'Type' => 5, // 保证金收取
+						'bank_number' => $bank_card->CreditNumber,
+						'OrderNum' => '',
+						'feeType' => '',
+						'TableId' => $plan->Id,
+						'SysFee' => $plan->fee + $plan->SysFee,
+						'From' => '余额',
+						'To' => '商户',
+					));
+					// 用余额 直接成功
+			    	Bill::billUpdate($bill_id, 'SUCCESS');
+					//扣除余额 ， 修改计划准备中
+					User::where('UserId', $plan->UserId)->decrement('Account', (float)$money);
+
+					// 判断 分销
+		    		if ($plan_sys->OpenPlanProfit) {
+						Profit::doProfit($plan->UserId, $money);
+					}
+					Plan::where('Id', $plan->Id)->update(array('status'=> 1));
+					DB::commit();
+				} catch (Exception $e) {
+					DB::rollback();
+					Plan::where('Id', $plan->Id)->update(array('status'=> 5, 'res'=> $e->getMessage()));
+					throw new Exception($e->getMessage(), 0);
+					
+				}	
+			}
+
 			return $this->cbc_encode(json_encode(array('code'=> '200', 'msg'=> '确认成功')));
 		} catch (Exception $e) {
-			return $this->cbc_encode(json_encode(array('code'=> '0', 'msg'=> '确认失败')));
+			return $this->cbc_encode(json_encode(array('code'=> '0', 'msg'=> '确认失败:'. $e->getMessage())));
 		}
 	}
 
