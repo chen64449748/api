@@ -5,7 +5,12 @@
 */
 class PlanController extends BaseController
 {
-	protected $user;
+	private function randomFloat($min, $max)
+	{
+		$r_float = $min + mt_rand() / mt_getrandmax() * ($max - $min);
+		return sprintf("%.2f",$r_float);
+	}
+
 	// d_time 同一天存在次数
 	private function getRandTime($times, $s_time, $e_time, &$arr = array(), $end_h = 21)
 	{
@@ -81,9 +86,9 @@ class PlanController extends BaseController
 
 	function getRandMoney($foot_money, $header_money)
 	{
-		$money = mt_rand($foot_money, $header_money);
+		$money = $this->randomFloat($foot_money, $header_money);
 
-		if ($money < 1) {
+		if ($money < 2) {
 			return $this->getRandMoney($foot_money, $header_money);
 		} else {
 			return $money;
