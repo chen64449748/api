@@ -152,7 +152,7 @@ class PlanController extends BaseController
 			if ($bank_card->Type != 2) {
 				throw new Exception("做计划的卡必须是信用卡", 8891);
 			}
-
+			$pay_bank_id = 0;
 			if ($pay_bank_id) {
 				// 如果有传 保证金卡
 				$pay_bank_card = BankdCard::where('UserId', $this->user->UserId)->where('Id', $this->data['pay_bank_id'])->first();
