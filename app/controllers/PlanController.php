@@ -106,13 +106,15 @@ class PlanController extends BaseController
 				throw new Exception("还款总额必填", 0);
 			}
 
-			if (!isset($this->data['cash_deposit'])) {
-				throw new Exception("保证金必填", 0);
-			}
+			// if (!isset($this->data['cash_deposit'])) {
+			// 	throw new Exception("保证金必填", 0);
+			// }
 
 			if (!isset($this->data['ratio'])) {
 				throw new Exception("保证金比例必填", 0);
 			}
+
+			$this->data['cash_deposit'] = round($this->data['total_money'], 2) * (int)$this->data['ratio'] / 100;
 
 			$pay_bank_id = 0;
 			isset($this->data['pay_bank_id']) && $pay_bank_id = $this->data['pay_bank_id'];
