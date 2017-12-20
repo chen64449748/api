@@ -211,7 +211,7 @@ class PlanController extends BaseController
 				$plan_e_time = strtotime('+'.$this->data['over']. ' day', $plan_e_time);
 			}
 
-			if ($plan_s_time < time() && $plan_s_time > time()) {
+			if ($plan_s_time < time() && $plan_e_time > time()) {
 				// 如果再还款中间
 				$plan_s_time = time();
 			}
@@ -472,6 +472,13 @@ class PlanController extends BaseController
 			// $this->data['bank_id'] = 1;
 			// $this->user = new stdClass();
 			// $this->user->UserId = 82;
+
+			$over = $this->data['over']; // 延后天数
+
+			if ($over == '') {
+				$over = 0;
+			}
+
 			if (!isset($this->data['bank_id'])) {
 				throw new Exception("bank_id必传", 0);
 			}
@@ -490,38 +497,88 @@ class PlanController extends BaseController
 				throw new Exception("没有找到交易卡", 8996);
 			}
 
-			$plan_start_date = $bank_card->AccountDate;
-			$plan_end_date = $bank_card->RepaymentDate;
+			$ddate = $bank_card->RepaymentDate - $bank_card->AccountDate;
+
+			$s_month = date('m');
+			$e_month = intval(date('m'));
+			
+
+			if ($e_month < 10) {
+				$e_month = '0'.$e_month;
+			}
+
+			if ($bank_card->AccountDate < 10) {
+				$bank_card->AccountDate = '0'.$bank_card->AccountDate;
+			}
+
+			if ($bank_card->RepaymentDate < 10) {
+				$bank_card->RepaymentDate = '0'.$bank_card->RepaymentDate;
+			}
+
+			$plan_start_date = date('Y-m').'-'.$bank_card->AccountDate.' 00:00:00';
+			$plan_end_date = '';
+			if ( $ddate < 20 ) {
+				$plan_end_date = date('Y-m', strtotime('+1 month', strtotime($plan_start_date))). '-'. $bank_card->RepaymentDate.' 23:59:59';
+			} else {
+				$plan_end_date = date('Y-m').'-'.$bank_card->RepaymentDate.' 00:00:00';
+			}
+
 			$d_time = $plan_sys->PlanDayTimes; // 后台获取
 
 			if (date('H') >= 15) {
-				throw new Exception("请在15点以前生成计划", 3003);
+				// throw new Exception("请在15点以前生成计划", 3003);
 			}
 
 			$plan_s_time = strtotime($plan_start_date);
 			$plan_e_time = strtotime($plan_end_date);
 
-			if ($plan_s_time < time() && $plan_s_time > time()) {
+			if (time() >= $plan_e_time) {
+				$plan_s_time = strtotime('+1 month', $plan_s_time);
+				$plan_e_time = strtotime('+1 month', $plan_e_time);
+			}
+
+			if ($over) {
+				$plan_e_time = strtotime('+'.$over. ' day', $plan_e_time);
+			}
+
+			// echo date('Y-m-d H:i:s', $plan_e_time);exit;
+			if ($plan_s_time < time() && $plan_e_time > time()) {
 				// 如果再还款中间
 				$plan_s_time = time();
 			}
 
-			$day_diff = (int)date('d', $plan_e_time) - (int)date('d', $plan_s_time);
-
+			$day_diff = ceil(($plan_e_time - $plan_s_time) / 86400);
 			// 计算次数 如一天两次 计算结果 加1 因为同一天 差距diff为0
 			$times = ($day_diff + 1) * $d_time;
 			
+			$top = 50;
+			$ratio_arr = array();
+
+			
+			$di_rate = 0;
 			if ($times <= 2) {
 				$di_rate = 100;
 			} else {
 				$di_rate = intval(100 / ($times - 1));
-				if ($di_rate % 5) {
-					$di_rate = ($di_rate % 5) * 10;
-				} 	
+
+				if ($di_rate <= 10) {
+					$di_rate = 10;
+				} else {
+					$di_rate = ceil($di_rate / 10) * 10;
+				}
+
+				if ($di_rate <= 5) {
+					$ratio_arr[] = 5;
+				}	
 			}
-			$top = 50;
+
+			if ($times >= 21) {
+				$ratio_arr[] = 5;
+			}
+
 			$now = $di_rate;
-			$ratio_arr = array();
+
+			// echo $now;exit;
 			if ($di_rate <= 50) {
 
 				while ($now <= $top) {
@@ -578,7 +635,7 @@ class PlanController extends BaseController
 	    $limit = $this->data['limit'] ? $this->data['limit'] : '20';
 	    $bankId = $this->data['bankId'];
 	    
-	    $planList = Plan::where('BankId',$bankId)->where('UserId', $this->user->UserId)->skip($offset)->take($limit)->get();
+	    $planList = Plan::where('BankId',$bankId)->where('UserId', $this->user->UserId)->where('status', '<>', 6)->skip($offset)->take($limit)->get();
 	    
 	    return json_encode(array('code'=> '200', 'planList'=> $planList));
 	}
