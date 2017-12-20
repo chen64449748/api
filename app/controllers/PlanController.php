@@ -204,10 +204,6 @@ class PlanController extends BaseController
 			$d_time = $plan_sys->PlanDayTimes; // 后台获取
 
 
-			if (date('H') >= 15) {
-				throw new Exception("请在15点以前生成计划", 3003);
-			}
-
 			$plan_s_time = strtotime($plan_start_date);
 			$plan_e_time = strtotime($plan_end_date);
 
@@ -223,6 +219,10 @@ class PlanController extends BaseController
 			if ($plan_s_time < time() && $plan_e_time > time()) {
 				// 如果再还款中间
 				$plan_s_time = time();
+				if (date('H') >= 15) {
+					$plan_s_time = strtotime('+1 day', strtotime(date('Y-m-d 00:00:00')));
+				}
+
 			}
 			// echo date('Y-m-d H:i:s', $plan_e_time);exit;
 			// $plan_s_time = strtotime($plan_start_date);	# 测
@@ -558,6 +558,9 @@ class PlanController extends BaseController
 			if ($plan_s_time < time() && $plan_e_time > time()) {
 				// 如果再还款中间
 				$plan_s_time = time();
+				if (date('H') >= 15) {
+					$plan_s_time = strtotime('+1 day', strtotime(date('Y-m-d 00:00:00')));
+				}
 			}
 
 			$day_diff = ceil(($plan_e_time - $plan_s_time) / 86400);
