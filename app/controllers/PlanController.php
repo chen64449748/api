@@ -543,7 +543,7 @@ class PlanController extends BaseController
 			    		throw new Exception("保证金收取中, 请稍后查看", 0);	
 			    	} else {
 			    		// 计划失败
-			    		Plan::where('Id', $plan->Id)->update(array('status'=> 5, 'res'=> $result['msg']));
+			    		// Plan::where('Id', $plan->Id)->update(array('status'=> 5, 'res'=> $result['msg']));
 			    		DB::commit();
 			    		throw new Exception($result['msg'], 0);
 			    	}
@@ -563,7 +563,7 @@ class PlanController extends BaseController
 					$money = $plan->CashDeposit + $plan->fee + $plan->SysFee;
 					// 余额不足
 					if ($user->Account < $money) {
-						Plan::where('Id', $plan->Id)->update(array('status'=> 5, 'res'=> '用户余额不足，不够扣除保证金，计划执行失败'));
+						// Plan::where('Id', $plan->Id)->update(array('status'=> 5, 'res'=> '用户余额不足，不够扣除保证金，计划执行失败'));
 						DB::commit();
 						throw new Exception("用户余额不足，不够扣除保证金，计划执行失败", 0);	
 					}
@@ -594,7 +594,7 @@ class PlanController extends BaseController
 					DB::commit();
 				} catch (Exception $e) {
 					DB::rollback();
-					Plan::where('Id', $plan->Id)->update(array('status'=> 5, 'res'=> $e->getMessage()));
+					// Plan::where('Id', $plan->Id)->update(array('status'=> 5, 'res'=> $e->getMessage()));
 					throw new Exception($e->getMessage(), 0);
 					
 				}	
@@ -820,7 +820,7 @@ class PlanController extends BaseController
 	    $limit = $this->data['limit'] ? $this->data['limit'] : '20';
 	    $bankId = $this->data['bankId'];
 	    
-	    $planList = Plan::where('BankId',$bankId)->where('UserId', $this->user->UserId)->where('status', '<>', 6)->skip($offset)->take($limit)->get();
+	    $planList = Plan::where('BankId',$bankId)->where('UserId', $this->user->UserId)->skip($offset)->take($limit)->get();
 	    
 	    return json_encode(array('code'=> '200', 'planList'=> $planList));
 	}
