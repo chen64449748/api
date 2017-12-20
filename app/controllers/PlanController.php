@@ -16,6 +16,11 @@ class PlanController extends BaseController
 	{
 		$use_time = $e_time - $s_time;
 
+		if ($use_time < 3600) {
+			$end_h = 23;
+			$use_time += 2 * 3600;
+		}
+
 		$tmp_s_time = 1;
 
 		$pay_time_tmp = mt_rand($tmp_s_time, $use_time);
@@ -24,8 +29,11 @@ class PlanController extends BaseController
 
 		if ((int)date('H', $pay_time) >= 7 && (int)date('H', $pay_time) <= $end_h) {
 			
-			$arr[] = $pay_time;
-			if (count($arr) == $times * 100) {
+			if (!array_search($pay_time, $arr)) {
+				$arr[] = $pay_time;	
+			}
+			
+			if (count($arr) == $times * 50) {
 				return $pay_time;
 			} else {
 				$this->getRandTime($times, $s_time, $e_time, $arr);
@@ -44,41 +52,42 @@ class PlanController extends BaseController
 		foreach ($arr as $key => $value) {
 			$tmp_arr[date('d', $value)][] = $value;
 		}
-		
 
 		$r_arr = array();
 		$tmp_time = 0;
 		foreach ($tmp_arr as $tk => $tv) {
 			
 			$tmp_count = count($tv) - 1;
-						
-			for ($i=0; $i < $d_time; $i++) { 	
-				
-				
+			$tmp_d_time = 0;			
+			while (true) {
 
 				$dk = mt_rand(0, $tmp_count);
 				$flag_t = true;
-				// 判断间隔时间是否小于半小时
-				// foreach ($r_arr as $rval) {
-				// 	$tmp_t_time = $tv[$dk] - $rval;
-				// 	if ($tmp_t_time < $t_time) {
-				// 		$flag_t = false;
-				// 		break;
-				// 	}
-				// }
+
+				if (array_search($tv[$dk], $r_arr)) {
+					$flag_t = false;
+				}
 
 				if ($flag_t) {
-
 					$r_arr[] = $tv[$dk];
+					$tmp_d_time++;
 					$tmp_time++;
-					// echo $tmp_time.'<br>';
+				}
+
+				if ($tmp_d_time == $d_time) {
+					break;
 				}
 
 				if ($tmp_time == $times) {
 					break;
-				}
+				}		
+			}	
+				
+				
+
+				
 					
-			}
+			
 		}
 
 		return $r_arr;
@@ -95,7 +104,7 @@ class PlanController extends BaseController
 		}
 	}
 
-	function postAdd()
+	function getAdd()
 	{
 
 		try {
@@ -251,8 +260,8 @@ class PlanController extends BaseController
 			$foot_money = round(($this->data['cash_deposit'] * $o_time) / $plan_time, 2);
 			$total_money = round($this->data['total_money'], 2);
 			// 生成计划
-			if ($header_money < 5) {
-				$zuidi_total = 5 * $o_time;
+			if ($header_money < 50) {
+				$zuidi_total = 50 * $o_time;
 				throw new Exception("最低总金额". $zuidi_total, 3010);
 			}
 
