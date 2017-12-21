@@ -829,7 +829,7 @@ class PlanController extends BaseController
 	 */
 	public function postPlandetail(){
 	    $planId = $this->data['planId'] ? $this->data['planId'] : '1';
-	    $planDetail = PlanDetail::where('PlanId',$planId)->orderBy('created_at','desc')->get();
+	    $planDetail = PlanDetail::where('PlanId',$planId)->orderBy('sort','asc')->get();
 	    
 	    if(!$planDetail->isEmpty()){
 	        foreach ($planDetail as $key => &$val){
