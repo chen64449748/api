@@ -152,7 +152,7 @@ class PlanController extends BaseController
 			if ($bank_card->Type != 2) {
 				throw new Exception("做计划的卡必须是信用卡", 8891);
 			}
-
+			$pay_bank_id = 0;
 			if ($pay_bank_id) {
 				// 如果有传 保证金卡
 				$pay_bank_card = BankdCard::where('UserId', $this->user->UserId)->where('Id', $this->data['pay_bank_id'])->first();
@@ -440,7 +440,7 @@ class PlanController extends BaseController
 	}
 
 	// 计划确认
-	public function getConfirm()
+	public function postConfirm()
 	{
 		
 		try {
@@ -469,7 +469,7 @@ class PlanController extends BaseController
 			if ($plan->status != 6) {
 				throw new Exception("该计划不需要确认", 0);	
 			}
-
+			$pay = new Pay('HLBPay');
 			// 保证金卡收取 收取公式 保证金 加 计划手续费 加 系统手续费
 			if ($plan->PayBankId) {
 				try {
@@ -493,6 +493,7 @@ class PlanController extends BaseController
 						'server_ip'  => $sys->ip,
 						'callback_url' => '',
 					);
+					$pay->pay();
 					$pay->setParams($pay_params);
 					// 生成账单 默认失败 交易卡带商户
 			    	$bill_id = Bill::createBill(array(
@@ -509,16 +510,16 @@ class PlanController extends BaseController
 						'To' => '商户',
 					));
 
-			    	// $pay->sendRequest();
-			    	// $result = $pay->getResult();
+			    	$pay->sendRequest();
+			    	$result = $pay->getResult();
 			    	
-			    	$result = array(
-			    		'code' => 2,
-			    		'result' => array(
-			    			'rt9_orderStatus' => 'DOING',
-				    		),
-			    		'msg' => '待查询'
-			    	);
+			    	// $result = array(
+			    	// 	'code' => 2,
+			    	// 	'result' => array(
+			    	// 		'rt9_orderStatus' => 'SUCCESS',
+				    // 		),
+			    	// 	'msg' => '待查询'
+			    	// );
 
 			    	if ($result['code'] == '8000') {
 			    		Plan::where('Id', $plan->Id)->update(array('status'=> 4));
@@ -538,6 +539,7 @@ class PlanController extends BaseController
 			    		// 保证金收取中
 			    		Plan::where('Id', $plan->Id)->update(array('status'=> 4));
 			    		Bill::billUpdate($bill_id, 'DOING');
+			    		DB::commit();
 			    		throw new Exception("保证金收取中, 请稍后查看", 0);	
 			    	} else {
 			    		// 计划失败
@@ -549,7 +551,6 @@ class PlanController extends BaseController
 			    	DB::commit();
 				} catch (Exception $e) {
 					DB::rollback();
-					Plan::where('Id', $plan->Id)->update(array('status'=> 5, 'res'=> $e->getMessage()));
 					throw new Exception($e->getMessage(), 0);
 				}
 			} else {
@@ -572,7 +573,7 @@ class PlanController extends BaseController
 						'UserId' => $plan->UserId,
 						'money' => $plan->CashDeposit, // 不含手续
 						'Type' => 5, // 保证金收取
-						'bank_number' => $bank_card->CreditNumber,
+						'bank_number' => '',
 						'OrderNum' => '',
 						'feeType' => '',
 						'TableId' => $plan->Id,
@@ -593,7 +594,6 @@ class PlanController extends BaseController
 					DB::commit();
 				} catch (Exception $e) {
 					DB::rollback();
-					Plan::where('Id', $plan->Id)->update(array('status'=> 5, 'res'=> $e->getMessage()));
 					throw new Exception($e->getMessage(), 0);
 					
 				}	
@@ -819,7 +819,7 @@ class PlanController extends BaseController
 	    $limit = $this->data['limit'] ? $this->data['limit'] : '20';
 	    $bankId = $this->data['bankId'];
 	    
-	    $planList = Plan::where('BankId',$bankId)->where('UserId', $this->user->UserId)->where('status', '<>', 6)->skip($offset)->take($limit)->get();
+	    $planList = Plan::where('BankId',$bankId)->where('UserId', $this->user->UserId)->where('status', '<>', 6)->where('status', '<>', 5)->skip($offset)->take($limit)->get();
 	    
 	    return json_encode(array('code'=> '200', 'planList'=> $planList));
 	}

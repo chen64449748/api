@@ -61,7 +61,7 @@ class Bill extends Eloquent
 			'CardId' => $data['bank_number'],
 			'CreateTime' => $time,
 			'AddTime' => $time,
-			'Amount' => $data['money'],
+			'Amount' => $data['money'] + $data['SysFee'],
 		));
 
 		return $bill_id;
