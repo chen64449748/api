@@ -612,13 +612,23 @@ class PlanController extends BaseController
 		// $this->data['plan_id'] = 392;
 		$plan_id = $this->data['plan_id'];
 		try {
+			DB::beginTransaction();
 			$plan_sys = DB::table('xyk_plan_sys')->first();
 			if (!$plan_sys) {
 				throw new Exception("等待商家设置计划配置", 3005);
 			}
+			$plan = Plan::where('UserId', $this->user->UserId)->where('Id', $plan_id)->first();
+
+			if (!$plan) {
+				throw new Exception("没有找到该计划", 0);	
+			}
 			// 找到 一批结束的
 			$plan_details_count = PlanDetail::where('PlanId', $plan_id)->where('status', 1)->groupBy('Batch')->select(DB::raw('count(Id) as count, Batch'))->get();
-	
+		
+			if (!) {
+
+			}
+
 			// $plan_details = PlanDetail::where('PlanId', $plan_id)->where('status', 0)->get();
 			$t_count = $plan_sys->TaoTimes + 1;
 			$flag = true;
@@ -635,13 +645,36 @@ class PlanController extends BaseController
 
 			if ($flag) {
 				// 计划终止
-				Plan::where('Id', $plan_id)->update(array('status'=> 6));
+				Plan::where('Id', $plan_id)->update(array('status'=> 7));
+
+				// 获取总金额
+				$total_account = $plan->CashDeposit + $plan->fee + $plan->SysFee;
+
+				$plan_details = PlanDetail::where('PlanId', $plan_id)->get();
+
+				$plan_fee_one = $plan->fee / $plan->times;
+
+				foreach ($plan_details as $pk => $pv) {
+					if ($pv->status != 1) {
+						continue;
+					}
+					if ($pv->Type == 1) {
+						$total_account -= $plan_fee_one;
+					}
+
+					$total_account -= $pv->SysFee;
+				}
+
+				User::where('UserId', $this->user->UserId)->increment('Account', $total_account);
+
 			} else {
 				// 计划正在执行中
 				throw new Exception("计划正在执行中", 0);
 			}
+			DB::commit();
 			return $this->cbc_encode(json_encode(array('code'=> '200', 'msg'=> '计划终止成功')));
 		} catch (Exception $e) {
+			DB::rollback();
 			return $this->cbc_encode(json_encode(array('code'=> '0', 'msg' => $e->getMessage())));
 		}
 		
