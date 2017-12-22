@@ -444,7 +444,7 @@ class PlanController extends BaseController
 	{
 		
 		try {
-			if (isset($this->data['pay_password']) || $this->data['pay_password'] == '') {
+			if (!isset($this->data['pay_password']) || $this->data['pay_password'] == '') {
 				throw new Exception("支付密码 必填", 0);	
 			}
 			$pay_password = $this->data['pay_password'];
