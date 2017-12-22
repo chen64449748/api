@@ -683,6 +683,22 @@ class PlanController extends BaseController
 					$total_account -= $pv->SysFee;
 				}
 
+				// 生成账单 默认失败 商户带余额
+		    	$bill_id = Bill::createBill(array(
+					'UserId' => $plan->UserId,
+					'money' => $total_account, // 不含手续
+					'Type' => 6, // 保证金返回
+					'bank_number' => '',
+					'OrderNum' => '',
+					'feeType' => '',
+					'TableId' => $plan->Id,
+					'SysFee' => 0,
+					'From' => '商户',
+					'To' => '余额',
+				));
+		    	// 直接成功
+				Bill::billUpdate($bill_id, 'SUCCESS');
+
 				User::where('UserId', $this->user->UserId)->increment('Account', $total_account);
 
 			} else {
