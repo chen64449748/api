@@ -62,6 +62,7 @@ class Bill extends Eloquent
 			'CreateTime' => $time,
 			'AddTime' => $time,
 			'Amount' => $data['money'] + $data['SysFee'],
+			'created_at' => date('Y-m-d H:i:s'),
 		));
 
 		return $bill_id;
