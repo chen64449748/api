@@ -122,6 +122,11 @@ class UserController extends BaseController
     	$code = isset($this->data['code']) ? $this->data['code'] : '';
     	$password = isset($this->data['password']) ? $this->data['password'] : '';
         $invite = isset($this->data['invite']) ? $this->data['invite'] : 0;
+        $paypassword = isset($this->data['pay_password']) ? $this->data['pay_password'] : '';
+
+        if (!$paypassword) {
+            return $this->cbc_encode(json_encode(array('code'=> 1311, 'msg'=> '交易密码不能空')));
+        }
 
         $keyObj = Key::first();
         if ($keyObj->key !== $key) {
@@ -172,6 +177,7 @@ class UserController extends BaseController
 	    		'Mobile' 	=> $mobile,
 	    		'Password'  => md5($password),
 	    		'Username'  => $username,
+                'PayPassword' => md5($paypassword),
                 'Status'    => 1,
                 'AddTime'   => time(),
                 'InviterId' => $first,
