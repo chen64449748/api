@@ -448,7 +448,7 @@ class PlanController extends BaseController
 				throw new Exception("支付密码 必填", 0);	
 			}
 			$pay_password = $this->data['pay_password'];
-
+			$pay_password = md5($pay_password);
 			if ($pay_password != $this->user->PayPassword) {
 				throw new Exception("支付密码 错误", 0);	
 			}
@@ -625,7 +625,7 @@ class PlanController extends BaseController
 				throw new Exception("支付密码 必填", 0);	
 			}
 			$pay_password = $this->data['pay_password'];
-
+			$pay_password = md5($pay_password);
 			if ($pay_password != $this->user->PayPassword) {
 				throw new Exception("支付密码 错误", 0);	
 			}
