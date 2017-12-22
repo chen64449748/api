@@ -386,7 +386,7 @@ class PayController extends BaseController
 			// $this->user = $user;
 			
 			if (!isset($this->data['pay_password']) || $this->data['pay_password'] == '') {
-				throw new Exception("支付密码 必填", 0);	
+				throw new Exception("支付密码 必填", 0);
 			}
 			$pay_password = $this->data['pay_password'];
 			$pay_password = md5($pay_password);

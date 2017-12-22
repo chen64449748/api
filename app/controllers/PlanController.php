@@ -642,9 +642,6 @@ class PlanController extends BaseController
 			// 找到 一批结束的
 			$plan_details_count = PlanDetail::where('PlanId', $plan_id)->where('status', 1)->groupBy('Batch')->select(DB::raw('count(Id) as count, Batch'))->get();
 		
-			if (!) {
-
-			}
 
 			// $plan_details = PlanDetail::where('PlanId', $plan_id)->where('status', 0)->get();
 			$t_count = $plan_sys->TaoTimes + 1;
