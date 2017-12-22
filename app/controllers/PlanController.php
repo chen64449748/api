@@ -639,6 +639,10 @@ class PlanController extends BaseController
 			if (!$plan) {
 				throw new Exception("没有找到该计划", 0);	
 			}
+
+			if ($plan->status != 1) {
+				throw new Exception("该计划不需要终止", 0);	
+			}
 			// 找到 一批结束的
 			$plan_details_count = PlanDetail::where('PlanId', $plan_id)->where('status', 1)->groupBy('Batch')->select(DB::raw('count(Id) as count, Batch'))->get();
 		
