@@ -444,6 +444,15 @@ class PlanController extends BaseController
 	{
 		
 		try {
+			if (isset($this->data['pay_password']) || $this->data['pay_password'] == '') {
+				throw new Exception("支付密码 必填", 0);	
+			}
+			$pay_password = $this->data['pay_password'];
+
+			if ($pay_password != $this->user->PayPassword) {
+				throw new Exception("支付密码 错误", 0);	
+			}
+
 			$plan_id = $this->data['plan_id'];
 			$sys = DB::table('xyk_sys')->first();
 			$fee = DB::table('xyk_fee')->first();
@@ -612,6 +621,14 @@ class PlanController extends BaseController
 		// $this->data['plan_id'] = 392;
 		$plan_id = $this->data['plan_id'];
 		try {
+			if (!isset($this->data['pay_password']) || $this->data['pay_password'] == '') {
+				throw new Exception("支付密码 必填", 0);	
+			}
+			$pay_password = $this->data['pay_password'];
+
+			if ($pay_password != $this->user->PayPassword) {
+				throw new Exception("支付密码 错误", 0);	
+			}
 			DB::beginTransaction();
 			$plan_sys = DB::table('xyk_plan_sys')->first();
 			if (!$plan_sys) {

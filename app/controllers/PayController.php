@@ -275,6 +275,14 @@ class PayController extends BaseController
 	{
 		try {
 
+			if (!isset($this->data['pay_password']) || $this->data['pay_password'] == '') {
+				throw new Exception("支付密码 必填", 0);	
+			}
+			$pay_password = $this->data['pay_password'];
+
+			if ($pay_password != $this->user->PayPassword) {
+				throw new Exception("支付密码 错误", 0);	
+			}
 			$bank_card = BankcCard::where('UserId', $this->user->UserId)->where('Id', $this->data['bank_id'])->first();
 
 			$fee = DB::table('xyk_fee')->first();
@@ -377,6 +385,15 @@ class PayController extends BaseController
 			// $user->UserId = 82;
 			// $this->user = $user;
 			
+			if (!isset($this->data['pay_password']) || $this->data['pay_password'] == '') {
+				throw new Exception("支付密码 必填", 0);	
+			}
+			$pay_password = $this->data['pay_password'];
+
+			if ($pay_password != $this->user->PayPassword) {
+				throw new Exception("支付密码 错误", 0);	
+			}
+
 			$money = (float)$this->data['money'];
 
 			$bank_card = BankdCard::where('UserId', $this->user->UserId)->where('Id', $this->data['bank_id'])->first();
@@ -570,6 +587,14 @@ class PayController extends BaseController
 	function postRepay()
 	{
 		try {
+			if (!isset($this->data['pay_password']) || $this->data['pay_password'] == '') {
+				throw new Exception("支付密码 必填", 0);	
+			}
+			$pay_password = $this->data['pay_password'];
+
+			if ($pay_password != $this->user->PayPassword) {
+				throw new Exception("支付密码 错误", 0);	
+			}
 
 			$bank_card = BankdCard::where('UserId', $this->user->UserId)->where('Id', $this->data['bank_id'])->first();
 			$fee = DB::table('xyk_fee')->first();
