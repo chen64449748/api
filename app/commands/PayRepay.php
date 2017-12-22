@@ -37,9 +37,10 @@ class PayRepay extends Command {
 	 */
 	public function fire()
 	{
+		$now_date = date('Y-m-d H:i:s');
 		$pay = new Pay('HLBPay');
 
-		$plans = Plan::where('status', 1)->take(200)->get();
+		$plans = Plan::->where('StartDate', '<=', $now_date)->where('EndDate', '>=', $now_date)->where('status', 1)->take(200)->get();
 		$plan_sys = DB::table('xyk_plan_sys')->first();
 
 		if (!$plan_sys) {
@@ -111,14 +112,14 @@ class PayRepay extends Command {
 				    		'status' => 3,
 				    	));
 
-				    	// $pay->sendRequest();
+				    	$pay->sendRequest();
 
-				    	// $result = $pay->getResult();
+				    	$result = $pay->getResult();
 
 				    	// 测试
-				    	$result = array(
-				    		'action' => 1,
-				    	);
+				    	// $result = array(
+				    	// 	'action' => 1,
+				    	// );
 
 						if ($result['action'] != 1) { throw new Exception($result['msg'], $result['code']);}
 
@@ -182,16 +183,22 @@ class PayRepay extends Command {
 				    		'status' => 3, // 执行中
 				    	));
 
-				  //   	$pay->sendRequest();
-						// $result = $pay->getResult();
+				    	$pay->sendRequest();
+						$result = $pay->getResult();
 						// 测试
-				    	$result = array(
-				    		'action' => 1,
-				    		'result' => array(
-				    			'rt9_orderStatus' => 'SUCCESS',
-				    		),
-				    	);
-						if ($result['action'] != 1) { throw new Exception($result['msg'], $result['code']);}
+				    	// $result = array(
+				    	// 	'action' => 1,
+				    	// 	'result' => array(
+				    	// 		'rt9_orderStatus' => 'SUCCESS',
+				    	// 	),
+				    	// );
+						// if ($result['action'] != 1) { throw new Exception($result['msg'], $result['code']);}
+						if ($result['code'] == '8000') {
+							Bill::billUpdate($bill_id, 'DOING'); //  账单修改为处理中
+							// 计划修改为处理中
+							PlanDetail::where('Id', $value->Id)->update(array('status'=> 2));
+							$this->info('planID:'. $plan->Id. ', sign error hkpay');
+						}
 
 						if ($result['result']['rt9_orderStatus'] == 'DOING' || $result['result']['rt9_orderStatus'] == 'INIT') {
 							Bill::billUpdate($bill_id, 'DOING'); //  账单修改为处理中
