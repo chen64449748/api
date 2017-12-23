@@ -32,7 +32,7 @@ class BillController extends BaseController
 	    if($type != ''){
 	        $billList = $billList->where('Type',$type);
 	    }
-	    $billList = $billList->skip($offset)->take($limit)->get();
+	    $billList = $billList->orderBy('created_at', 'desc')->skip($offset)->take($limit)->get();
 	    
  	    if(!$billList->isEmpty()){
 	        foreach ($billList as $key => &$val){
