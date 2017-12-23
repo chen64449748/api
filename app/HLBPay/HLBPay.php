@@ -789,6 +789,7 @@ class HLBPay
 			'P8_cardNo'				=> $params['bank_number'],
 			'P9_phone'				=> $params['user_phone'],
 			'P10_bankUnionCode'		=> '',
+			'P11_operateType'		=> $params['operate'],
 		);
 	}
 

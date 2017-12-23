@@ -222,6 +222,24 @@ class UserController extends BaseController
     	}
     }
 
+    public function postPaypwverify()
+    {
+        $mobile = $this->user->Mobile;
+        if(!preg_match("/^1(3|4|5|7|8)\d{9}$/", $mobile)){
+            return $this->cbc_encode(json_encode(array('code'=> 1002, 'msg'=> '手机号格式错误')));
+        }
+
+        try {
+            $code = rand(100000,999999);
+            if ($this->sendSMS($mobile, $code)) {
+                return $this->cbc_encode(json_encode(array('code'=> 200, 'msg'=> '验证码发送成功')));
+            }
+            return $this->cbc_encode(json_encode(array('code'=> 1003, 'msg'=> '验证码发送失败')));
+        } catch (Exception $e) {
+            return $this->cbc_encode(json_encode(array('code'=> $e->getCode(), 'msg'=> $e->getMessage())));
+        }
+    }
+
     /**
      * 发送验证码
      * @AuthorHTL

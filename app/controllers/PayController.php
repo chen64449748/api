@@ -212,6 +212,7 @@ class PayController extends BaseController
 				'id_card_number' => $this->IdCard,
 				'bank_number' => $this->data['bank_number'],
 				'user_phone' => $this->user->Mobile,
+				'operate' => 'ADD',
 			);
 
 			// $params = array(
