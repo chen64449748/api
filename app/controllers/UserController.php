@@ -149,7 +149,7 @@ class UserController extends BaseController
             ->orderBy('time', 'desc')
             ->first();
     	if ($ary['time'] < time() || $ary['code'] != $code) {
-    		return $this->cbc_encode(json_encode(array('code'=> 1001, 'msg'=> '验证码错误')));
+    		// return $this->cbc_encode(json_encode(array('code'=> 1001, 'msg'=> '验证码错误')));
     	}
 
     	$have_user = User::where("Mobile", $mobile)
@@ -165,11 +165,12 @@ class UserController extends BaseController
             if ($invite && !$inviter_user) {
                 return $this->cbc_encode(json_encode(array('code'=> 1110, 'msg'=> '邀请人不存在')));
             }
-            $first = $second = 0;
+            $first = $second = $third = 0;
 
             if ($inviter_user) {
                 $first = $inviter_user->UserId;
                 $second = $inviter_user->InviteOne;
+                $third = $inviter_user->InviteTwo;
             }
             /* 邀请人结束 */
 
@@ -181,8 +182,10 @@ class UserController extends BaseController
                 'Status'    => 1,
                 'AddTime'   => time(),
                 'InviterId' => $first,
-                'InviteOne'=> $first,
-                'InviteTwo'=> $second
+                'InviteOne' => $first,
+                'InviteTwo' => $second,
+                'InviteThree'=> $third
+
 	    	));
 
 	    	if ($userId) {
@@ -465,8 +468,10 @@ class UserController extends BaseController
             ->lists('UserId');
         $second_ids = User::where("InviteTwo", $this->user->UserId)
             ->lists('UserId');
+        $third_ids = User::where("InviteThree", $this->user->UserId)
+            ->lists('UserId');
 
-        $firsts = $seconds = array();
+        $firsts = $seconds = $thirds = array();
 
         if ($first_ids) {
             $firsts = User::whereIn("UserId", $first_ids)
@@ -476,7 +481,11 @@ class UserController extends BaseController
             $seconds = User::whereIn("UserId", $second_ids)
                 ->get();
         }
-        return $this->cbc_encode(json_encode(array('code'=> 200, 'msg'=> '请求成功', 'data'=> compact("firsts", "seconds", "money"))));
+        if ($third_ids) {
+            $thirds = User::whereIn("UserId", $third_ids)
+                ->get();
+        }
+        return $this->cbc_encode(json_encode(array('code'=> 200, 'msg'=> '请求成功', 'data'=> compact("firsts", "seconds", "money", "thirds"))));
     }
 
     public function postProfits()

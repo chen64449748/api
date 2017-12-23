@@ -46,12 +46,14 @@ class Profit extends Eloquent
 
 		$persent1 = $persent->persent1;
 		$persent2 = $persent->persent2;
-		if (!$persent1 || !$persent2) {
+		$persent3 = $persent->persent3;
+		if (!$persent1 || !$persent2 || !$persent3) {
 			return ;
 		}
 
 		$first_profit = number_format($persent1 * $money, 2, '.', '');
-		$second_profit = number_format($persent2 * $money, 2, '.', '');;
+		$second_profit = number_format($persent2 * $money, 2, '.', '');
+		$third_profit = number_format($persent3 * $money, 2, '.', '');
 
 		if (!User::where("UserId", $user->InviteOne)->first()) {
 			return ;
@@ -73,9 +75,23 @@ class Profit extends Eloquent
 			"user_id"=> $user->InviteTwo,
 			"first_user_id"=> $user->InviteOne,
 			"second_user_id"=> $user_id,
-			"money"=> $first_profit,
+			"money"=> $second_profit,
 			"time"=> time(),
 			"content"=> "二级分销"
+		));
+
+		if (!User::where("UserId", $user->InviteThree)->first()) {
+			return ;
+		}
+		User::where("UserId", $user->InviteThree)->increment('Account', $third_profit);
+		Profit::insert(array(
+			"user_id"=> $user->InviteThree,
+			"first_user_id"=> $user->InviteTwo,
+			"second_user_id"=> $user->InviteOne,
+			"third_user_id"=> $user_id,
+			"money"=> $third_profit,
+			"time"=> time(),
+			"content"=> "三级分销"
 		));
 		return 1;
 	}
