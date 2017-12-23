@@ -215,6 +215,8 @@ class PayController extends BaseController
 				'operate' => 'ADD',
 			);
 
+
+
 			// $params = array(
 			// 	'user_id' => '82',
 			// 	'user_name' => '陈文越',
@@ -222,6 +224,11 @@ class PayController extends BaseController
 			// 	'bank_number' => '6217710804856110',
 			// 	'user_phone' => '18329042977',
 			// );
+			
+			$user_bank_card = BankcCard::where('UserId', $params['user_id'])->first();
+			if ($user_bank_card) {
+				$params['operate'] = "UPDATE";
+			}
 
 			$pay = new Pay('HLBPay');
 
@@ -237,19 +244,13 @@ class PayController extends BaseController
 
 			// 如果不存在 
 			if (!$bank) {
-				throw new Exception("系统不支持该银行卡，请换卡重试", 8998);
+				$bank = new stdClass();
+				$bank->BankName = '';
 			}
-
-			$isDefault = 1;
-
-			$user_bank_card = BankcCard::where('UserId', $params['user_id'])->first();
-
+			
 			if ($user_bank_card) {
-				$isDefault = 0;
-			} else {
-				$isDefault = 1;
+				BankcCard::where('Id', $user_bank_card->Id)->delete();
 			}
-
 			$is_has = BankcCard::where('BankNumber', $params['bank_number'])->first();
 			if ($is_has) {
 				BankcCard::where('Id', $is_has->Id)->delete();
