@@ -40,7 +40,7 @@ class BindCardController extends BaseController
 
    
 	// 修改 交易卡
-	public function getBindcardupdate()
+	public function postBindcardupdate()
 	{
 		try {
 
