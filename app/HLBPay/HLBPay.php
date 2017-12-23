@@ -118,7 +118,7 @@ class HLBPay
 				return array('action'=> 1, 'code'=> '0000', 'msg'=> '待查询', 'result'=> $this->result);
 			}
 		} else if ($this->type == 'settle' || $this->type == 'repay') {
-			if ($this->result['code'] == '0001') {
+			if ($this->result['rt2_retCode'] == '0001') {
 				return array('action'=> 1, 'code'=> '0001', 'msg'=> '待查询', 'result'=> $this->result);
 			}
 		}

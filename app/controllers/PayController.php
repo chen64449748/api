@@ -620,8 +620,7 @@ class PayController extends BaseController
 				throw new Exception("还款必须是信用卡", 8970);	
 			}
 			
-			// 先扣除余额
-			User::where('UserId', $this->user->UserId)->decrement('Account', $y_money);
+			
 			$money = (float)$this->data['money'];
 			$y_money = (float)$this->data['money'];
 
@@ -641,6 +640,8 @@ class PayController extends BaseController
 			$pay->repay();
 			$pay->setParams($params);
 
+			// 先扣除余额
+			User::where('UserId', $this->user->UserId)->decrement('Account', $y_money);
 			// 生成账单 余额 到 交易卡
 			$bill_id = Bill::createBill(array(
 				'CreditId' => $bank_card->Id,
