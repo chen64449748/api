@@ -53,9 +53,16 @@ class Pay
 		$this->pay_obj->setType('pay');
 	}
 
+	// 支付查询
 	function payQuery()
 	{
 		$this->pay_obj->setType('payQuery');
+	}
+
+	// 还款 提现查询
+	function repayQuery()
+	{
+		$this->pay_obj->setType('repayQuery');
 	}
 	// 支付短信
 	function payCode()

@@ -310,7 +310,7 @@ class PayController extends BaseController
 			if ($money < 1) {
 				throw new Exception("提现金额不能小于1", 1004);
 			}
-
+			
 			// 费率扣除
 			$settle_fee = $money * $fee->SettleFee / 100;
 			$settle_fee = round($settle_fee, 2);
@@ -337,6 +337,7 @@ class PayController extends BaseController
 			$pay->settle();
 			$pay->setParams($params);
 
+			
 			// 生成账单 余额 到 结算卡
 			$bill_id = Bill::createBill(array(
 				'BankId' => $bank_card->Id,
@@ -351,23 +352,30 @@ class PayController extends BaseController
 				'To' => '结算卡',
 			));
 
+			// 先扣款
+			User::where('UserId', $this->user->UserId)->decrement('Account', (float)$y_money);
 			$pay->sendRequest();
-
 			$result = $pay->getResult();
-
-			if ($result['action'] != 1) { 
+			DB::beginTransaction();
+			if ($result['action'] != 1) {
 				Bill::billUpdate($bill_id, 'FAIL');
+				// 失败 加回余额
+				User::where('UserId', $this->user->UserId)->increment('Account', (float)$y_money);
+				DB::commit();
 				throw new Exception('错误代码：'.$result['code'].','.$result['msg'], $result['code']);
 			}
 
-			// 扣除余额
-
-			Bill::billUpdate($bill_id, 'SUCCESS');
-
-			User::where('UserId', $this->user->UserId)->decrement('Account', (float)$y_money);
-
+			if ($result['code'] == '0001') {
+				// 带查询
+				Bill::billUpdate($bill_id, 'DOING');
+			} else {
+				// 成功
+				Bill::billUpdate($bill_id, 'SUCCESS');
+			}
+			DB::commit();
 			return $this->cbc_encode(json_encode(array('code'=> '200', 'msg'=> '提现成功!')));
 		} catch (Exception $e) {
+			DB::rollback();
 			return $this->cbc_encode(json_encode(array('code'=> (string)$e->getCode(), 'msg'=> $e->getMessage())));
 		}
 	}
@@ -611,7 +619,9 @@ class PayController extends BaseController
 			if ($bank_card->Type != 2) {
 				throw new Exception("还款必须是信用卡", 8970);	
 			}
-
+			
+			// 先扣除余额
+			User::where('UserId', $this->user->UserId)->decrement('Account', $y_money);
 			$money = (float)$this->data['money'];
 			$y_money = (float)$this->data['money'];
 
@@ -645,39 +655,34 @@ class PayController extends BaseController
 				'To' => '交易卡',
 			));
 
-
+			DB::beginTransaction();
 			$pay->sendRequest();
 
 			$result = $pay->getResult();
 
 			if ($result['action'] != 1) {
 				Bill::billUpdate($bill_id, 'FAIL');
+				// 还回余额
+				User::where('UserId', $this->user->UserId)->increment('Account', $y_money);
+				DB::commit();
 				throw new Exception($result['msg'], $result['code']);
 			}
 
 			// 还款成功	
-			Bill::billUpdate($bill_id, 'SUCCESS');
-
-			// 扣除余额
-			User::where('UserId', $this->user->UserId)->decrement('Account', $y_money);
-
-			// $repay_id = Repay::insertGetId(array(
-			// 	'OrderNum' => $result['result']['rt6_orderId'],
-			// 	'Money' => $params['money'],
-			// 	'UserId' => $params['user_id'],
-			// 	// 'SerialNum' => $result['result']['rt7_serialNumber'],
-			// 	'BankId' => $bank_card->Id,
-			// 	'FeeType' => $params['feeType'],
-			// 	'created_at' => date('Y-m-d H:i:s'),
-			// 	'status' => 1,
-			// 	'SerialNum' => $result['result']['rt7_serialNumber'],
-			// ));
+			if ($result['code'] == '0001') {
+				// 待查询
+				Bill::billUpdate($bill_id, 'DOING');
+			} else {
+				// 成功
+				Bill::billUpdate($bill_id, 'SUCCESS');
+			}
 
 			// 还款成功 
-
+			DB::commit();
 			return $this->cbc_encode(json_encode(array('code'=> '200', 'msg'=> '还款成功!')));
 
 		} catch (Exception $e) {
+			DB::rollback();
 			return $this->cbc_encode(json_encode(array('code'=> $e->getCode(), 'msg'=> '错误代码：'.$e->getCode().','.$e->getMessage())));		
 		}
 		
@@ -751,4 +756,18 @@ class PayController extends BaseController
 		return $this->cbc_encode(json_encode(array('code'=> '200', 'msg'=>'成功', 'banks'=> $banks)));
 	}
 
+
+	function getQuery()
+	{
+		$pay = new Pay('HLBPay');
+		$pay->repayQuery();
+		// echo $this->user->UserId;exit;
+		$params = array(
+			'out_order_id' => $this->data['out_id'],
+		);
+		$pay->setParams($params);
+		$pay->sendRequest();
+		$result = $pay->getResult();
+		print_r($result);
+	}
 }

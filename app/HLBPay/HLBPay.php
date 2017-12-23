@@ -114,11 +114,13 @@ class HLBPay
 
 		// 待查询状态
 		if ($this->type == 'pay') {
-
-			if ($this->result['rt9_orderStatus'] == 'DOING' || $this->result['rt9_orderStatus'] == 'INIT') {
+			if ($this->result['rt9_orderStatus'] == 'DOING') {
 				return array('action'=> 1, 'code'=> '0000', 'msg'=> '待查询', 'result'=> $this->result);
 			}
-
+		} else if ($this->type == 'settle' || $this->type == 'repay') {
+			if ($this->result['code'] == '0001') {
+				return array('action'=> 1, 'code'=> '0001', 'msg'=> '待查询', 'result'=> $this->result);
+			}
 		}
 
 		if ($this->result['rt2_retCode'] == '0000') {
@@ -658,7 +660,7 @@ class HLBPay
 			$sign_str .= '&'.$value;
 		}
 
-		$sign_str .= '&'.$this->signkey;
+		$sign_str .= '&'.$this->rt_signkey;
 		$this->rt_sign = md5($sign_str);
 	}
 
