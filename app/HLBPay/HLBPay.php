@@ -92,7 +92,7 @@ class HLBPay
 		}
 
 		$pageContents = HttpClient::quickPost($this->send_url, $this->send_data);
-		// echo $pageContents;
+		// echo $pageContents;exit;
 		$this->response = $pageContents;
 		$result = json_decode($pageContents, 1);
 		$this->result = $result;
@@ -255,6 +255,10 @@ class HLBPay
 
 		if ($this->type == 'pay') {
 			unset($tmp_sign_data['P17_validateCode'], $tmp_sign_data['P18_isIntegral'], $tmp_sign_data['P19_integralType'], $tmp_sign_data['P20_aptitudeCode']);
+		}
+
+		if ($this->type == 'settleBind') {
+			unset($tmp_sign_data['P11_operateType']);
 		}
 
 
@@ -793,6 +797,7 @@ class HLBPay
 			'P10_bankUnionCode'		=> '',
 			'P11_operateType'		=> $params['operate'],
 		);
+
 	}
 
 	// 验签

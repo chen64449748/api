@@ -194,7 +194,7 @@ class PayController extends BaseController
 		
 	}
 	// 结算卡绑定
-	function postSettlebind()
+	function getSettlebind()
 	{
 		try {
 			
