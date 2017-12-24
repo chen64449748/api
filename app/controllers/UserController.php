@@ -317,7 +317,7 @@ class UserController extends BaseController
                     }
 
                     $verify = Verify::where("mobile", $mobile)
-                    ->orderBy('time')
+                    ->orderBy('time', 'desc')
                     ->first();
                     if ($verify->code != $code || $verify->time < time()) {
                         return $this->cbc_encode(json_encode(array('code'=> 1001, 'msg'=> '验证码错误')));
@@ -491,7 +491,7 @@ class UserController extends BaseController
         }
 
         $verify = Verify::where("mobile", $mobile)
-            ->orderBy('time')
+            ->orderBy('time', 'desc')
             ->first();
         if ($verify->code != $code || $verify->time < time()) {
             return $this->cbc_encode(json_encode(array('code'=> 1001, 'msg'=> '验证码错误')));
