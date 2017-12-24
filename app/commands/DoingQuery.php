@@ -39,7 +39,7 @@ class DoingQuery extends Command {
 	{
 		$page = 1;
 		$pay = new Pay('HLBPay');
-		$pay->payQuery();
+		
 
 		$fee = DB::table('xyk_fee')->first();
 
@@ -67,48 +67,61 @@ class DoingQuery extends Command {
 					
 					$bill_detail = BillDetail::where('BillId', $bill->Id)->first();
 
+					if ($bill->Type == 2 || $bill->Type == 3) {
+						// 还款 提现
+						$pay->repayQuery();
+					} else {
+						$pay->payQuery();
+					}
+					
+
 					$params = array(
 						'out_order_id' => $bill_detail->OrderNum,
 					);
 					$pay->setParams($params);
-					// $pay->sendRequest();
-					// $result = $pay->getResult();
+					$pay->sendRequest();
+					$result = $pay->getResult();
 
 					//测试
-					$result = array(
-						'result' => array(
-							'rt2_retCode' => '0000',
-							'rt9_orderStatus' => 'SUCCESS',
-						),
-					);
+					// $result = array(
+					// 	'result' => array(
+					// 		'rt2_retCode' => '0000',
+					// 		'rt9_orderStatus' => 'SUCCESS',
+					// 	),
+					// );
 					if (!$result['result']) {
 						continue;
 					}
 
-					if ($result['result']['rt2_retCode'] == '8004') {
+					if ($result['result']['rt2_retCode'] == '8004' || $result['result']['rt2_retCode'] == '0005') {
 						$this->info("billid: $bill->Id , no order");
 						$this->noOrder($bill, $bill_detail); // 没有找到该订单
 						continue;
 					}
 
+					$order_status = '';
+
+					if ($bill->Type == 2 || $bill->Type == 3) {
+						$order_status = $result['result']['rt7_orderStatus'];
+					} else {
+						$order_status = $result['result']['rt9_orderStatus'];
+					}
 					
-					if ($result['result']['rt9_orderStatus'] == 'DOING' || $result['result']['rt9_orderStatus'] == 'INIT') {
+					if ($order_status == 'DOING') {
+						$this->info("billid: $bill->Id , DOING");
 						continue;
-					} else if ($result['result']['rt9_orderStatus'] == 'SUCCESS') {
+					} else if ($order_status == 'SUCCESS') {
 						// 成功
 						$this->info("billid: $bill->Id , SUCCESS");
 						$this->orderSuccess($bill, $bill_detail, $fee);
-					} else if ($result['result']['rt9_orderStatus'] == 'FAILED') {
+					} else {
 						$this->info("billid: $bill->Id , FAILED");
 						$this->noOrder($bill, $bill_detail);
 					}
 					
-					
-
-
-
+				
 				} catch (Exception $e) {
-					
+					$this->info($e->getMessage());
 				}
 
 
@@ -129,6 +142,12 @@ class DoingQuery extends Command {
 				case '1':
 					// 充值 
 					// 没动作
+					break;
+				case '2': // 提现失败 还余额
+					User::where('UserId', $bill->UserId)->increment('Account', $bill->Amount);
+					break;
+				case '3': // 还款失败 还余额
+					User::where('UserId', $bill->UserId)->increment('Account', $bill->Amount);
 					break;
 				case '4':
 					// 还款消费 
