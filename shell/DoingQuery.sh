@@ -7,11 +7,11 @@ log_path="/var/log/DoingQuery/`date +%Y/%m/%d`.log"
 
 count=`/bin/ps -ef | grep '/usr/bin/php' | grep artisan | grep DoingQuery | grep -v grep | wc -l`
 
-# zc=`/bin/ps -ef | grep '/usr/bin/php' | grep artisan | grep DoingQuery  | grep -v grep | grep domain=gwsd.bookuu.com | wc -l`
+# zc=`/bin/ps -ef | grep '/usr/bin/php' | grep artisan | grep DoingQuery | grep -v grep | wc -l`
 # 不杀进程 
-#if [[ $zc -gt 0 ]]; then
-#    /bin/ps -ef | grep '/usr/bin/php' | grep $file_uri | grep -v grep | grep domain=gwsd.bookuu.com | awk '{print $2}' | xargs kill -9
-#fi
+# if [[ $zc -gt 0 ]]; then
+#    /bin/ps -ef | grep '/usr/bin/php' | grep artisan | grep DoingQuery | grep -v grep | awk '{print $2}' | xargs kill -9
+# fi
 
 if [[ $count -lt 1 ]]; then
     /usr/bin/php artisan DoingQuery >> $log_path &
