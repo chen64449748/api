@@ -43,18 +43,16 @@ class PlanSettle extends Command {
 		while (true) {
 			$limit = ($page - 1) * 100;
 			$take = 100;
-			$plans = Plan::where('status', 2)->skip($limit)->take(100)->get();
-
-			if (!$plans->count()) {
+			$plans = Plan::where('status', 2)->skip($limit)->take($take)->get();
+			if ($plans->count() == 0) {
 				$this->info('empty data');
 				exit();
 			}
-		
+			$page++;
 			foreach ($plans as $plan) {
 				
 				try {
 					DB::beginTransaction();
-
 					// 生成账单 默认失败 商户带余额
 			    	$bill_id = Bill::createBill(array(
 						'UserId' => $plan->UserId,
@@ -73,7 +71,6 @@ class PlanSettle extends Command {
 					// 结算到余额
 					Plan::where('Id', $plan->Id)->update(array('status'=> 3));
 					User::where('UserId', $plan->UserId)->increment('Account', (float)$plan->CashDeposit);
-
 					$this->info('planid: '.$plan->Id.', cash:'. $plan->CashDeposit. ', SUCCESS');
 					DB::commit();
 				} catch (Exception $e) {
@@ -93,7 +90,7 @@ class PlanSettle extends Command {
 	protected function getArguments()
 	{
 		return array(
-			array('example', InputArgument::REQUIRED, 'An example argument.'),
+			// array('example', InputArgument::REQUIRED, 'An example argument.'),
 		);
 	}
 
@@ -105,7 +102,7 @@ class PlanSettle extends Command {
 	protected function getOptions()
 	{
 		return array(
-			array('example', null, InputOption::VALUE_OPTIONAL, 'An example option.', null),
+			// array('example', null, InputOption::VALUE_OPTIONAL, 'An example option.', null),
 		);
 	}
 
