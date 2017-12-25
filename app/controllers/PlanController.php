@@ -544,7 +544,7 @@ class PlanController extends BaseController
 			    		if ($plan_sys->OpenPlanProfit) {
 							Profit::doProfit($plan->UserId, $plan->CashDeposit);
 						}
-			    	} elseif ($result['result']['rt9_orderStatus'] == 'DOING' || $result['result']['rt9_orderStatus'] == 'INIT') {
+			    	} elseif ($result['result']['rt9_orderStatus'] == 'DOING') {
 			    		// 保证金收取中
 			    		Plan::where('Id', $plan->Id)->update(array('status'=> 4));
 			    		Bill::billUpdate($bill_id, 'DOING');

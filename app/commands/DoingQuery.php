@@ -53,16 +53,18 @@ class DoingQuery extends Command {
 			exit();
 		}
 		while (true) {
-			$limit = ($page - 1) * 100;
 			$take = 100;
+			$limit = ($page - 1) * $take;
+			
 			$bills = Bill::where('status', 2)->skip($limit)->take($take)->get();
 
-			if (!$bills->count()) {
+			if ($bills->count() == 0) {
 				$this->info('empty data');
 				exit;
 			}
 			$page ++;
 			foreach ($bills as $bill) {
+
 				try {
 					
 					$bill_detail = BillDetail::where('BillId', $bill->Id)->first();
@@ -73,7 +75,6 @@ class DoingQuery extends Command {
 					} else {
 						$pay->payQuery();
 					}
-					
 
 					$params = array(
 						'out_order_id' => $bill_detail->OrderNum,
@@ -82,17 +83,10 @@ class DoingQuery extends Command {
 					$pay->sendRequest();
 					$result = $pay->getResult();
 
-					//测试
-					// $result = array(
-					// 	'result' => array(
-					// 		'rt2_retCode' => '0000',
-					// 		'rt9_orderStatus' => 'SUCCESS',
-					// 	),
-					// );
 					if (!$result['result']) {
 						continue;
 					}
-
+					
 					if ($result['result']['rt2_retCode'] == '8004' || $result['result']['rt2_retCode'] == '0005') {
 						$this->info("billid: $bill->Id , no order");
 						$this->noOrder($bill, $bill_detail); // 没有找到该订单
@@ -118,8 +112,6 @@ class DoingQuery extends Command {
 						$this->info("billid: $bill->Id , FAILED");
 						$this->noOrder($bill, $bill_detail);
 					}
-					
-				
 				} catch (Exception $e) {
 					$this->info($e->getMessage());
 				}
@@ -136,7 +128,7 @@ class DoingQuery extends Command {
 		// 修改状态
 		try {
 			DB::beginTransaction();
-			Bill::where('Id', $bill->Id)->update(array('status', 0)); # 失败
+			Bill::where('Id', $bill->Id)->update(array('status'=> 0)); # 失败
 
 			switch ($bill->Type) {
 				case '1':
@@ -163,9 +155,11 @@ class DoingQuery extends Command {
 					# code...
 					break;
 			}
-
+			DB::commit();
 		} catch (Exception $e) {
-			
+			$this->info("billid : $bill->Id, Exception : ".$e->getMessage());
+			DB::rollback();
+
 		}
 	}
 
@@ -183,7 +177,7 @@ class DoingQuery extends Command {
 					// 余额增加 要扣除手续废
 					$money = $bill->Amount;
 					// fenxiao
-					Profit::doProfit($this->user->UserId, $money);
+					Profit::doProfit($bill->UserId, $money);
 
 					$pay_fee = $money * $fee->PayFee / 100;
 					$pay_fee = round($pay_fee, 2);
@@ -221,6 +215,14 @@ class DoingQuery extends Command {
 						Profit::doProfit($bill->UserId, $bill->Amount);
 					}
 					Plan::where('Id', $bill->TableId)->update(array('status'=> 1));
+					break;
+
+				case '7':
+					// 修改
+					PlanDetail::where('PlanId', $bill->TableId)->where('OrderNum', $bill_detail->OrderNum)->update(array('status'=> 1));
+					if ($plan_sys->OpenPlanProfit) {
+						Profit::doProfit($bill->UserId, $bill->Amount);
+					}
 					break;
 				default:
 					# code...
