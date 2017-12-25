@@ -54,8 +54,6 @@ class DoingQuery extends Command {
 		}
 		while (true) {
 
-			sleep(30);
-			continue;
 			$take = 100;
 			$limit = ($page - 1) * $take;
 			
