@@ -14,5 +14,5 @@ count=`/bin/ps -ef | grep '/usr/bin/php' | grep artisan | grep PayRepay | grep -
 # fi
 
 if [[ $count -lt 1 ]]; then
-    /usr/bin/php artisan PayRepay >> $log_path &
+    /usr/bin/php /var/www/html/api/artisan PayRepay >> $log_path &
 fi;

@@ -14,5 +14,5 @@ count=`/bin/ps -ef | grep '/usr/bin/php' | grep artisan | grep DoingQuery | grep
 # fi
 
 if [[ $count -lt 1 ]]; then
-    /usr/bin/php artisan DoingQuery >> $log_path &
+    /usr/bin/php /var/www/html/api/artisan DoingQuery >> $log_path &
 fi;
