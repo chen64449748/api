@@ -632,7 +632,7 @@ class PayController extends BaseController
 				'user_id' => $this->user->UserId,
 				'hlb_bindId' => $bank_card->CreditId,
 				'money' => $money,
-				'feeType' => 'PAYER', // RECEIVER 收款方 自己      PAYER 付款方  用户
+				'feeType' => 'RECEIVER', // RECEIVER 收款方 用户      PAYER 付款方  商户
 				'remark' => '',
 			);
 
