@@ -13,14 +13,14 @@ class HLBPay
 	// private $huan_gateway = 'http://transfer.trx.helipay.com/trx/';
 
 	// 私钥 测试
-	private $signkey = 'aFn0C3OTNYFAiKIK842uKt4kU58HueRL'; 
-	private $rt_signkey = 'WUiTnxTecFt5hhUdoJ7aQjjgaIuYAjUS';
+	private $signkey = '9mzXWZCoBs0yzXLlphrcuOpbp5EYKRYz'; 
+	private $rt_signkey = 'nM1l91NJHqAm04lLgNsgD0zzoOqNYedg';
 	// rsa 私钥
-	private $rsa_signkey = 'MIICdgIBADANBgkqhkiG9w0BAQEFAASCAmAwggJcAgEAAoGBAK5GQSOPqzt7o4xcgygdikqN1uY13J7Uu0nJdm/BtxPH1Y1qolPUw/lSCd83f7KnS/xS/THCVEwvUm2iOtQKIDj2A/SC7Jy+bZbbbrJqkx+61pgjuIFsKo7Wf/2OX59Nj1qQlWa99J3ZH/kEFxKd5V1moV9cCNpBZVoEYyhmBbajAgMBAAECgYAIDqt4T24lQ+Qd2zEdK7B3HfOvlRHsLf2yvaPCKvyh531SGnoC0jV1U3utXE2FHwL+WX/nSwrGsvFmrDd4EjfHFsqRvHm+TJfXoHtmkfvbVGI7bFl/3NbYdi76tqbth6W8k0gkPUsACs2ix8a4K7zxOO+UpOeUBIXrchDxFmj9sQJBAOgSHQAI5hr/3+rSQXlq2lET87Ew9Ib72Lwqri3vsHO/sysVTLAznuA+V8s+a4tUeA839a/tGLp1SaJhvma9/30CQQDAPoNFw4rYTm9vbQnrCb6Mm0l9GNpCD1c4ShTxHJyt8Gql0e1Sl3vc28AxyqHLq66abYDzOpnPGJ8AIpri4qifAkArJsMRsJXoy089gJ8ADqhNjyIu/mVZfBbO1jjQ/dKXkzujdTBvSwnttGnqts6Ud75jRgp/Dd0dPpXUhcw7mnSZAkEAmYeTKP0Afr0tS6ymNhojHoHJz+kwLX+45VBspx51loghc+pSgRpPplOti1ZLnq+uktAPIrDTM0xzdxUr4zSm+wJAV54yRQsZBkRmhPibmLeoe3lM6hcAwLqS+E1H09X92fBLqCtBAybDnf++hT2ATgtW+xgI+tFVbOqbi1QbLyw1kA==';
+	private $rsa_signkey = 'MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC4+lWPrtQsetWbs1jicf2EgsEL2emTGOWai+RHcx1AwXzOqIzFM6ud1P1hUMIifun4vTNPR3BOMYpR3WGeppgl8Br5hAZDqmHuxK/3HPxj8dnflnXLdHL/OrtPNGbhbwLsuaRrvgUseOSjZHap8iPV5Pt5prbrZtSaE65zNbxBAQIDAQAB';
 	
 	// 测试
-	private $customer_number = 'C1800001108';
-	private $credit_number = 'C1800001108';
+	private $customer_number = 'C1800169895';
+	private $credit_number = 'C1800169895';
 
 	private $type; // 业务类型
 	public $send_url; // 发送接口
