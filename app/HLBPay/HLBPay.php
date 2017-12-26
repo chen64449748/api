@@ -6,11 +6,11 @@ class HLBPay
 	private $crypt_rsa;
 
 	// 测试环境
-	private $pay_gateway = 'http://test.trx.helipay.com/trx/';
-	private $huan_gateway = 'http://test.trx.helipay.com/trx/';
+	// private $pay_gateway = 'http://test.trx.helipay.com/trx/';
+	// private $huan_gateway = 'http://test.trx.helipay.com/trx/';
 	//生产环境
-	// private $pay_gateway = 'http://pay.trx.helipay.com/trx/';
-	// private $huan_gateway = 'http://transfer.trx.helipay.com/trx/';
+	private $pay_gateway = 'http://pay.trx.helipay.com/trx/';
+	private $huan_gateway = 'http://transfer.trx.helipay.com/trx/';
 
 	// 私钥 测试
 	private $signkey = '9mzXWZCoBs0yzXLlphrcuOpbp5EYKRYz'; 
