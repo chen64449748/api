@@ -9,14 +9,14 @@ class HLBPay
 	// private $pay_gateway = 'http://test.trx.helipay.com/trx/';
 	// private $huan_gateway = 'http://test.trx.helipay.com/trx/';
 	//生产环境
-	private $pay_gateway = 'http://pay.trx.helipay.com/trx/';
+	private $pay_gateway = 'http://quickpay.trx.helipay.com/trx/';
 	private $huan_gateway = 'http://transfer.trx.helipay.com/trx/';
 
 	// 私钥 测试
-	private $signkey = '9mzXWZCoBs0yzXLlphrcuOpbp5EYKRYz'; 
+	private $signkey = '9mzXWZCoBs0yzXLlphrcuOpbp5EYKRYz';
 	private $rt_signkey = 'nM1l91NJHqAm04lLgNsgD0zzoOqNYedg';
 	// rsa 私钥
-	private $rsa_signkey = 'MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC4+lWPrtQsetWbs1jicf2EgsEL2emTGOWai+RHcx1AwXzOqIzFM6ud1P1hUMIifun4vTNPR3BOMYpR3WGeppgl8Br5hAZDqmHuxK/3HPxj8dnflnXLdHL/OrtPNGbhbwLsuaRrvgUseOSjZHap8iPV5Pt5prbrZtSaE65zNbxBAQIDAQAB';
+	private $rsa_signkey = 'MIICxjBABgkqhkiG9w0BBQ0wMzAbBgkqhkiG9w0BBQwwDgQI2PgfBTogUlwCAggAMBQGCCqGSIb3DQMHBAheK6pQeBIRhQSCAoDLDYHX+z+VPaIy3uNtDCoAuQiLoWvILEbWh/flOrzpis4GOhBQaA0SqslZWbp39NEFJgUTpPF8UbOBrtXyEmj8YIDogbbAOMe+2D+d7UiaFbz7NrexkpnAppD9VCCgCp+9l4xbFiMXOlEksLhKEZPkm/EjHqYwhH34rmpMxCYAzSnukcrNr5H7+3xiXFSayIv+u3KICe0+hmJTiGhazZtSPMgB1LVi5QKna3XYB2Sfu3n/PFOFzyXhiyyE6yjPWdT0kEt/sn3ibPhIczAU5IJjW8gBLbG35Y7m0rFXzy36TNMK7nhOobwHkAz23mK7okbte9hsZ01EAlgb0y8V1bSmw3kOIEXwXOithe1u9Hzz2DEEYXjOno70x6d3HJyAgNyfeMvDmguVITFToCQSJ+zB2lokHcfVuFGFt8+3V5HfUCdqou88+aoUJbxUcVsipLVAUWHbmYIsHVS9eswWyj8dm2x6ZWbK6IoQy0CE3LOlFSC15oEcGPsW6ehqMlSHyL8ujcvf9nc/WUhapiPp2KJriA/V7X/mDwOS/ydbM/jnTgapr5FYYCWb2dDW+ki3FEON4bHgXchY33hht06VYVmbWsxVwRTdkCkq0OmuXBhrQ+Fv+/bO6OithkIiGXGZDFYmLwDymu/dTjUEBnGD9AYFFkJrA0AMFNjfKBCxDIaZvn7GUODb9jS1QREH13I3JWeSG2NXfuFpySkH1DKrP06pys8w681CB6C9syMbiRb2nNFKTEpzsK39qmhCLNZ+8UsvCPZxGJcPH4oI5TL814YtYYYXdc1PX1AsdjzmI1KkytnmHvcGbLEMpvuqB09PSGmP8d4uWvial92KAlsNUoV2';
 	
 	// 测试
 	private $customer_number = 'C1800169895';
@@ -289,10 +289,9 @@ class HLBPay
 
 		$sign_str = '&'.implode('&', array_values($tmp_sign_data));
 		$this->sign_str = $sign_str;
-		$this->crypt_rsa->setHash('md5');
-		$this->crypt_rsa->setSignatureMode(CRYPT_RSA_SIGNATURE_PKCS1);
+		$this->crypt_rsa->setHash('md5'); 
+		$this->crypt_rsa->setSignatureMode(CRYPT_RSA_SIGNATURE_PKCS1); # CRYPT_RSA_SIGNATURE_PKCS1
 		$this->crypt_rsa->loadKey($this->rsa_signkey);
-
 		$sign = base64_encode($this->crypt_rsa->sign($sign_str));
 
 		$this->send_data['sign'] = $sign;

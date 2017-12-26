@@ -368,6 +368,8 @@ class PayController extends BaseController
 			if ($result['code'] == '0001') {
 				// 带查询
 				Bill::billUpdate($bill_id, 'DOING');
+				DB::commit();
+				throw new Exception("提现处理中", 0);				
 			} else {
 				// 成功
 				Bill::billUpdate($bill_id, 'SUCCESS');
@@ -468,7 +470,7 @@ class PayController extends BaseController
 			$pay->sendRequest();
 			
 			$result = $pay->getResult();
-
+			// print_r($result);exit;
 			// 测试
 			// $result_str = '{"rt10_bindId":"48cfb204ba8b4a3f870ea4c567399272","sign":"7cb7efb4a36ffb9468da7699b56c299f","rt1_bizType":"QuickPayBindPay","rt9_orderStatus":"SUCCESS","rt6_serialNumber":"QUICKPAY171207123745PPFQ","rt14_userId":"82","rt2_retCode":"0000","rt12_onlineCardType":"CREDIT","rt11_bankId":"CMBCHINA","rt13_cardAfterFour":"6880","rt5_orderId":"20171207123745976700","rt4_customerNumber":"C1800001108","rt8_orderAmount":"1.00","rt3_retMsg":"成功","rt7_completeDate":"2017-12-07 12:37:49"}';
 			// $result = json_decode($result_str, 1);
@@ -484,6 +486,7 @@ class PayController extends BaseController
 			
 			if ($result['result']['rt9_orderStatus'] == 'DOING' || $result['result']['rt9_orderStatus'] == 'INIT') {
 				Bill::billUpdate($bill_id, 'DOING'); //  账单修改为处理中
+				throw new Exception($result['msg'], $result['code']);
 			} else if ($result['result']['rt9_orderStatus'] == 'SUCCESS') {
 				Bill::billUpdate($bill_id, 'SUCCESS'); // 成功 
 				// 添加余额 扣除手续废
@@ -492,6 +495,7 @@ class PayController extends BaseController
 				User::where('UserId', $this->user->UserId)->increment('Account', (float)$d_money);
 			} else {
 				Bill::billUpdate($bill_id, 'FAIL');
+				throw new Exception($result['msg'], $result['code']);
 			}
 
 			
@@ -673,6 +677,8 @@ class PayController extends BaseController
 			if ($result['code'] == '0001') {
 				// 待查询
 				Bill::billUpdate($bill_id, 'DOING');
+				DB::commit();
+				throw new Exception("还款处理中", 0);			
 			} else {
 				// 成功
 				Bill::billUpdate($bill_id, 'SUCCESS');
