@@ -319,7 +319,7 @@ class PayController extends BaseController
 			$params = array(
 				'user_id' => $this->user->UserId,
 				'money' => $money,
-				'feeType' => 'RECEIVER',
+				'feeType' => 'RECEIVER', // PAYER 商户  RECEIVER 用户
 				'remark' => '',
 				'hlb_bindId' => $bank_card->BankId,
 			);
@@ -624,6 +624,10 @@ class PayController extends BaseController
 			$money = (float)$this->data['money'];
 			$y_money = (float)$this->data['money'];
 
+			if ($money > $this->user->Account) {
+				throw new Exception("最多可还款". $this->user->Account. '元', 0);
+			}
+
 			$repay_fee = $money * $fee->RepayFee / 100;
 			$repay_fee = round($repay_fee, 2);
 
@@ -632,7 +636,7 @@ class PayController extends BaseController
 				'user_id' => $this->user->UserId,
 				'hlb_bindId' => $bank_card->CreditId,
 				'money' => $money,
-				'feeType' => 'PAYER', // RECEIVER 收款方 自己      PAYER 付款方  用户
+				'feeType' => 'RECEIVER', // RECEIVER 收款方 用户      PAYER 付款方  商户
 				'remark' => '',
 			);
 

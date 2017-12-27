@@ -6,21 +6,21 @@ class HLBPay
 	private $crypt_rsa;
 
 	// 测试环境
-	private $pay_gateway = 'http://test.trx.helipay.com/trx/';
-	private $huan_gateway = 'http://test.trx.helipay.com/trx/';
+	// private $pay_gateway = 'http://test.trx.helipay.com/trx/';
+	// private $huan_gateway = 'http://test.trx.helipay.com/trx/';
 	//生产环境
-	// private $pay_gateway = 'http://pay.trx.helipay.com/trx/';
-	// private $huan_gateway = 'http://transfer.trx.helipay.com/trx/';
+	private $pay_gateway = 'http://quickpay.trx.helipay.com/trx/';
+	private $huan_gateway = 'http://transfer.trx.helipay.com/trx/';
 
 	// 私钥 测试
-	private $signkey = 'aFn0C3OTNYFAiKIK842uKt4kU58HueRL'; 
-	private $rt_signkey = 'WUiTnxTecFt5hhUdoJ7aQjjgaIuYAjUS';
+	private $signkey = '9mzXWZCoBs0yzXLlphrcuOpbp5EYKRYz'; 
+	private $rt_signkey = 'nM1l91NJHqAm04lLgNsgD0zzoOqNYedg';
 	// rsa 私钥
-	private $rsa_signkey = 'MIICdgIBADANBgkqhkiG9w0BAQEFAASCAmAwggJcAgEAAoGBAK5GQSOPqzt7o4xcgygdikqN1uY13J7Uu0nJdm/BtxPH1Y1qolPUw/lSCd83f7KnS/xS/THCVEwvUm2iOtQKIDj2A/SC7Jy+bZbbbrJqkx+61pgjuIFsKo7Wf/2OX59Nj1qQlWa99J3ZH/kEFxKd5V1moV9cCNpBZVoEYyhmBbajAgMBAAECgYAIDqt4T24lQ+Qd2zEdK7B3HfOvlRHsLf2yvaPCKvyh531SGnoC0jV1U3utXE2FHwL+WX/nSwrGsvFmrDd4EjfHFsqRvHm+TJfXoHtmkfvbVGI7bFl/3NbYdi76tqbth6W8k0gkPUsACs2ix8a4K7zxOO+UpOeUBIXrchDxFmj9sQJBAOgSHQAI5hr/3+rSQXlq2lET87Ew9Ib72Lwqri3vsHO/sysVTLAznuA+V8s+a4tUeA839a/tGLp1SaJhvma9/30CQQDAPoNFw4rYTm9vbQnrCb6Mm0l9GNpCD1c4ShTxHJyt8Gql0e1Sl3vc28AxyqHLq66abYDzOpnPGJ8AIpri4qifAkArJsMRsJXoy089gJ8ADqhNjyIu/mVZfBbO1jjQ/dKXkzujdTBvSwnttGnqts6Ud75jRgp/Dd0dPpXUhcw7mnSZAkEAmYeTKP0Afr0tS6ymNhojHoHJz+kwLX+45VBspx51loghc+pSgRpPplOti1ZLnq+uktAPIrDTM0xzdxUr4zSm+wJAV54yRQsZBkRmhPibmLeoe3lM6hcAwLqS+E1H09X92fBLqCtBAybDnf++hT2ATgtW+xgI+tFVbOqbi1QbLyw1kA==';
+	private $rsa_signkey = 'MIICeAIBADANBgkqhkiG9w0BAQEFAASCAmIwggJeAgEAAoGBALCgzmIu2FT5TSU8blvi1cfvX9lVg3ZbA9NFXnXrkj6bQ0Ze+NZGMKrARCsN87QaT/WnciqxVlWkOeZQCl+wH+cK9VLLHbNZuMaLTqPOvHCpEnxe2Ny8XOJtoC0ONAQo1Bs5kiSrUYgs1TGsO37XyXhTqf8dLyhyXAEnJVPNzmXBAgMBAAECgYBwp5/673X7fKa/wTOCV8OSqhKwQ+J9cr+V2QDOpVm5pL3b/GcqA8q2nbrc2yE9Fis5u3sNz94I8Z4cT6DONz+gxgfvmzRwk0tBl+Ly5c25j67u1Od36htCwEHcuFUmW0t9paAhZlAUsOoaHlocpAJ1+I3pc6+rYTp2sJRXH8IxIQJBANiNetDbnJJrjteUBQ73hC2NuthCwmueq/AUXFDploQyHkDZWEEBAyPsS+KSn3F9Njm5htlAQmuNHy1ZkVpVte8CQQDQzYXwunJzQFnVHavgDaL04G9i4RW/y7SuOBngNn7J6CS/tH4t8X/iW6A2NQeWUZYonTbx6IjuILSJ3097sc9PAkEAxFmsFXo7AmwyDXgyCfsVxzQuSW5m2Kv7XGkpt1fFWUIUOlqX8gDX9xeHSv4FQiL1Kuv0wEHKt7gyn60J5W230wJBAKEDK1sD24fGQr+VftlqipO8kgg0u9nHks+Z0VJVk5XM3rG51GdHSC9cKoJCiFRBG8K74QfQIe9G5xE+U4N2DP8CQQCw1EZ57Kv4g22K+dpfjG1EdPmbzvyZeNs3Qzfa8A05fLNjM3GGO6jcm0HSHGjNYwlu1tUSUxs832+YMfvYcagG';
 	
 	// 测试
-	private $customer_number = 'C1800001108';
-	private $credit_number = 'C1800001108';
+	private $customer_number = 'C1800169895';
+	private $credit_number = 'C1800169895';
 
 	private $type; // 业务类型
 	public $send_url; // 发送接口
