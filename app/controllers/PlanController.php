@@ -318,7 +318,7 @@ class PlanController extends BaseController
 				if ($plan_sys->OpenPlanFeeRepay) {
 					$plan_repay_fee = $huan_money * $fee->RepayFee / 100;
 					$plan_repay_fee = round($plan_repay_fee, 2);
-					$plan_pay_fee_total += $plan_repay_fee;
+					$plan_pay_fee_total += $plan_repay_fee + $fee->ApiFee;
 				}
 
 				// 还款计划

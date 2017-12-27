@@ -53,6 +53,7 @@ class DoingQuery extends Command {
 			exit();
 		}
 		while (true) {
+
 			$take = 100;
 			$limit = ($page - 1) * $take;
 			
@@ -69,7 +70,7 @@ class DoingQuery extends Command {
 					
 					$bill_detail = BillDetail::where('BillId', $bill->Id)->first();
 
-					if ($bill->Type == 2 || $bill->Type == 3) {
+					if ($bill->Type == 2 || $bill->Type == 3 || $bill->Type == 7) {
 						// 还款 提现
 						$pay->repayQuery();
 					} else {
@@ -95,7 +96,7 @@ class DoingQuery extends Command {
 
 					$order_status = '';
 
-					if ($bill->Type == 2 || $bill->Type == 3) {
+					if ($bill->Type == 2 || $bill->Type == 3 || $bill->Type == 7) {
 						$order_status = $result['result']['rt7_orderStatus'];
 					} else {
 						$order_status = $result['result']['rt9_orderStatus'];
@@ -107,7 +108,7 @@ class DoingQuery extends Command {
 					} else if ($order_status == 'SUCCESS') {
 						// 成功
 						$this->info("billid: $bill->Id , SUCCESS");
-						$this->orderSuccess($bill, $bill_detail, $fee);
+						$this->orderSuccess($bill, $bill_detail, $fee, $plan_sys);
 					} else {
 						$this->info("billid: $bill->Id , FAILED");
 						$this->noOrder($bill, $bill_detail);
@@ -163,7 +164,7 @@ class DoingQuery extends Command {
 		}
 	}
 
-	private function orderSuccess($bill, $bill_detail, $fee)
+	private function orderSuccess($bill, $bill_detail, $fee, $plan_sys)
 	{
 		// 订单成功
 		try {

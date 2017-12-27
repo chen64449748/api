@@ -17,6 +17,7 @@ class HLBPay
 	private $rt_signkey = 'nM1l91NJHqAm04lLgNsgD0zzoOqNYedg';
 	// rsa 私钥
 	private $rsa_signkey = 'MIICeAIBADANBgkqhkiG9w0BAQEFAASCAmIwggJeAgEAAoGBALCgzmIu2FT5TSU8blvi1cfvX9lVg3ZbA9NFXnXrkj6bQ0Ze+NZGMKrARCsN87QaT/WnciqxVlWkOeZQCl+wH+cK9VLLHbNZuMaLTqPOvHCpEnxe2Ny8XOJtoC0ONAQo1Bs5kiSrUYgs1TGsO37XyXhTqf8dLyhyXAEnJVPNzmXBAgMBAAECgYBwp5/673X7fKa/wTOCV8OSqhKwQ+J9cr+V2QDOpVm5pL3b/GcqA8q2nbrc2yE9Fis5u3sNz94I8Z4cT6DONz+gxgfvmzRwk0tBl+Ly5c25j67u1Od36htCwEHcuFUmW0t9paAhZlAUsOoaHlocpAJ1+I3pc6+rYTp2sJRXH8IxIQJBANiNetDbnJJrjteUBQ73hC2NuthCwmueq/AUXFDploQyHkDZWEEBAyPsS+KSn3F9Njm5htlAQmuNHy1ZkVpVte8CQQDQzYXwunJzQFnVHavgDaL04G9i4RW/y7SuOBngNn7J6CS/tH4t8X/iW6A2NQeWUZYonTbx6IjuILSJ3097sc9PAkEAxFmsFXo7AmwyDXgyCfsVxzQuSW5m2Kv7XGkpt1fFWUIUOlqX8gDX9xeHSv4FQiL1Kuv0wEHKt7gyn60J5W230wJBAKEDK1sD24fGQr+VftlqipO8kgg0u9nHks+Z0VJVk5XM3rG51GdHSC9cKoJCiFRBG8K74QfQIe9G5xE+U4N2DP8CQQCw1EZ57Kv4g22K+dpfjG1EdPmbzvyZeNs3Qzfa8A05fLNjM3GGO6jcm0HSHGjNYwlu1tUSUxs832+YMfvYcagG';
+
 	
 	// 测试
 	private $customer_number = 'C1800169895';
@@ -289,10 +290,9 @@ class HLBPay
 
 		$sign_str = '&'.implode('&', array_values($tmp_sign_data));
 		$this->sign_str = $sign_str;
-		$this->crypt_rsa->setHash('md5');
-		$this->crypt_rsa->setSignatureMode(CRYPT_RSA_SIGNATURE_PKCS1);
+		$this->crypt_rsa->setHash('md5'); 
+		$this->crypt_rsa->setSignatureMode(CRYPT_RSA_SIGNATURE_PKCS1); # CRYPT_RSA_SIGNATURE_PKCS1
 		$this->crypt_rsa->loadKey($this->rsa_signkey);
-
 		$sign = base64_encode($this->crypt_rsa->sign($sign_str));
 
 		$this->send_data['sign'] = $sign;

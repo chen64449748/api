@@ -45,10 +45,7 @@ class PayRepay extends Command {
 		if (!$plan_sys) {
 			$this->info("plan_sys no");exit();
 		}
-		if (!$plans->count()) {
-			$this->info('data empty');
-			exit();
-		}
+
 		$page = 1;
 		while (true) {
 			$take = 100;
@@ -120,7 +117,7 @@ class PayRepay extends Command {
 					    	// 修改计划为带查询
 					    	PlanDetail::where('Id', $value->Id)->update(array(
 					    		'OrderNum' => $pay->getOrderId(),
-					    		'status' => 3,
+					    		'status' => 2,
 					    	));
 
 					    	$pay->sendRequest();
@@ -146,7 +143,7 @@ class PayRepay extends Command {
 							$continue_batch = 0; # 用来做判断 批次号跟跳过批次号相同的 不处理
 		    			} catch (Exception $e) {
 		    				PlanDetail::where('Id', $value->Id)->update(array('status'=> 0));
-		    				$this->info('planID:'. $plan->Id.', batch：'.$value->Batch.', hk faile，'.$e->getMessage());
+		    				$this->info('planID:'. $plan->Id.', batch：'.$value->Batch.', code: '.$e->getCode().' hk faile，'.$e->getMessage());
 		    				$continue_batch = $value->Batch;
 		    			}
 		    		} else if ($value->Type == 2) {
@@ -196,7 +193,7 @@ class PayRepay extends Command {
 					    	// 修改计划
 					    	PlanDetail::where('Id', $value->Id)->update(array(
 					    		'OrderNum' => $pay->getOrderId(),
-					    		'status' => 3, // 执行中
+					    		'status' => 2, // 执行中
 					    	));
 
 					    	$pay->sendRequest();
@@ -238,7 +235,6 @@ class PayRepay extends Command {
 		    			}
 		    		}
 
-			       
 
 		    	}
 
