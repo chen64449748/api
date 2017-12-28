@@ -245,11 +245,11 @@ class PlanController extends BaseController
 			// 套现分两次 数据库获取
 			$tao_time = $plan_sys->TaoTimes;
 
-			$plan_fee_one = $fee->PlanFee / 100 * $this->data['cash_deposit'];
+			// $plan_fee_one = $fee->PlanFee / 100 * $this->data['cash_deposit'];
 
-			if ($plan_fee_one * $plan_time > $this->data['cash_deposit']) {
-				throw new Exception("保证金不能低于手续费", 3002);
-			}
+			// if ($plan_fee_one * $plan_time > $this->data['cash_deposit']) {
+			// 	throw new Exception("保证金不能低于手续费", 3002);
+			// }
 
 			// 时间间隔
 			$plan_jiange_time = ceil(($plan_e_time - $plan_s_time) / $plan_time);
@@ -259,18 +259,13 @@ class PlanController extends BaseController
 			$o_time = $plan_time - 1;
 			$foot_money = round(($this->data['cash_deposit'] * $o_time) / $plan_time, 2);
 			$total_money = round($this->data['total_money'], 2);
+
+			$plan_fee = $total_money * $fee->PlanFee / 100;
+
 			// 生成计划
 			if ($header_money < 50) {
 				$zuidi_total = 50 * $o_time;
 				throw new Exception("最低总金额". $zuidi_total, 3010);
-			}
-
-			// 保证金费率
-			$cash_deposit_fee = 0;
-			// 如果有打开计划 系统支付费用
-			if ($plan_sys->OpenPlanFeePay) {
-				$cash_deposit_fee = $header_money * $fee->PayFee / 100;
-				$cash_deposit_fee = round($cash_deposit_fee, 2);
 			}
 			
 			$plan_id = Plan::insertGetId(array(
@@ -282,9 +277,9 @@ class PlanController extends BaseController
 				'created_at' => date('Y-m-d H:i:s'),
 				'TotalMoney' => $total_money, // 不含手续费 还款总额
 				'CashDeposit' => $header_money, // 保证金
-				'fee' => $plan_fee_one * $plan_time,
+				'fee' => $plan_fee,
 				'PayBankId' => $pay_bank_id,
-				'SysFee' => $cash_deposit_fee, // 先设置 计划保证金支付费率
+				'SysFee' => 0, // 先设置 计划保证金支付费率
 				'times' => $plan_time, // 还款次数
 			));
 
@@ -316,7 +311,7 @@ class PlanController extends BaseController
 				$plan_repay_fee = 0;
 				// 如果还款费率打开
 				if ($plan_sys->OpenPlanFeeRepay) {
-					$plan_repay_fee = $huan_money * $fee->RepayFee / 100;
+					$plan_repay_fee = $huan_money * $fee->PlanRepayFee / 100;
 					$plan_repay_fee = round($plan_repay_fee, 2) + $fee->ApiFee;
 					$plan_pay_fee_total += $plan_repay_fee;
 				}
@@ -363,13 +358,7 @@ class PlanController extends BaseController
 					$tao_item_total_money = $tao_item_total_money - $tao_money;
 
 					$plan_pay_fee = 0;
-					// 如果还款消费费率打开
-					if ($plan_sys->OpenPlanFeeRepay) {
-						$plan_pay_fee = $tao_money * $fee->PayFee / 100;
-						$plan_pay_fee = round($plan_pay_fee, 2);
-						$plan_pay_fee_total += $plan_pay_fee;
-					}
-
+					
 					$tao_item = array(
 						'PlanId' => $plan_id,
 						'created_at' => date('Y-m-d H:i:s'),
