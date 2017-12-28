@@ -221,9 +221,6 @@ class DoingQuery extends Command {
 				case '7':
 					// 修改
 					PlanDetail::where('PlanId', $bill->TableId)->where('OrderNum', $bill_detail->OrderNum)->update(array('status'=> 1));
-					if ($plan_sys->OpenPlanProfit) {
-						Profit::doProfit($bill->UserId, $bill->Amount);
-					}
 					break;
 				default:
 					# code...
