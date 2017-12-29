@@ -460,7 +460,7 @@ class UserController extends BaseController
      * @version   [version]
      * @return    [type]                   [description]
      */
-    public function postMyshare()
+    public function getMyshare()
     {
         $money = Profit::where("user_id", $this->user->UserId)
             ->sum('money');
@@ -501,7 +501,7 @@ class UserController extends BaseController
                 ->get();
         }
 
-        return $this->cbc_encode(json_encode(array('code'=> 200, 'msg'=> '请求成功', 'data'=> compact("firsts", "seconds", "money", "thirds", "firsts_count", "seconds_count", "thirds_count"))));
+        return $this->cbc_encode(json_encode(array('code'=> 200, 'msg'=> '请求成功', 'data'=> compact("firsts", "seconds", "money", "thirds", "firsts_count", "seconds_count", "thirds_count", "money"))));
     }
 
     public function postProfits()
