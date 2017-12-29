@@ -350,6 +350,7 @@ class PayController extends BaseController
 				'SysFee' => $settle_fee,
 				'From' => '余额',
 				'To' => '结算卡',
+				'ApiFee' => $fee->ApiFee,
 			));
 
 			// 先扣款
@@ -662,6 +663,7 @@ class PayController extends BaseController
 				'SysFee' => $repay_fee,
 				'From' => '余额',
 				'To' => '交易卡',
+				'ApiFee' => $fee->ApiFee,
 			));
 
 			DB::beginTransaction();

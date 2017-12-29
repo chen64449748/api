@@ -36,6 +36,10 @@ class Bill extends Eloquent
 			$data['To'] = '';
 		}
 
+		if (!isset($data['ApiFee'])) {
+			$data['ApiFee'] = 0;
+		}
+
 		$bill_id = Bill::insertGetId(array(
 			'CreditId' => $data['CreditId'],
 			'BankId' => $data['BankId'],
@@ -50,6 +54,7 @@ class Bill extends Eloquent
 			'SysFee' => $data['SysFee'],
 			'From' => $data['From'],
 			'To' => $data['To'],
+			'ApiFee' => $data['ApiFee'],
 		));
 
 		BillDetail::insert(array(
