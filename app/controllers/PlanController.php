@@ -178,7 +178,7 @@ class PlanController extends BaseController
 	function postAdd()
 	{
 
-		// try {
+		try {
 
 			DB::beginTransaction();
 
@@ -454,10 +454,10 @@ class PlanController extends BaseController
 			$re_plan = Plan::where('Id', $plan_id)->first();
 			DB::commit();
 			return $this->cbc_encode(json_encode(array('code'=> '200', 'msg'=> '计划添加成功!', 'data'=> $re_data, 'plan'=> $re_plan, 'plan_id'=> $plan_id)));
-		// } catch (Exception $e) {
-		// 	DB::rollback();
-		// 	return $this->cbc_encode(json_encode(array('code'=> $e->getCode(), 'msg'=> $e->getMessage())));
-		// }
+		} catch (Exception $e) {
+			DB::rollback();
+			return $this->cbc_encode(json_encode(array('code'=> $e->getCode(), 'msg'=> $e->getMessage())));
+		}
 			
 
 	}
