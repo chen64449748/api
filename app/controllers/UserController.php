@@ -460,7 +460,7 @@ class UserController extends BaseController
      * @version   [version]
      * @return    [type]                   [description]
      */
-    public function getMyshare()
+    public function postMyshare()
     {
         $money = Profit::where("user_id", $this->user->UserId)
             ->sum('money');
