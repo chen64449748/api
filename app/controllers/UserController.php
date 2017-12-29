@@ -464,35 +464,51 @@ class UserController extends BaseController
     {
         $money = Profit::where("user_id", $this->user->UserId)
             ->sum('money');
+
+        $level = $this->data['level'];
+        $first_ids = $second_ids = $third_ids = array();
+
         $first_ids = User::where("InviteOne", $this->user->UserId)
-            ->lists('UserId');
+            ->lists('UserId');    
+        
+
         $second_ids = User::where("InviteTwo", $this->user->UserId)
             ->lists('UserId');
+        
+        
+        
         $third_ids = User::where("InviteThree", $this->user->UserId)
             ->lists('UserId');
+        
 
         $firsts = $seconds = $thirds = array();
+        $firsts_count = $seconds_count = $thirds_count = 0;
 
-        if ($first_ids) {
-            $firsts = User::whereIn("UserId", $first_ids)
+        $firsts_count = count($first_ids);
+        $seconds_count = count($second_ids);
+        $thirds_count = count($third_ids);
+
+        if ($first_ids && $level == 'first') {
+            $firsts = User::whereIn("UserId", $first_ids)->orderBy('AddTime', 'desc')
                 ->get();
         }
-        if ($second_ids) {
-            $seconds = User::whereIn("UserId", $second_ids)
+        if ($second_ids && $level == 'second') {
+            $seconds = User::whereIn("UserId", $second_ids)->orderBy('AddTime', 'desc')
                 ->get();
         }
-        if ($third_ids) {
-            $thirds = User::whereIn("UserId", $third_ids)
+        if ($third_ids && $level == 'third') {
+            $thirds = User::whereIn("UserId", $third_ids)->orderBy('AddTime', 'desc')
                 ->get();
         }
-        return $this->cbc_encode(json_encode(array('code'=> 200, 'msg'=> '请求成功', 'data'=> compact("firsts", "seconds", "money", "thirds"))));
+
+        return $this->cbc_encode(json_encode(array('code'=> 200, 'msg'=> '请求成功', 'data'=> compact("firsts", "seconds", "money", "thirds", "firsts_count", "seconds_count", "thirds_count"))));
     }
 
     public function postProfits()
     {
         $offset = $this->data['offset'];
         $limit = $this->data['limit'];
-        $profits = Profit::where("user_id", $this->user->UserId)->skip($offset)->take($limit)
+        $profits = Profit::where("user_id", $this->user->UserId)->orderBy("time", 'desc')->skip($offset)->take($limit)
             ->get();
         // foreach ($profits as $k => $v) {
         //     $profits[$k]['first'] = User::where("UserId", $v['first_user_id'])->get();
