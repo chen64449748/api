@@ -12,7 +12,7 @@ class PlanController extends BaseController
 	}
 
 	// d_time 同一天存在次数
-	private function getRandTime($times, $s_time, $e_time, &$arr = array(), $end_h = 21)
+	private function getRandTime($times, $s_time, $e_time, &$arr = array(), $end_h = 22)
 	{
 		$use_time = $e_time - $s_time;
 
@@ -21,7 +21,7 @@ class PlanController extends BaseController
 			$use_time += 2 * 3600;
 		}
 
-		$tmp_s_time = 1;
+		$tmp_s_time = 0;
 
 		$pay_time_tmp = mt_rand($tmp_s_time, $use_time);
 
@@ -33,7 +33,7 @@ class PlanController extends BaseController
 				$arr[] = $pay_time;	
 			}
 			
-			if (count($arr) == $times * 50) {
+			if (count($arr) == $times * 1) {
 				return $pay_time;
 			} else {
 				$this->getRandTime($times, $s_time, $e_time, $arr);
@@ -44,53 +44,124 @@ class PlanController extends BaseController
 		}
 	} 
 
-	private function getRandTimeDay($arr, $d_time = 2, $times, $t_time = 1200, $t = 0)
+	private function getRandTimeDay($arr, $d_time = 2, $times, $plan_s_time, $plan_e_time, $t = 0)
 	{
 
 		$tmp_arr = array();
 		sort($arr);
-		foreach ($arr as $key => $value) {
-			$tmp_arr[date('d', $value)][] = $value;
+		$all_day = array();
+		$diff_days = ceil(($plan_e_time - $plan_s_time) / 86400);
+
+		for ($j=0; $j < $diff_days; $j++) { 
+			$all_day[] = date('Y-m-d', strtotime('+'.$j.' day', $plan_s_time));
 		}
 
+		foreach ($arr as $key => $value) {
+			$tmp_arr[date('Y-m-d', $value)][] = $value;
+		}
+		
+		// print_r($tmp_arr);echo '<br>';
+		// exit;
+		// 调整每天次数
+		// 先检查 中间是否有空的天数
+		$use_day = array();
+		$empty_day = array();
+		$diyici_key = 0; # 默认天数
+		$gt_d_time_day = array(); # 收集大于每日次数的
+		$lt_d_time_day = array(); # 收集小于每日次数的
+		$now_times = 0; # 当前次数
+		
+		foreach ($tmp_arr as $key => $value) {
+			$use_day[] = $key;
+
+			if (count($value) >= $d_time) {
+				
+				$now_times += $d_time;
+			} else {
+				$now_times += count($value);
+			}
+
+			if (count($value) > $d_time) {
+				$gt_d_time_day[$key] = count($value);
+			} if (count($value) < $d_time) {
+				$lt_d_time_day[$key] = count($value);
+			}
+
+		}
+	
+		
+		$empty_day = array_diff($all_day, $use_day);
+		$empty_day = array_values($empty_day);
+		// echo '生成次数'. $now_times.'<br>';
+		// 用空的天数补上时间
+		if ($empty_day && $now_times < $times) {
+			$buc_days = floor(($times - $now_times) / $d_time); # 补充的天数
+			if ($buc_days < 0) {
+				$buc_days = 0; # 不需要补充
+			}
+			
+			// echo '补充'.$buc_days. '<br>'; 	
+			
+			
+			for ($i=0; $i < $buc_days; $i++) { 
+				$bck = mt_rand(0, count($empty_day) - 1);
+				$day = $empty_day[$bck];
+
+				// echo '补充day'. $day.'<br>';
+				
+				
+				unset($empty_day[$bck]);
+				$empty_day = array_values($empty_day);
+				$tmp_arr[$day] = array();
+				$this->getRandTime($d_time, strtotime($day.' 00:00:00'), strtotime($day.' 23:59:59'), $tmp_arr[$day]);
+				$now_times += $d_time;
+			}	
+		}
+
+		# 补充天数如果还未满足
+		if ($lt_d_time_day && $now_times < $times) {
+			// echo '小于天数<br>';
+			// print_r($lt_d_time_day);echo '<br>';
+			// 将一天不足的 不上
+			foreach ($lt_d_time_day as $ldk => $ldv) {
+				$day = $ldk;
+				$this->getRandTime($d_time, strtotime($day.' 00:00:00'), strtotime($day.' 23:59:59'), $tmp_arr[$day]);
+				$now_times += $d_time - $ldv;
+			}
+		}
+
+		shuffle($tmp_arr);
+	
 		$r_arr = array();
 		$tmp_time = 0;
-		foreach ($tmp_arr as $tk => $tv) {
+		foreach ($tmp_arr as $tk => &$tv) {
 			
-			$tmp_count = count($tv) - 1;
-			$tmp_d_time = 0;			
-			while (true) {
-
-				$dk = mt_rand(0, $tmp_count);
-				$flag_t = true;
-
-				if (array_search($tv[$dk], $r_arr)) {
-					$flag_t = false;
+			shuffle($tv);	
+			for ($y=0; $y < $d_time; $y++) { 
+				if ($y > (count($tv) - 1)) {
+					continue;
 				}
+				$r_arr[] = $tv[$y];
 
-				if ($flag_t) {
-					$r_arr[] = $tv[$dk];
-					$tmp_d_time++;
-					$tmp_time++;
-				}
-
-				if ($tmp_d_time == $d_time) {
-					break;
-				}
-
-				if ($tmp_time == $times) {
-					break;
-				}		
-			}	
-				
-				
-
-				
+			}
 					
-			
+		}
+	
+		return $r_arr;
+	}
+
+	private function getHuanXiaofeiTime($arr, $tao_time)
+	{
+		$r_arr = array();
+	
+		// 数组打乱
+		shuffle($arr);
+		for ($i=0; $i < $tao_time; $i++) { 
+			$r_arr[] = $arr[$i];
 		}
 
 		return $r_arr;
+
 	}
 
 	function getRandMoney($foot_money, $header_money)
@@ -107,7 +178,7 @@ class PlanController extends BaseController
 	function postAdd()
 	{
 
-		try {
+		// try {
 
 			DB::beginTransaction();
 
@@ -289,7 +360,8 @@ class PlanController extends BaseController
 			// 生成时间
 			$arr = array();
 			$this->getRandTime($plan_time, $plan_s_time, $plan_e_time, $arr);
-			$pay_t_arr = $this->getRandTimeDay($arr, $d_time, $plan_time);
+			
+			$pay_t_arr = $this->getRandTimeDay($arr, $d_time, $plan_time, $plan_s_time, $plan_e_time);
 			sort($pay_t_arr);
 
 			$plan_pay_fee_total = 0; # 接口调用费率
@@ -382,10 +454,10 @@ class PlanController extends BaseController
 			$re_plan = Plan::where('Id', $plan_id)->first();
 			DB::commit();
 			return $this->cbc_encode(json_encode(array('code'=> '200', 'msg'=> '计划添加成功!', 'data'=> $re_data, 'plan'=> $re_plan, 'plan_id'=> $plan_id)));
-		} catch (Exception $e) {
-			DB::rollback();
-			return $this->cbc_encode(json_encode(array('code'=> $e->getCode(), 'msg'=> $e->getMessage())));
-		}
+		// } catch (Exception $e) {
+		// 	DB::rollback();
+		// 	return $this->cbc_encode(json_encode(array('code'=> $e->getCode(), 'msg'=> $e->getMessage())));
+		// }
 			
 
 	}
@@ -402,8 +474,9 @@ class PlanController extends BaseController
 
 			if ($addkey == count($pay_t_arr)) {
 				// 最后一笔还款 时间随意
-				$this->getRandTime($tmp_tao_time, $pay_t_arr[$key], $plan_e_time, $arr, 24, 600);
-				$huan_t_arr = $this->getRandTimeDay($arr, $d_time, $tmp_tao_time);
+				$this->getRandTime($tmp_tao_time, $pay_t_arr[$key], $plan_e_time, $arr, 24);
+				$huan_t_arr = $this->getHuanXiaofeiTime($arr, $tmp_tao_time);
+				// $huan_t_arr = $this->getRandTimeDay($arr, $d_time, $tmp_tao_time, $pay_t_arr[$key], $plan_e_time, $t = 1);
 			} else {
 
 				if (date('d', $pay_t_arr[$key]) != date('d', $pay_t_arr[$addkey])) {
@@ -413,10 +486,12 @@ class PlanController extends BaseController
 				}
 				
 				$tmp_e_time = $pay_t_arr[$addkey];
-				$this->getRandTime($tmp_tao_time, $pay_t_arr[$key], $tmp_e_time, $arr, 24, 600);
-				$huan_t_arr = $this->getRandTimeDay($arr, $d_time, $tmp_tao_time, 1200, 1);
+				$this->getRandTime($tmp_tao_time, $pay_t_arr[$key], $tmp_e_time, $arr, 24);
+				$huan_t_arr = $this->getHuanXiaofeiTime($arr, $tmp_tao_time);
+				// $huan_t_arr = $this->getRandTimeDay($arr, $d_time, $tmp_tao_time, $pay_t_arr[$key], $tmp_e_time, $t = 1);
+
 			}
-			
+			// print_r($huan_t_arr);exit;
 			sort($huan_t_arr);
 			for ($j=0; $j < $tmp_tao_time; $j++) { 
 				PlanDetail::where('PlanId', $value->PlanId)->where('Batch', $value->Batch)->take(1)->whereNull('PayTime')->update(array(
@@ -425,6 +500,7 @@ class PlanController extends BaseController
 			}
 			
 		}
+
 		
 	}
 
