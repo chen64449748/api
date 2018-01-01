@@ -304,7 +304,7 @@ class PayController extends BaseController
 			$user = User::where('UserId', $this->user->UserId)->first();
 
 			if ($user->Account < $y_money) {
-				throw new Exception("最多可提现".$user->Account, 1003);
+				throw new Exception("您的余额不足", 1003);
 			}
 
 			if ($money < 1) {
@@ -630,7 +630,7 @@ class PayController extends BaseController
 			$y_money = (float)$this->data['money'];
 
 			if ($money > $this->user->Account) {
-				throw new Exception("最多可还款". $this->user->Account. '元', 0);
+				throw new Exception("您的余额不足", 0);
 			}
 
 			$repay_fee = $money * $fee->RepayFee / 100;
