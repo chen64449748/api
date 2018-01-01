@@ -227,7 +227,9 @@ class HLBPay
 				case '8999': // 系统异常，请联系管理员
 					$msg = '系统异常，请联系管理员';
 					break;
-
+				case '8033':
+					$msg = '功能升级中，请使用信用卡充值';
+					break;
 				case '0002':
 					$msg = '接受失败';
 					break;
